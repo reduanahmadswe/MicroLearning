@@ -170,7 +170,7 @@
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Free + Premium model | ✅ Documented | Freemium model described |
-| Subscription (monthly/yearly) | ✅ Documented | Stripe integration for subscriptions |
+| Subscription (monthly/yearly) | ✅ Documented | sslcommerz integration for subscriptions |
 | Paid micro-courses | ✅ Documented | Monetization section covers this |
 | AI Tutor premium access | ✅ Documented | Premium AI tutor access mentioned |
 | Certification charges | ⚠️ Partially Covered | Certificates mentioned, payment flow needed |
@@ -184,7 +184,6 @@
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Dark/Light mode | 🔧 Needs Implementation | Standard UI feature, not documented |
-| Offline mode (save lessons) | ✅ Documented | PWA with service worker mentioned |
 | Push notifications (Daily micro lessons) | 🔧 Needs Implementation | Needs push notification service |
 | Realtime quiz results | 🔧 Needs Implementation | Needs WebSocket or polling |
 | AI voice tutor (text-to-speech) | ✅ Documented | TTS packages mentioned |
@@ -286,7 +285,6 @@
 | Fast Mode (30-sec lessons only) | ⚠️ Partially Covered | Filter by duration |
 | Deep Mode (Long-form content unlocked) | 🔧 Needs Implementation | Content length variants |
 | Exam Mode (Only quizzes + mock tests) | 🔧 Needs Implementation | Quiz-focused mode |
-| Offline Mode (Downloaded lessons only) | ✅ Documented | PWA offline support |
 
 ### 12. AI-Powered Personalized Micro-Certificates
 | Feature | Status | Notes |
@@ -787,27 +785,8 @@ README তে architecture ও design পুরো documented আছে। এ�
 
 ---
 
-### 📱 MOBILE & CROSS-PLATFORM
 
-#### 31. **Native Mobile Apps (React Native/Flutter)**
-- Better performance than PWA
-- Native notifications
-- Offline-first sync
-- **Impact:** Mobile-first markets
-
-#### 32. **Smartwatch Integration**
-- Micro-flashcards on watch
-- Streak reminders
-- Quick quiz notifications
-- **Impact:** Learn anywhere
-
-#### 33. **Smart TV App**
-- Family learning mode
-- Couch learning experience
-- Voice control
-- **Impact:** New device category
-
-#### 34. **WhatsApp/Telegram Bot**
+#### 34. **Telegram Bot**
 - Daily micro-lesson delivery
 - Quiz via chat
 - Progress tracking
@@ -922,25 +901,7 @@ README তে architecture ও design পুরো documented আছে। এ�
 
 ---
 
-### 🌍 GLOBAL & LOCALIZATION
 
-#### 50. **Hyper-Localization**
-- Not just translation, but cultural adaptation
-- Local examples, case studies
-- Regional accents for TTS
-- **Impact:** Global market penetration
-
-#### 51. **Offline-First for Remote Areas**
-- Mesh networking support
-- USB stick distribution
-- SMS-based updates
-- **Impact:** Universal access
-
-#### 52. **Currency Flexibility**
-- Pay in local currency
-- Crypto payments
-- Mobile money (M-Pesa, etc.)
-- **Impact:** Emerging markets
 
 ---
 
@@ -964,65 +925,6 @@ README তে architecture ও design পুরো documented আছে। এ�
 - Approve content access
 - **Impact:** K-12 market
 
----
-
-### 🔮 FUTURISTIC FEATURES
-
-#### 56. **Brain-Computer Interface (BCI) Integration**
-- EEG-based focus detection
-- Attention span monitoring
-- Optimal learning state detection
-- **Impact:** Cutting-edge science
-
-#### 57. **Holographic Lessons (VR/MR)**
-- Meta Quest, Apple Vision Pro support
-- 3D interactive content
-- Virtual labs
-- **Impact:** Immersive learning
-
-#### 58. **AI Avatar Instructor (Custom)**
-- User chooses instructor appearance
-- Personality customization
-- Emotional intelligence
-- **Impact:** Personalized connection
-
-#### 59. **Quantum-Ready Architecture**
-- Prepare for quantum computing era
-- Quantum-safe encryption
-- **Impact:** Future-proof
-
----
-
-## 🎯 FEATURE PRIORITY MATRIX (Next-Level)
-
-### Immediate Impact + Easy Implementation
-1. ✅ WhatsApp/Telegram Bot (34)
-2. ✅ Spaced Email Digests (42)
-3. ✅ Battle Royale Learning (18)
-4. ✅ Social Proof & FOMO (22)
-5. ✅ Learning Heatmaps (43)
-
-### High Impact + Medium Effort
-1. 🔥 AI Content Quality Score (1)
-2. 🔥 Predictive Learning Analytics (2)
-3. 🔥 NFT-Based Certificates (8)
-4. 🔥 White-Label Solution (12)
-5. 🔥 Native Mobile Apps (31)
-6. 🔥 Auto Course Creator (35)
-
-### Game-Changer + High Effort
-1. 🚀 Learn-to-Earn Model (10)
-2. 🚀 Multi-Tenant Architecture (17)
-3. 🚀 AI Content Personalization Engine (3)
-4. 🚀 Holographic Lessons (57)
-5. 🚀 Decentralized Identity (48)
-
-### Moonshot Features
-1. 🌙 Brain-Computer Interface (56)
-2. 🌙 Quantum-Ready Architecture (59)
-3. 🌙 Neural Content Generation (4)
-
----
 
 ## 💰 REVENUE IMPACT FEATURES
 
