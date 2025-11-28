@@ -5,6 +5,8 @@ import globalErrorHandler from '../middleware/globalErrorHandler';
 import authRoutes from '../app/modules/auth/auth.route';
 import lessonRoutes from '../app/modules/microLessons/lesson.route';
 import progressRoutes from '../app/modules/progressTracking/progress.route';
+import quizRoutes from '../app/modules/quiz/quiz.route';
+import flashcardRoutes from '../app/modules/flashcard/flashcard.route';
 
 const app: Application = express();
 
@@ -27,6 +29,8 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/lessons', lessonRoutes);
 app.use('/api/v1/progress', progressRoutes);
+app.use('/api/v1/quizzes', quizRoutes);
+app.use('/api/v1/flashcards', flashcardRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
