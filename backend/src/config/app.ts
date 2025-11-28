@@ -8,6 +8,7 @@ import progressRoutes from '../app/modules/progressTracking/progress.route';
 import quizRoutes from '../app/modules/quiz/quiz.route';
 import flashcardRoutes from '../app/modules/flashcard/flashcard.route';
 import bookmarkRoutes from '../app/modules/bookmark/bookmark.route';
+import badgeRoutes from '../app/modules/badge/badge.route';
 
 const app: Application = express();
 
@@ -33,6 +34,7 @@ app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/quizzes', quizRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/bookmarks', bookmarkRoutes);
+app.use('/api/v1/badges', badgeRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
