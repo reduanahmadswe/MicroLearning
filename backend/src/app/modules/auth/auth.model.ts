@@ -27,13 +27,99 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     },
     role: {
       type: String,
-      enum: ['admin', 'learner'],
+      enum: ['admin', 'learner', 'instructor'],
       default: 'learner',
     },
     isActive: {
       type: Boolean,
       default: true,
     },
+    profilePicture: {
+      type: String,
+    },
+    bio: {
+      type: String,
+      maxlength: [500, 'Bio cannot exceed 500 characters'],
+    },
+    phone: {
+      type: String,
+    },
+    
+    // Gamification
+    xp: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    coins: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    level: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+    streak: {
+      current: {
+        type: Number,
+        default: 0,
+      },
+      longest: {
+        type: Number,
+        default: 0,
+      },
+      lastActivityDate: {
+        type: Date,
+      },
+    },
+    badges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Badge',
+      },
+    ],
+    
+    // Learning Preferences
+    preferences: {
+      interests: {
+        type: [String],
+        default: [],
+      },
+      goals: {
+        type: [String],
+        default: [],
+      },
+      dailyLearningTime: {
+        type: Number,
+        default: 30, // 30 minutes default
+        min: 5,
+      },
+      preferredDifficulty: {
+        type: String,
+        enum: ['beginner', 'intermediate', 'advanced'],
+        default: 'beginner',
+      },
+      language: {
+        type: String,
+        default: 'en',
+      },
+      learningStyle: {
+        type: String,
+        enum: ['visual', 'auditory', 'kinesthetic'],
+      },
+    },
+    
+    // Premium
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    premiumExpiresAt: {
+      type: Date,
+    },
+    
     refreshToken: {
       type: String,
       select: false,

@@ -3,6 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import globalErrorHandler from '../middleware/globalErrorHandler';
 import authRoutes from '../app/modules/auth/auth.route';
+import lessonRoutes from '../app/modules/microLessons/lesson.route';
+import progressRoutes from '../app/modules/progressTracking/progress.route';
 
 const app: Application = express();
 
@@ -23,6 +25,8 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/lessons', lessonRoutes);
+app.use('/api/v1/progress', progressRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
