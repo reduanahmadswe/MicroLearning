@@ -17,6 +17,10 @@ import courseRoutes from '../app/modules/course/course.route';
 import certificateRoutes from '../app/modules/certificate/certificate.route';
 import adminRoutes from '../app/modules/admin/admin.route';
 import analyticsRoutes from '../app/modules/analytics/analytics.route';
+import { FriendRoutes } from '../app/modules/friend/friend.route';
+import { ChallengeRoutes } from '../app/modules/challenge/challenge.route';
+import { UploadRoutes } from '../app/modules/upload/upload.route';
+import { PushRoutes } from '../app/modules/push/push.route';
 
 const app: Application = express();
 
@@ -51,6 +55,10 @@ app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/friends', FriendRoutes);
+app.use('/api/v1/challenges', ChallengeRoutes);
+app.use('/api/v1/upload', UploadRoutes);
+app.use('/api/v1/push', PushRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
