@@ -21,6 +21,7 @@ import { FriendRoutes } from '../app/modules/friend/friend.route';
 import { ChallengeRoutes } from '../app/modules/challenge/challenge.route';
 import { UploadRoutes } from '../app/modules/upload/upload.route';
 import { PushRoutes } from '../app/modules/push/push.route';
+import AIRoutes from '../app/modules/ai/ai.route';
 
 const app: Application = express();
 
@@ -59,6 +60,7 @@ app.use('/api/v1/friends', FriendRoutes);
 app.use('/api/v1/challenges', ChallengeRoutes);
 app.use('/api/v1/upload', UploadRoutes);
 app.use('/api/v1/push', PushRoutes);
+app.use('/api/v1/ai', AIRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
