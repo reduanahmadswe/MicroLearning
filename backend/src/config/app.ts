@@ -9,6 +9,11 @@ import quizRoutes from '../app/modules/quiz/quiz.route';
 import flashcardRoutes from '../app/modules/flashcard/flashcard.route';
 import bookmarkRoutes from '../app/modules/bookmark/bookmark.route';
 import badgeRoutes from '../app/modules/badge/badge.route';
+import leaderboardRoutes from '../app/modules/leaderboard/leaderboard.route';
+import profileRoutes from '../app/modules/profile/profile.route';
+import notificationRoutes from '../app/modules/notification/notification.route';
+import commentRoutes from '../app/modules/comment/comment.route';
+import courseRoutes from '../app/modules/course/course.route';
 
 const app: Application = express();
 
@@ -29,12 +34,17 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/lessons', lessonRoutes);
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/quizzes', quizRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/bookmarks', bookmarkRoutes);
 app.use('/api/v1/badges', badgeRoutes);
+app.use('/api/v1/leaderboard', leaderboardRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/comments', commentRoutes);
+app.use('/api/v1/courses', courseRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
