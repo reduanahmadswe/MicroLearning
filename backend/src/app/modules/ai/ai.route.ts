@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import * as AIController from './ai.controller';
-import authGuard from '../../middlewares/authGuard';
-import validateRequest from '../../middlewares/validateRequest';
+
 import {
   generateLessonSchema,
   generateQuizSchema,
@@ -13,6 +12,8 @@ import {
   getGenerationHistorySchema,
   deleteChatSessionSchema,
 } from './ai.validation';
+import { authGuard } from '../../../middleware/authGuard';
+import { validateRequest } from '../../../middleware/validateRequest';
 
 const router = Router();
 

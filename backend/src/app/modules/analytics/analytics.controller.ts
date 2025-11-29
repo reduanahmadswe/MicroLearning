@@ -18,7 +18,7 @@ class AnalyticsController {
   });
 
   // Get system analytics (admin only)
-  getSystemAnalytics = catchAsync(async (req: Request, res: Response) => {
+  getSystemAnalytics = catchAsync(async (_req: Request, res: Response) => {
     const result = await analyticsService.getSystemAnalytics();
 
     sendResponse(res, {

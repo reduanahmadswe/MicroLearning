@@ -165,7 +165,7 @@ export interface IAIGenerationHistory extends Document {
   request: any;
   response: any;
   provider: AIProvider;
-  model: string;
+  aiModel: string;
   tokensUsed: number;
   cost: number;
   status: 'success' | 'failed' | 'pending';

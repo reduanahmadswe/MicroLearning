@@ -5,7 +5,7 @@ import { IDeviceToken, IScheduledNotification } from './push.types';
 const deviceTokenSchema = new Schema<IDeviceToken>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },
@@ -41,7 +41,7 @@ deviceTokenSchema.index({ user: 1, platform: 1 });
 const scheduledNotificationSchema = new Schema<IScheduledNotification>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },

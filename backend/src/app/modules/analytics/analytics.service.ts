@@ -1,11 +1,11 @@
 import User from '../auth/auth.model';
-import UserProgress from '../userProgress/userProgress.model';
-import QuizAttempt from '../quizAttempt/quizAttempt.model';
+import UserProgress from '../progressTracking/progress.model';
+import { QuizAttempt } from '../quiz/quiz.model';
 import Certificate from '../certificate/certificate.model';
 import { Enrollment } from '../course/course.model';
-import Badge from '../badges/badges.model';
-import Lesson from '../microLessons/microLesson.model';
+
 import ApiError from '../../../utils/ApiError';
+import { Badge } from '../badge/badge.model';
 
 class AnalyticsService {
   // Get user analytics
@@ -16,9 +16,9 @@ class AnalyticsService {
     }
 
     // Learning streak
-    const currentStreak = user.currentStreak || 0;
-    const longestStreak = user.longestStreak || 0;
-    const lastActivityDate = user.lastLoginAt || user.createdAt;
+    const currentStreak = user.streak?.current || 0;
+    const longestStreak = user.streak?.longest || 0;
+    const lastActivityDate = user.streak?.lastActivityDate || user.createdAt;
 
     // Progress over time (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -42,7 +42,7 @@ class AnalyticsService {
       { $sort: { _id: 1 } },
     ]);
 
-    const progressOverTime = progressData.map((item) => ({
+    const progressOverTime = progressData.map((item: any) => ({
       date: item._id,
       xp: 50, // Approximate XP per lesson
       lessonsCompleted: item.lessonsCompleted,
@@ -69,14 +69,14 @@ class AnalyticsService {
       },
     ]);
 
-    const categoryBreakdown = categoryData.map((item) => ({
+    const categoryBreakdown = categoryData.map((item: any) => ({
       category: item._id,
       lessonsCompleted: item.lessonsCompleted,
       timeSpent: item.timeSpent,
     }));
 
     // Performance metrics
-    const [quizStats, totalProgress, coursesCompleted] = await Promise.all([
+    const [quizStats, _totalProgress, coursesCompleted] = await Promise.all([
       QuizAttempt.aggregate([
         { $match: { user: user._id } },
         {
@@ -366,7 +366,7 @@ class AnalyticsService {
       });
     }
 
-    if (user.currentStreak < 7) {
+    if ((user.streak?.current || 0) < 7) {
       recommendations.push({
         type: 'streak',
         message: 'Build your learning streak! Study daily to unlock streak badges',
@@ -375,8 +375,8 @@ class AnalyticsService {
 
     return {
       recentActivity: recentProgress,
-      strongCategories: strongCategories.map(c => c._id),
-      weakCategories: weakCategories.map(c => c._id),
+      strongCategories: strongCategories.map((c: any) => c._id),
+      weakCategories: weakCategories.map((c: any) => c._id),
       recommendations,
       nextMilestone: {
         type: 'level',

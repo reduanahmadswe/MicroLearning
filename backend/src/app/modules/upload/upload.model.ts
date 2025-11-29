@@ -4,7 +4,7 @@ import { IFileMetadata } from './upload.types';
 const fileMetadataSchema = new Schema<IFileMetadata>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },

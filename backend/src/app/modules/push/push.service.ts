@@ -85,7 +85,7 @@ const unregisterDevice = async (userId: string, token: string) => {
 
 // Send push notification to a single user
 const sendNotification = async (payload: IPushNotificationPayload) => {
-  const { userId, title, body, data } = payload;
+  const { userId, title, body: _body, data: _data } = payload;
 
   // Get user's active device tokens
   const deviceTokens = await DeviceToken.find({
@@ -149,7 +149,7 @@ const sendNotification = async (payload: IPushNotificationPayload) => {
 
 // Send push notification to multiple users
 const sendBulkNotification = async (payload: IBulkNotificationPayload) => {
-  const { userIds, title, body, data } = payload;
+  const { userIds } = payload;
 
   // Get all active device tokens for these users
   const deviceTokens = await DeviceToken.find({
@@ -201,7 +201,7 @@ const sendBulkNotification = async (payload: IBulkNotificationPayload) => {
   // }
 
   // Placeholder response (remove after Firebase setup)
-  console.log(`[PUSH BULK] Would send to ${tokens.length} devices: ${title}`);
+  console.log(`[PUSH BULK] Would send to ${tokens.length} devices: ${payload.title}`);
   return {
     success: tokens.length,
     failure: 0,

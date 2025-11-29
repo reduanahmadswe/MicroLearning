@@ -1,7 +1,7 @@
 import express from 'express';
 import { FriendController } from './friend.controller';
-import authGuard from '../../../middleware/authGuard';
-import validateRequest from '../../../middleware/validateRequest';
+import { authGuard } from '../../../middleware/authGuard';
+import { validateRequest } from '../../../middleware/validateRequest';
 import {
   sendFriendRequestSchema,
   respondToRequestSchema,

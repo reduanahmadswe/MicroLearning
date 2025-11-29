@@ -1,10 +1,9 @@
 import User from '../auth/auth.model';
-import Lesson from '../microLessons/microLesson.model';
-import Quiz from '../quiz/quiz.model';
+import Lesson from '../microLessons/lesson.model';
+import { Quiz, QuizAttempt } from '../quiz/quiz.model';
 import Flashcard from '../flashcard/flashcard.model';
 import { Course, Enrollment } from '../course/course.model';
-import UserProgress from '../userProgress/userProgress.model';
-import QuizAttempt from '../quizAttempt/quizAttempt.model';
+import UserProgress from '../progressTracking/progress.model';
 import Certificate from '../certificate/certificate.model';
 import ApiError from '../../../utils/ApiError';
 
@@ -21,7 +20,7 @@ class AdminService {
       roleDistribution,
       totalLessons,
       totalQuizzes,
-      totalFlashcards,
+      totalFlashcards, 
       totalCourses,
       totalLessonCompletions,
       totalQuizAttempts,
@@ -29,7 +28,7 @@ class AdminService {
       topUsers,
     ] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ lastLoginAt: { $gte: thirtyDaysAgo } }),
+      User.countDocuments({ updatedAt: { $gte: thirtyDaysAgo }, isActive: true }),
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
       User.aggregate([
         { $group: { _id: '$role', count: { $sum: 1 } } },
@@ -82,7 +81,7 @@ class AdminService {
         active: activeUsers,
         new: newUsers,
         byRole: {
-          student: roleMap.student || 0,
+          learner: roleMap.learner || 0,
           instructor: roleMap.instructor || 0,
           admin: roleMap.admin || 0,
         },
@@ -159,7 +158,7 @@ class AdminService {
       throw new ApiError(403, 'Cannot ban admin users');
     }
 
-    user.isBlocked = true;
+    user.isActive = false;
     await user.save();
 
     return { message: 'User banned successfully' };
@@ -171,7 +170,7 @@ class AdminService {
       throw new ApiError(404, 'User not found');
     }
 
-    user.isBlocked = false;
+    user.isActive = true;
     await user.save();
 
     return { message: 'User unbanned successfully' };
@@ -194,7 +193,7 @@ class AdminService {
     return { message: 'User promoted to instructor successfully' };
   }
 
-  async demoteToStudent(userId: string) {
+  async demoteToLearner(userId: string) {
     const user = await User.findById(userId);
     if (!user) {
       throw new ApiError(404, 'User not found');
@@ -204,10 +203,10 @@ class AdminService {
       throw new ApiError(403, 'Cannot demote admin users');
     }
 
-    user.role = 'student';
+    user.role = 'learner';
     await user.save();
 
-    return { message: 'User demoted to student successfully' };
+    return { message: 'User demoted to learner successfully' };
   }
 
   // Delete user

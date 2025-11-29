@@ -42,10 +42,13 @@ class SendGridProvider implements EmailProvider {
     try {
       // Note: Actual SendGrid integration would use @sendgrid/mail
       // For now, this is a placeholder structure
+      // html and text parameters will be used when SendGrid is properly configured
       console.log('[SendGrid] Sending email:', {
         to,
         subject,
         from: `${this.fromName} <${this.fromEmail}>`,
+        htmlLength: html.length,
+        textLength: text.length,
       });
 
       // Simulated response

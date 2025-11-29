@@ -1,7 +1,7 @@
 import express from 'express';
 import { ChallengeController } from './challenge.controller';
-import authGuard from '../../../middleware/authGuard';
-import validateRequest from '../../../middleware/validateRequest';
+import { authGuard } from '../../../middleware/authGuard';
+import { validateRequest } from '../../../middleware/validateRequest';
 import {
   createChallengeSchema,
   challengeFriendSchema,

@@ -6,7 +6,7 @@ import { FriendService } from './friend.service';
 
 // Send friend request
 const sendFriendRequest = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { friendId } = req.body;
 
   const result = await FriendService.sendFriendRequest(userId, friendId);
@@ -21,7 +21,7 @@ const sendFriendRequest = catchAsync(async (req: Request, res: Response) => {
 
 // Get friend requests (received)
 const getFriendRequests = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
 
   const result = await FriendService.getFriendRequests(userId);
 
@@ -35,7 +35,7 @@ const getFriendRequests = catchAsync(async (req: Request, res: Response) => {
 
 // Get sent requests
 const getSentRequests = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
 
   const result = await FriendService.getSentRequests(userId);
 
@@ -49,7 +49,7 @@ const getSentRequests = catchAsync(async (req: Request, res: Response) => {
 
 // Respond to friend request
 const respondToRequest = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { requestId, action } = req.body;
 
   let result;
@@ -69,7 +69,7 @@ const respondToRequest = catchAsync(async (req: Request, res: Response) => {
 
 // Get all friends
 const getFriends = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
 
@@ -85,7 +85,7 @@ const getFriends = catchAsync(async (req: Request, res: Response) => {
 
 // Remove friend
 const removeFriend = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { friendId } = req.params;
 
   const result = await FriendService.removeFriend(userId, friendId);
@@ -99,7 +99,7 @@ const removeFriend = catchAsync(async (req: Request, res: Response) => {
 
 // Block user
 const blockUser = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { userId: blockUserId } = req.params;
 
   const result = await FriendService.blockUser(userId, blockUserId);
@@ -114,7 +114,7 @@ const blockUser = catchAsync(async (req: Request, res: Response) => {
 
 // Unblock user
 const unblockUser = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { userId: unblockUserId } = req.params;
 
   const result = await FriendService.unblockUser(userId, unblockUserId);
@@ -128,7 +128,7 @@ const unblockUser = catchAsync(async (req: Request, res: Response) => {
 
 // Get blocked users
 const getBlockedUsers = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
 
   const result = await FriendService.getBlockedUsers(userId);
 
@@ -142,7 +142,7 @@ const getBlockedUsers = catchAsync(async (req: Request, res: Response) => {
 
 // Get friend statistics
 const getFriendStats = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
 
   const result = await FriendService.getFriendStats(userId);
 
@@ -156,7 +156,7 @@ const getFriendStats = catchAsync(async (req: Request, res: Response) => {
 
 // Get friend recommendations
 const getFriendRecommendations = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const limit = parseInt(req.query.limit as string) || 10;
 
   const result = await FriendService.getFriendRecommendations(userId, limit);

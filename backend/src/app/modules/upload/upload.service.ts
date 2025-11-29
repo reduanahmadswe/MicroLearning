@@ -2,7 +2,7 @@ import { IUploadRequest, IUploadResponse } from './upload.types';
 import { FileMetadata } from './upload.model';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import path from 'path';
 import { validateFileType, validateFileSize } from './upload.validation';
 
@@ -47,7 +47,8 @@ const generateUploadUrl = async (userId: string, data: IUploadRequest): Promise<
 
   // Generate unique file key
   const fileExtension = path.extname(fileName);
-  const fileKey = `${fileType}s/${userId}/${uuidv4()}${fileExtension}`;
+  const uniqueId = crypto.randomUUID();
+  const fileKey = `${fileType}s/${userId}/${uniqueId}${fileExtension}`;
 
   // TODO: Replace with actual S3 pre-signed URL generation
   // Example with AWS S3:

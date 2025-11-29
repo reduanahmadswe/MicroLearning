@@ -544,7 +544,7 @@ export const shareMilestone = async (
 
 export const getActivityFeed = async (
   currentUserId: string,
-  query: GetActivityFeedQuery
+  query: any
 ) => {
   const { userId, activityType, visibility, limit = 20, skip = 0 } = query;
 

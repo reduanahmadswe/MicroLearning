@@ -1,7 +1,7 @@
 import express from 'express';
 import { UploadController } from './upload.controller';
-import authGuard from '../../../middleware/authGuard';
-import validateRequest from '../../../middleware/validateRequest';
+import { authGuard } from '../../../middleware/authGuard';
+import { validateRequest } from '../../../middleware/validateRequest';
 import { getUploadUrlSchema, deleteFileSchema } from './upload.validation';
 
 const router = express.Router();

@@ -28,6 +28,10 @@ import MarketplaceRoutes from '../app/modules/marketplace/marketplace.route';
 import ProgressShareRoutes from '../app/modules/progress/progress.route';
 import DailyChallengeRoutes from '../app/modules/dailyChallenge/dailyChallenge.route';
 import EmailRoutes from '../app/modules/email/email.route';
+import TTSRoutes from '../app/modules/tts/tts.route';
+import ASRRoutes from '../app/modules/asr/asr.route';
+import RoadmapRoutes from '../app/modules/roadmap/roadmap.route';
+import CareerMentorRoutes from '../app/modules/careerMentor/careerMentor.route';
 
 const app: Application = express();
 
@@ -73,6 +77,10 @@ app.use('/api/v1/marketplace', MarketplaceRoutes);
 app.use('/api/v1/progress-share', ProgressShareRoutes);
 app.use('/api/v1/daily-challenges', DailyChallengeRoutes);
 app.use('/api/v1/email', EmailRoutes);
+app.use('/api/v1/tts', TTSRoutes);
+app.use('/api/v1/asr', ASRRoutes);
+app.use('/api/v1/roadmap', RoadmapRoutes);
+app.use('/api/v1/career-mentor', CareerMentorRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {

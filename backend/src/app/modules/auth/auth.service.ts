@@ -18,7 +18,7 @@ class AuthService {
       throw new ApiError(500, 'JWT access secret is not configured');
     }
 
-    return jwt.sign(payload, secret, { expiresIn });
+    return jwt.sign(payload, secret, { expiresIn } as jwt.SignOptions);
   }
 
   // Generate refresh token
@@ -30,7 +30,7 @@ class AuthService {
       throw new ApiError(500, 'JWT refresh secret is not configured');
     }
 
-    return jwt.sign(payload, secret, { expiresIn });
+    return jwt.sign(payload, secret, { expiresIn } as jwt.SignOptions);
   }
 
   // Register new user

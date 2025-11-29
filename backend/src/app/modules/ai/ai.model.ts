@@ -99,7 +99,7 @@ const aiGenerationHistorySchema = new Schema<IAIGenerationHistory>(
       required: true,
       default: 'openai',
     },
-    model: {
+    aiModel: {
       type: String,
       required: true,
     },

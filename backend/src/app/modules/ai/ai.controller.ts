@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
  * Generate Lesson with AI
  */
 export const generateLesson = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.generateLesson(userId, req.body);
 
   sendResponse(res, {
@@ -23,7 +23,7 @@ export const generateLesson = catchAsync(async (req: Request, res: Response) => 
  * Generate Quiz with AI
  */
 export const generateQuiz = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.generateQuiz(userId, req.body);
 
   sendResponse(res, {
@@ -38,7 +38,7 @@ export const generateQuiz = catchAsync(async (req: Request, res: Response) => {
  * Generate Flashcards with AI
  */
 export const generateFlashcards = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.generateFlashcards(userId, req.body);
 
   sendResponse(res, {
@@ -53,7 +53,7 @@ export const generateFlashcards = catchAsync(async (req: Request, res: Response)
  * Chat with AI Tutor
  */
 export const chat = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.chat(userId, req.body);
 
   sendResponse(res, {
@@ -68,7 +68,7 @@ export const chat = catchAsync(async (req: Request, res: Response) => {
  * Get Chat Sessions
  */
 export const getChatSessions = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
 
@@ -79,7 +79,11 @@ export const getChatSessions = catchAsync(async (req: Request, res: Response) =>
     success: true,
     message: 'Chat sessions retrieved successfully',
     data: result.sessions,
-    meta: result.pagination,
+    meta: {
+      page: result.pagination.currentPage,
+      limit: result.pagination.itemsPerPage,
+      total: result.pagination.totalItems,
+    },
   });
 });
 
@@ -87,7 +91,7 @@ export const getChatSessions = catchAsync(async (req: Request, res: Response) =>
  * Get Chat Session Details
  */
 export const getChatSessionDetails = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const { sessionId } = req.params;
 
   const result = await AIService.getChatSessionDetails(userId, sessionId);
@@ -104,7 +108,7 @@ export const getChatSessionDetails = catchAsync(async (req: Request, res: Respon
  * Delete Chat Session
  */
 export const deleteChatSession = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const { sessionId } = req.params;
 
   const result = await AIService.deleteChatSession(userId, sessionId);
@@ -121,7 +125,7 @@ export const deleteChatSession = catchAsync(async (req: Request, res: Response) 
  * Improve Content with AI
  */
 export const improveContent = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.improveContent(userId, req.body);
 
   sendResponse(res, {
@@ -136,7 +140,7 @@ export const improveContent = catchAsync(async (req: Request, res: Response) => 
  * Get Topic Suggestions
  */
 export const getTopicSuggestions = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const skillLevel = req.query.skillLevel as 'beginner' | 'intermediate' | 'advanced' | undefined;
   const limit = parseInt(req.query.limit as string) || 10;
 
@@ -154,7 +158,7 @@ export const getTopicSuggestions = catchAsync(async (req: Request, res: Response
  * Get AI Statistics
  */
 export const getAIStats = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.getAIStats(userId);
 
   sendResponse(res, {
@@ -169,7 +173,7 @@ export const getAIStats = catchAsync(async (req: Request, res: Response) => {
  * Get Generation History
  */
 export const getGenerationHistory = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id as Types.ObjectId;
+  const userId = new Types.ObjectId(req.user!.userId);
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const type = req.query.type as 'lesson' | 'quiz' | 'flashcard' | 'chat' | undefined;
@@ -182,6 +186,10 @@ export const getGenerationHistory = catchAsync(async (req: Request, res: Respons
     success: true,
     message: 'Generation history retrieved successfully',
     data: result.history,
-    meta: result.pagination,
+    meta: {
+      page: result.pagination.currentPage,
+      limit: result.pagination.itemsPerPage,
+      total: result.pagination.totalItems,
+    },
   });
 });

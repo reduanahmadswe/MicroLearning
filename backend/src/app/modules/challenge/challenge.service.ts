@@ -2,10 +2,10 @@ import { Challenge, ChallengeProgress, UserChallenge } from './challenge.model';
 import { ICreateChallengeRequest, IChallengeStats, IDailyChallengeResponse } from './challenge.types';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
-import { User } from '../auth/auth.model';
-import { UserProgress } from '../progressTracking/progressTracking.model';
+import User from '../auth/auth.model';
+import UserProgress from '../progressTracking/progress.model';
 import { QuizAttempt } from '../quiz/quiz.model';
-import { Notification } from '../notification/notification.model';
+import Notification from '../notification/notification.model';
 import { Friend } from '../friend/friend.model';
 
 // Create challenge (admin/instructor only)

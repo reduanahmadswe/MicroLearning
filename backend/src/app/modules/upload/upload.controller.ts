@@ -6,7 +6,7 @@ import { UploadService } from './upload.service';
 
 // Get upload URL
 const getUploadUrl = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await UploadService.generateUploadUrl(userId, req.body);
 
   sendResponse(res, {
@@ -19,7 +19,7 @@ const getUploadUrl = catchAsync(async (req: Request, res: Response) => {
 
 // Get user's files
 const getUserFiles = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { fileType, page, limit } = req.query;
 
   const result = await UploadService.getUserFiles(userId, {
@@ -38,7 +38,7 @@ const getUserFiles = catchAsync(async (req: Request, res: Response) => {
 
 // Get file by ID
 const getFileById = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { fileId } = req.params;
 
   const result = await UploadService.getFileById(userId, fileId);
@@ -53,7 +53,7 @@ const getFileById = catchAsync(async (req: Request, res: Response) => {
 
 // Delete file
 const deleteFile = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { fileId } = req.params;
 
   const result = await UploadService.deleteFile(userId, fileId);
@@ -67,7 +67,7 @@ const deleteFile = catchAsync(async (req: Request, res: Response) => {
 
 // Make file public
 const makeFilePublic = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { fileId } = req.params;
 
   const result = await UploadService.makeFilePublic(userId, fileId);
@@ -82,7 +82,7 @@ const makeFilePublic = catchAsync(async (req: Request, res: Response) => {
 
 // Get upload statistics
 const getUploadStats = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await UploadService.getUploadStats(userId);
 
   sendResponse(res, {

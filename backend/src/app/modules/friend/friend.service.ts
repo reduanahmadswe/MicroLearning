@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
 import { Friend } from './friend.model';
-import { User } from '../auth/auth.model';
+import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
 import { IFriendRecommendation, IFriendStats } from './friend.types';
-import { Notification } from '../notification/notification.model';
+import Notification from '../notification/notification.model';
 
 // Send friend request
 const sendFriendRequest = async (userId: string, friendId: string) => {
@@ -408,7 +408,7 @@ const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFr
     },
   ]);
 
-  return recommendations.map((rec) => ({
+  return recommendations.map((rec: any) => ({
     user: {
       _id: rec._id.toString(),
       name: rec.name,

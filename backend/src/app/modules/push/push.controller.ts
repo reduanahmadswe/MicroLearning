@@ -6,7 +6,7 @@ import { PushService } from './push.service';
 
 // Register device token
 const registerDevice = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await PushService.registerDevice(userId, req.body);
 
   sendResponse(res, {
@@ -19,7 +19,7 @@ const registerDevice = catchAsync(async (req: Request, res: Response) => {
 
 // Unregister device token
 const unregisterDevice = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { token } = req.body;
 
   const result = await PushService.unregisterDevice(userId, token);
@@ -77,7 +77,7 @@ const scheduleNotification = catchAsync(async (req: Request, res: Response) => {
 
 // Get user's devices
 const getUserDevices = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await PushService.getUserDevices(userId);
 
   sendResponse(res, {
@@ -90,7 +90,7 @@ const getUserDevices = catchAsync(async (req: Request, res: Response) => {
 
 // Get push notification statistics
 const getPushStats = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await PushService.getPushStats(userId);
 
   sendResponse(res, {

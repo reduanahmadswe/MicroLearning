@@ -1,7 +1,7 @@
 import User from '../auth/auth.model';
 import UserProgress from '../progressTracking/progress.model';
 import { QuizAttempt } from '../quiz/quiz.model';
-import { Badge, UserAchievement } from '../badge/badge.model';
+import { UserAchievement } from '../badge/badge.model';
 import ApiError from '../../../utils/ApiError';
 import {
   IUpdateProfileRequest,
@@ -21,7 +21,7 @@ class ProfileService {
       throw new ApiError(404, 'User not found');
     }
 
-    return user as IUserProfileResponse;
+    return { ...user, _id: user._id.toString() } as unknown as IUserProfileResponse;
   }
 
   // Get public profile
@@ -91,7 +91,8 @@ class ProfileService {
       throw new ApiError(404, 'User not found');
     }
 
-    return user.toObject() as IUserProfileResponse;
+    const userObj = user.toObject();
+    return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
   }
 
   // Update learning preferences
@@ -109,7 +110,9 @@ class ProfileService {
       throw new ApiError(404, 'User not found');
     }
 
-    return user.toObject() as IUserProfileResponse;
+    const userObj = user.toObject();
+    return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
+    return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
   }
 
   // Get user badges

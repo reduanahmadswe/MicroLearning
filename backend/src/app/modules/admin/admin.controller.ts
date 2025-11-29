@@ -5,7 +5,7 @@ import adminService from './admin.service';
 
 class AdminController {
   // Get dashboard stats
-  getDashboardStats = catchAsync(async (req: Request, res: Response) => {
+  getDashboardStats = catchAsync(async (_req: Request, res: Response) => {
     const result = await adminService.getDashboardStats();
 
     sendResponse(res, {
@@ -71,10 +71,10 @@ class AdminController {
     });
   });
 
-  // Demote to student
-  demoteToStudent = catchAsync(async (req: Request, res: Response) => {
+  // Demote to learner
+  demoteToLearner = catchAsync(async (req: Request, res: Response) => {
     const { userId } = req.params;
-    const result = await adminService.demoteToStudent(userId);
+    const result = await adminService.demoteToLearner(userId);
 
     sendResponse(res, {
       statusCode: 200,
@@ -96,7 +96,7 @@ class AdminController {
   });
 
   // Get content stats
-  getContentStats = catchAsync(async (req: Request, res: Response) => {
+  getContentStats = catchAsync(async (_req: Request, res: Response) => {
     const result = await adminService.getContentStats();
 
     sendResponse(res, {

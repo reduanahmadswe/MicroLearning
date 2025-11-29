@@ -1,12 +1,12 @@
 import User from '../auth/auth.model';
 import UserProgress from '../progressTracking/progress.model';
 import Lesson from '../microLessons/lesson.model';
-import { ILeaderboardQuery, ILeaderboardEntry } from './leaderboard.types';
+import { ILeaderboardEntry } from './leaderboard.types';
 import ApiError from '../../../utils/ApiError';
 
 class LeaderboardService {
   // Get global leaderboard
-  async getGlobalLeaderboard(timeframe: string = 'all-time', limit: number = 50) {
+  async getGlobalLeaderboard(_timeframe: string = 'all-time', limit: number = 50) {
     // For now, return all-time leaderboard
     // In production, implement Redis caching for performance
     
@@ -17,7 +17,7 @@ class LeaderboardService {
       .lean();
 
     // Get lessons completed count for each user
-    const leaderboard: ILeaderboardEntry[] = await Promise.all(
+    const leaderboardData = await Promise.all(
       users.map(async (user, index) => {
         const lessonsCompleted = await UserProgress.countDocuments({
           user: user._id,
@@ -36,6 +36,8 @@ class LeaderboardService {
         };
       })
     );
+
+    const leaderboard: ILeaderboardEntry[] = leaderboardData.filter((entry) => entry !== null) as ILeaderboardEntry[];
 
     return leaderboard;
   }
@@ -70,7 +72,7 @@ class LeaderboardService {
     ]);
 
     // Populate user data
-    const leaderboard: ILeaderboardEntry[] = await Promise.all(
+    const leaderboardData = await Promise.all(
       topicProgress.map(async (entry, index) => {
         const user = await User.findById(entry._id)
           .select('name profilePicture xp level streak.current')
@@ -93,7 +95,9 @@ class LeaderboardService {
       })
     );
 
-    return leaderboard.filter((entry) => entry !== null) as ILeaderboardEntry[];
+    const leaderboard: ILeaderboardEntry[] = leaderboardData.filter((entry) => entry !== null) as ILeaderboardEntry[];
+
+    return leaderboard;
   }
 
   // Get user's rank

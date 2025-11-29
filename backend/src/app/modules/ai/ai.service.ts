@@ -19,9 +19,8 @@ import {
   AIProvider,
 } from './ai.types';
 import { ChatSession, AIGenerationHistory } from './ai.model';
-import { User } from '../auth/auth.model';
-import { UserProgress } from '../progressTracking/progressTracking.model';
-import AppError from '../../../errors/AppError';
+import UserProgress from '../progressTracking/progress.model';
+import ApiError from '../../../utils/ApiError';
 
 /**
  * AI Service Configuration
@@ -59,7 +58,7 @@ const makeOpenAIRequest = async (
   maxTokens: number = AI_CONFIG.defaultMaxTokens
 ): Promise<IOpenAIResponse> => {
   if (!AI_CONFIG.openai.apiKey) {
-    throw new AppError(500, 'OpenAI API key not configured');
+    throw new ApiError(500, 'OpenAI API key not configured');
   }
 
   try {
@@ -83,12 +82,12 @@ const makeOpenAIRequest = async (
     return response.data;
   } catch (error: any) {
     if (error.response) {
-      throw new AppError(
+      throw new ApiError(
         error.response.status,
         `OpenAI API Error: ${error.response.data?.error?.message || 'Unknown error'}`
       );
     }
-    throw new AppError(500, `Failed to connect to OpenAI: ${error.message}`);
+    throw new ApiError(500, `Failed to connect to OpenAI: ${error.message}`);
   }
 };
 
@@ -112,7 +111,7 @@ const saveGenerationHistory = async (
     request,
     response,
     provider: AI_CONFIG.provider,
-    model: AI_CONFIG.openai.model,
+    aiModel: AI_CONFIG.openai.model,
     tokensUsed,
     cost,
     status,
@@ -127,8 +126,6 @@ export const generateLesson = async (
   userId: Types.ObjectId,
   data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
-  const startTime = Date.now();
-
   const systemPrompt = `You are an expert educational content creator specializing in micro-learning. 
 Create concise, engaging, and well-structured lessons that are easy to understand and remember.
 Focus on clarity, practical examples, and actionable insights.`;
@@ -369,7 +366,7 @@ export const chat = async (userId: Types.ObjectId, data: IChatRequest): Promise<
   if (data.sessionId) {
     session = await ChatSession.findOne({ _id: data.sessionId, user: userId });
     if (!session) {
-      throw new AppError(404, 'Chat session not found');
+      throw new ApiError(404, 'Chat session not found');
     }
   } else {
     // Create new session
@@ -501,7 +498,7 @@ export const getChatSessionDetails = async (userId: Types.ObjectId, sessionId: s
     .populate('context.quiz', 'title');
 
   if (!session) {
-    throw new AppError(404, 'Chat session not found');
+    throw new ApiError(404, 'Chat session not found');
   }
 
   return session;
@@ -514,7 +511,7 @@ export const deleteChatSession = async (userId: Types.ObjectId, sessionId: strin
   const session = await ChatSession.findOneAndDelete({ _id: sessionId, user: userId });
 
   if (!session) {
-    throw new AppError(404, 'Chat session not found');
+    throw new ApiError(404, 'Chat session not found');
   }
 
   return { message: 'Chat session deleted successfully' };
@@ -524,7 +521,7 @@ export const deleteChatSession = async (userId: Types.ObjectId, sessionId: strin
  * Improve Content
  */
 export const improveContent = async (
-  userId: Types.ObjectId,
+  _userId: Types.ObjectId,
   data: IImproveContentRequest
 ): Promise<IImprovedContent> => {
   const improvementPrompts = {
@@ -577,7 +574,7 @@ Provide your response as a JSON object:
       },
     };
   } catch (error: any) {
-    throw new AppError(500, `Content improvement failed: ${error.message}`);
+    throw new ApiError(500, `Content improvement failed: ${error.message}`);
   }
 };
 
@@ -589,13 +586,12 @@ export const getTopicSuggestions = async (
   data: ITopicSuggestionRequest
 ): Promise<ITopicSuggestion[]> => {
   // Get user's completed lessons and interests
-  const user = await User.findById(userId).select('interests');
   const progress = await UserProgress.find({ user: userId, completed: true })
     .populate('lesson', 'title category')
     .limit(20);
 
   const completedTopics = progress.map((p: any) => p.lesson?.title || '').filter(Boolean);
-  const userInterests = data.userInterests || user?.interests || [];
+  const userInterests = data.userInterests || [];
 
   const systemPrompt = `You are an AI learning advisor specializing in personalized education.
 Suggest relevant topics that build on the user's current knowledge and interests.`;
@@ -642,7 +638,7 @@ Format as JSON:
 
     return parsedContent.topics;
   } catch (error: any) {
-    throw new AppError(500, `Failed to get topic suggestions: ${error.message}`);
+    throw new ApiError(500, `Failed to get topic suggestions: ${error.message}`);
   }
 };
 

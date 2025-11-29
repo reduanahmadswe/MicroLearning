@@ -6,7 +6,7 @@ import { ChallengeService } from './challenge.service';
 
 // Create challenge (admin/instructor)
 const createChallenge = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await ChallengeService.createChallenge(userId, req.body);
 
   sendResponse(res, {
@@ -19,7 +19,7 @@ const createChallenge = catchAsync(async (req: Request, res: Response) => {
 
 // Get daily challenge
 const getDailyChallenge = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await ChallengeService.getDailyChallenge(userId);
 
   sendResponse(res, {
@@ -32,7 +32,7 @@ const getDailyChallenge = catchAsync(async (req: Request, res: Response) => {
 
 // Get all active challenges
 const getActiveChallenges = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { type, difficulty, page, limit } = req.query;
 
   const result = await ChallengeService.getActiveChallenges(userId, {
@@ -52,7 +52,7 @@ const getActiveChallenges = catchAsync(async (req: Request, res: Response) => {
 
 // Update challenge progress
 const updateChallengeProgress = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { challengeId } = req.params;
 
   const result = await ChallengeService.updateChallengeProgress(userId, challengeId);
@@ -67,7 +67,7 @@ const updateChallengeProgress = catchAsync(async (req: Request, res: Response) =
 
 // Challenge a friend
 const challengeFriend = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { opponentId, challengeId } = req.body;
 
   const result = await ChallengeService.challengeFriend(userId, opponentId, challengeId);
@@ -82,7 +82,7 @@ const challengeFriend = catchAsync(async (req: Request, res: Response) => {
 
 // Respond to friend challenge
 const respondToChallenge = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { userChallengeId, action } = req.body;
 
   const result = await ChallengeService.respondToFriendChallenge(userId, userChallengeId, action);
@@ -97,7 +97,7 @@ const respondToChallenge = catchAsync(async (req: Request, res: Response) => {
 
 // Get my challenges with friends
 const getMyChallenges = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const { status } = req.query;
 
   const result = await ChallengeService.getMyChallenges(userId, status as string);
@@ -112,7 +112,7 @@ const getMyChallenges = catchAsync(async (req: Request, res: Response) => {
 
 // Get challenge statistics
 const getChallengeStats = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user._id;
+  const userId = req.user!.userId;
   const result = await ChallengeService.getChallengeStats(userId);
 
   sendResponse(res, {
