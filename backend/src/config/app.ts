@@ -14,6 +14,9 @@ import profileRoutes from '../app/modules/profile/profile.route';
 import notificationRoutes from '../app/modules/notification/notification.route';
 import commentRoutes from '../app/modules/comment/comment.route';
 import courseRoutes from '../app/modules/course/course.route';
+import certificateRoutes from '../app/modules/certificate/certificate.route';
+import adminRoutes from '../app/modules/admin/admin.route';
+import analyticsRoutes from '../app/modules/analytics/analytics.route';
 
 const app: Application = express();
 
@@ -45,6 +48,9 @@ app.use('/api/v1/leaderboard', leaderboardRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/courses', courseRoutes);
+app.use('/api/v1/certificates', certificateRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {

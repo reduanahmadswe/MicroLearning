@@ -264,6 +264,115 @@
 
 ---
 
+### 13. **Certificate Module** ✅ 🆕
+**Location:** `backend/src/app/modules/certificate/`
+
+**Features:**
+- Auto-generate certificates on course completion
+- Unique certificate IDs (CERT-{timestamp}-{random})
+- 32-character verification code (hex)
+- Public certificate viewing (no auth required)
+- Public verification system for authenticity check
+- Certificate revocation (admin only)
+- Award 100 XP bonus on certificate generation
+- Certificate metadata snapshot (userName, courseName, completionDate, totalLessons, instructor)
+- Statistics (total, this month, this year)
+- Prevent duplicate certificates (one per user per course)
+
+**API Endpoints (6):**
+- `POST /api/v1/certificates/generate` - Generate certificate after course completion (+100 XP)
+- `GET /api/v1/certificates/me` - Get my certificates
+- `GET /api/v1/certificates/view/:certificateId` - View certificate by ID (PUBLIC)
+- `GET /api/v1/certificates/verify/:code` - Verify certificate authenticity (PUBLIC)
+- `GET /api/v1/certificates/stats` - Get certificate statistics
+- `DELETE /api/v1/certificates/:certificateId/revoke` - Revoke certificate (admin)
+
+**Model:**
+- Certificate (user, course, certificateId unique, verificationCode unique, issuedDate, metadata{userName, courseName, completionDate, totalLessons, score, instructor}, isRevoked)
+
+---
+
+### 14. **Admin Module** ✅ 🆕
+**Location:** `backend/src/app/modules/admin/`
+
+**Features:**
+- Dashboard statistics (users, content, engagement, top performers)
+- User management (ban, unban, promote, demote, delete)
+- Role management (promote student to instructor, demote instructor to student)
+- User search with filters (role, name, email, pagination)
+- Top performers tracking (top 10 users by XP with lesson counts)
+- Content oversight (recent lessons, quizzes, courses, flashcards - last 10 each)
+- User activity monitoring (active users last 30 days, new users last 30 days)
+- Engagement metrics (total completions, attempts, certificates, avg completion rate)
+- Cascade delete (removes user + all related data: progress, quiz attempts, enrollments, certificates)
+- Admin protection (cannot ban/delete/demote other admins)
+
+**API Endpoints (8):**
+- `GET /api/v1/admin/dashboard` - Get comprehensive dashboard statistics (admin)
+- `GET /api/v1/admin/content-stats` - Get recent content overview (admin)
+- `GET /api/v1/admin/users` - Get all users with filters (admin)
+- `PATCH /api/v1/admin/users/:userId/ban` - Ban user (admin)
+- `PATCH /api/v1/admin/users/:userId/unban` - Unban user (admin)
+- `PATCH /api/v1/admin/users/:userId/promote` - Promote to instructor (admin)
+- `PATCH /api/v1/admin/users/:userId/demote` - Demote to student (admin)
+- `DELETE /api/v1/admin/users/:userId` - Delete user and all related data (admin)
+
+**Dashboard Metrics:**
+- **Users:** total, active (last 30d), new (last 30d), by role (student/instructor/admin)
+- **Content:** total lessons, quizzes, flashcards, courses
+- **Engagement:** total lesson completions, quiz attempts, certificates, average completion rate
+- **Top Performers:** top 10 users (name, email, XP, level, lessons completed)
+
+---
+
+### 15. **Analytics Module** ✅ 🆕
+**Location:** `backend/src/app/modules/analytics/`
+
+**Features:**
+- **User Analytics:** Personal learning insights
+- **System Analytics:** Platform-wide metrics (admin only)
+- Learning streak tracking (current, longest, last activity date)
+- Progress over time (30-day chart with XP and lessons per day)
+- Category breakdown (time spent, lessons completed per category)
+- Performance metrics (average quiz score, completion rate, total study time)
+- Achievement summary (badges, certificates, courses completed)
+- User growth tracking (daily new users, cumulative total over 30 days)
+- Engagement metrics (DAU, WAU, MAU - Daily/Weekly/Monthly Active Users)
+- Content popularity (most popular lessons/courses - top 10 by completions/enrollments)
+- Platform metrics (retention rate, drop-off rate, average completion time)
+- Personalized learning recommendations based on weak categories and streak
+- Strong/weak category identification (top 3 strong, bottom 3 weak by quiz score)
+- Next milestone tracking (XP needed for next level)
+- Recent activity timeline (last 5 lessons completed)
+
+**API Endpoints (3):**
+- `GET /api/v1/analytics/me` - Get my learning analytics (streak, progress, categories, performance, achievements)
+- `GET /api/v1/analytics/insights` - Get personalized learning insights (recent activity, strong/weak categories, recommendations, next milestone)
+- `GET /api/v1/analytics/system` - Get system-wide analytics (admin) (user growth, engagement DAU/WAU/MAU, content popularity, retention/drop-off)
+
+**User Analytics:**
+- Learning streak (current, longest, last activity date)
+- Progress over time (last 30 days: date, XP, lessons completed)
+- Category breakdown (lessons completed, time spent per category)
+- Performance metrics (avg quiz score, total quizzes, completion rate %, total study time minutes)
+- Achievements (badges count, certificates count, courses completed count)
+
+**Learning Insights:**
+- Recent activity (last 5 lessons with details)
+- Strong categories (top 3 by completion count)
+- Weak categories (bottom 3 by average quiz score)
+- Personalized recommendations (improvement suggestions, streak building)
+- Next milestone (level, current, next level, XP needed)
+
+**System Analytics (Admin Only):**
+- User growth (last 30 days: daily new users, cumulative total)
+- Engagement metrics (DAU, WAU, MAU, average session duration)
+- Most popular lessons (top 10 by completion count)
+- Most popular courses (top 10 by enrollment count)
+- Performance metrics (average completion time, drop-off rate %, retention rate %)
+
+---
+
 ## 📊 Architecture Overview
 
 ### Tech Stack
@@ -301,7 +410,10 @@ backend/
 │   │       ├── leaderboard/
 │   │       ├── notification/
 │   │       ├── comment/
-│   │       └── course/
+│   │       ├── course/
+│   │       ├── certificate/ 🆕
+│   │       ├── admin/ 🆕
+│   │       └── analytics/ 🆕
 │   ├── config/
 │   │   ├── app.ts
 │   │   └── database.ts
@@ -344,10 +456,7 @@ module/
 ### XP System
 - **Lesson Completion:** 50 XP
 - **Course Completion:** 200 XP
-- **Quiz (per point earned):** 10 XP
-- **Flashcard Review (quality-based):** 1-5 XP
-- **Badge Earned:** Variable (10-2000 XP based on rarity)
-- **Level Calculation:** `Level = floor(XP / 100) + 1`
+- **Certificate Earned:** 100 XP 🆕
 - **Quiz (per point earned):** 10 XP
 - **Flashcard Review (quality-based):** 1-5 XP
 - **Badge Earned:** Variable (10-2000 XP based on rarity)
@@ -414,7 +523,6 @@ module/
 - `GET /api/v1/profile/:userId`
 
 ### Lessons (10 endpoints)
-### Lessons (10 endpoints)
 - `POST /api/v1/lessons/create`
 - `POST /api/v1/lessons/generate`
 - `GET /api/v1/lessons`
@@ -461,6 +569,12 @@ module/
 - `GET /api/v1/bookmarks/collections`
 - `GET /api/v1/bookmarks/stats`
 
+### Badges (4 endpoints)
+- `GET /api/v1/badges/me` - Get user's badges
+- `GET /api/v1/badges/:badgeId/progress` - Check badge progress
+- `POST /api/v1/badges/check` - Manually check and award badges
+- `POST /api/v1/badges/initialize` - Initialize default badges (Admin)
+
 ### Leaderboard (4 endpoints)
 - `GET /api/v1/leaderboard/global`
 - `GET /api/v1/leaderboard/topic/:topic`
@@ -494,17 +608,30 @@ module/
 - `POST /api/v1/courses/progress/update`
 - `GET /api/v1/courses/:id/statistics`
 
-**Total Endpoints:** 81check`
-- `POST /api/v1/badges/create` (Admin)
-- `POST /api/v1/badges/initialize` (Admin)
+### Certificates (6 endpoints)
+- `POST /api/v1/certificates/generate`
+- `GET /api/v1/certificates/me`
+- `GET /api/v1/certificates/view/:certificateId`
+- `GET /api/v1/certificates/verify/:code`
+- `GET /api/v1/certificates/stats`
+- `DELETE /api/v1/certificates/:certificateId/revoke` (Admin)
 
-### Leaderboard (4 endpoints)
-- `GET /api/v1/leaderboard/global`
-- `GET /api/v1/leaderboard/topic/:topic`
-- `GET /api/v1/leaderboard/rank/me`
-- `GET /api/v1/leaderboard/position/me`
+### Admin (8 endpoints)
+- `GET /api/v1/admin/dashboard` (Admin)
+- `GET /api/v1/admin/content-stats` (Admin)
+- `GET /api/v1/admin/users` (Admin)
+- `PATCH /api/v1/admin/users/:userId/ban` (Admin)
+- `PATCH /api/v1/admin/users/:userId/unban` (Admin)
+- `PATCH /api/v1/admin/users/:userId/promote` (Admin)
+- `PATCH /api/v1/admin/users/:userId/demote` (Admin)
+- `DELETE /api/v1/admin/users/:userId` (Admin)
 
-**Total Endpoints:** 53
+### Analytics (3 endpoints)
+- `GET /api/v1/analytics/me`
+- `GET /api/v1/analytics/insights`
+- `GET /api/v1/analytics/system` (Admin)
+
+**Total Endpoints:** 100 🎉
 
 ---
 
@@ -555,6 +682,16 @@ NODE_ENV=development
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/microlearning
 JWT_ACCESS_SECRET=your_access_secret_here
+JWT_REFRESH_SECRET=your_refresh_secret_here
+JWT_ACCESS_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+BCRYPT_SALT_ROUNDS=10
+```
+
+---
+
+## 📈 Database Schema
+
 ### Collections
 1. **users** - User accounts with gamification data
 2. **lessons** - Micro-learning content
@@ -568,7 +705,8 @@ JWT_ACCESS_SECRET=your_access_secret_here
 10. **notifications** - User notifications
 11. **comments** - Lesson comments and replies
 12. **courses** - Course definitions
-13. **enrollments** - User course enrollmentsialize
+13. **enrollments** - User course enrollments
+14. **certificates** - Course completion certificates 🆕
 ```
 
 ---
@@ -628,7 +766,11 @@ JWT_ACCESS_SECRET=your_access_secret_here
 
 // Enrollments
 { user: 1, course: 1 } unique
-```ole: 1 }
+
+// Certificates 🆕
+{ user: 1, course: 1 } unique
+{ certificateId: 1 } unique
+{ verificationCode: 1 } unique
 
 // Lessons
 { topic: 1, difficulty: 1 }
@@ -670,17 +812,14 @@ text index on { title, description, content, tags }
 - Lean queries for read-only operations
 - Pagination on all list endpoints
 - Compound indexes for complex queries
-### Advanced Features
-- **Social Features:** Friends, groups
-- **Challenges:** Coding challenges, puzzles, competitions
-- **Push Notifications:** Firebase Cloud Messaging integration
-- **Email Notifications:** SendGrid/AWS SES integration
-- **Analytics:** User behavior tracking, learning patterns
-- **Admin Dashboard:** Content management, user management, analytics
-- **Certificates:** PDF generation for course completion
 - Database connection pooling
-- Query result caching
+- Efficient aggregation pipelines
+
+### Recommended
+- Query result caching (Redis)
 - Rate limiting on API endpoints
+- CDN for media assets
+- Database read replicas for scaling
 
 ---
 
@@ -690,22 +829,23 @@ text index on { title, description, content, tags }
 - **Lesson Generation:** OpenAI/Claude API integration
 - **Quiz Generation:** AI-powered question creation
 - **Flashcard Generation:** Extract key concepts from lessons
-- **Personalized Recommendations:** ML-based lesson suggestions
+- **Advanced Recommendations:** ML-based personalized learning paths
 
 ### Advanced Features
-- **Social Features:** Friends, groups, forums, comments
-- **Courses:** Multi-lesson structured learning paths
-- **Challenges:** Coding challenges, puzzles, competitions
-- **Notifications:** Push notifications, email notifications
-- **Analytics:** User behavior tracking, learning patterns
-- **Admin Dashboard:** Content management, user management, analytics
+- **Social Features:** Friend system, groups, forums
+- **Challenges:** Daily challenges, coding challenges, competitions
+- **Push Notifications:** Firebase/OneSignal integration
+- **Email Notifications:** SendGrid/AWS SES integration
+- **Video Lessons:** Support for video content
+- **PDF Certificates:** Export certificates as PDF
+- **Real-time Features:** WebSocket for live updates
 
 ### Optimization
 - **Caching Layer:** Redis for performance
 - **Rate Limiting:** Protect against abuse
-- **WebSocket:** Real-time updates for leaderboard
 - **CDN:** Fast media delivery
-- **Monitoring:** Error tracking, performance monitoring
+- **Monitoring:** Sentry/New Relic integration
+- **Advanced Analytics:** Cohort analysis, A/B testing
 
 ---
 
@@ -745,13 +885,11 @@ POST http://localhost:5000/api/v1/auth/login
 ## ✨ Code Quality
 
 ### TypeScript Configuration
-## 🎯 Key Achievements
-
-✅ **12 Complete Modules** - Auth, Profile, Lessons, Progress, Quiz, Flashcard, Bookmark, Badge, Leaderboard, Notifications, Comments, Courses
-✅ **81 API Endpoints** - Fully functional with validation
-✅ **Complete User Management** - Profile, preferences, statistics, public profiles
+- Strict mode enabled
+- No implicit any
 - No implicit returns
 - No fallthrough cases
+- Proper type inference
 
 ### ESLint & Prettier
 - Configured for consistent code style
@@ -769,9 +907,14 @@ POST http://localhost:5000/api/v1/auth/login
 
 ## 🎯 Key Achievements
 
-✅ **8 Complete Modules** - Auth, Lessons, Progress, Quiz, Flashcard, Bookmark, Badge, Leaderboard
-✅ **53 API Endpoints** - Fully functional with validation
-✅ **8 Comprehensive API Docs** - With examples, Postman setup, integration guides
+✅ **15 Complete Modules** - All core features implemented
+✅ **100 API Endpoints** - Fully functional with validation
+✅ **14 Database Collections** - Optimized with indexes
+✅ **Complete User Management** - Profile, preferences, statistics, public profiles
+✅ **Full Gamification System** - XP, levels, 15 badges, leaderboard
+✅ **Certificate System** - Auto-generation with public verification ✨
+✅ **Admin Dashboard** - Complete platform management ✨
+✅ **Analytics Platform** - User & system insights ✨
 ✅ **Clean Architecture** - Modular, scalable, maintainable
 ✅ **Type Safety** - TypeScript strict mode + Zod validation
 ✅ **Security** - JWT auth, password hashing, role-based access
@@ -794,37 +937,39 @@ All modules have comprehensive API documentation in `backend/API_Documentation/`
 
 ## 🏁 Conclusion
 
-The AI-Powered Micro-Learning Platform backend is **complete and production-ready** for Phase 1 MVP. All 12 modules are implemented with:
+The AI-Powered Micro-Learning Platform backend is **complete and production-ready** for MVP launch. All 15 modules are implemented with:
 
-This backend demonstrates:
-- **Enterprise-level architecture** with clean code principles
-- **RESTful API design** with consistent patterns
-- **MongoDB best practices** with proper indexing and aggregation
-- **TypeScript advanced usage** with strict typing
-- **Authentication & Authorization** with JWT
-- **Data validation** with Zod schemas
-- **Error handling** with centralized middleware
-- **Gamification systems** with XP, badges, leaderboards
-- **Spaced Repetition System** (SM-2 algorithm)
-- **API documentation** for team collaboration
+### Architecture Excellence
+- ✅ **Enterprise-level architecture** with clean code principles
+- ✅ **RESTful API design** with consistent patterns
+- ✅ **MongoDB best practices** with proper indexing and aggregation
+- ✅ **TypeScript strict mode** with full type safety
+- ✅ **SOLID principles** throughout the codebase
 
----
+### Complete Feature Set
+- ✅ **Authentication & Authorization** with JWT and RBAC
+- ✅ **Gamification system** with XP, levels, 15 badges, leaderboard
+- ✅ **Learning tools** with lessons, quizzes, flashcards (SM-2), bookmarks
+- ✅ **Social features** with profiles, comments, notifications
+- ✅ **Course system** with enrollment and progress tracking
+- ✅ **Certificate generation** with public verification ✨
+- ✅ **Admin dashboard** with complete platform management ✨
+- ✅ **Analytics engine** with user insights and system metrics ✨
 
-## 🏁 Conclusion
-
-The AI-Powered Micro-Learning Platform backend is **complete and production-ready** for Phase 1 MVP. All 8 modules are implemented with:
-- ✅ Clean, modular, scalable architecture
-- ✅ Comprehensive API documentation
-- ✅ Type-safe code with validation
-- ✅ Gamification features
+### Production Ready
+- ✅ 100 fully functional API endpoints
+- ✅ Comprehensive data validation with Zod
+- ✅ Global error handling
 - ✅ Security best practices
 - ✅ Performance optimizations
+- ✅ Complete API documentation
 
 **Ready for:**
-- Frontend integration
-- AI service integration (OpenAI/Claude)
-- Deployment to production
-- User testing and feedback
+- ✅ Frontend integration (React/Next.js)
+- ✅ AI service integration (OpenAI/Claude)
+- ✅ Cloud deployment (AWS/Azure/Heroku)
+- ✅ User testing and feedback
+- ✅ Mobile app development
 
 ---
 
