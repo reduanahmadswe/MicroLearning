@@ -22,6 +22,9 @@ import { ChallengeRoutes } from '../app/modules/challenge/challenge.route';
 import { UploadRoutes } from '../app/modules/upload/upload.route';
 import { PushRoutes } from '../app/modules/push/push.route';
 import AIRoutes from '../app/modules/ai/ai.route';
+import ForumRoutes from '../app/modules/forum/forum.route';
+import VideoRoutes from '../app/modules/video/video.route';
+import MarketplaceRoutes from '../app/modules/marketplace/marketplace.route';
 
 const app: Application = express();
 
@@ -61,6 +64,9 @@ app.use('/api/v1/challenges', ChallengeRoutes);
 app.use('/api/v1/upload', UploadRoutes);
 app.use('/api/v1/push', PushRoutes);
 app.use('/api/v1/ai', AIRoutes);
+app.use('/api/v1/forum', ForumRoutes);
+app.use('/api/v1/videos', VideoRoutes);
+app.use('/api/v1/marketplace', MarketplaceRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
