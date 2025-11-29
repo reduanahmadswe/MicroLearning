@@ -25,6 +25,9 @@ import AIRoutes from '../app/modules/ai/ai.route';
 import ForumRoutes from '../app/modules/forum/forum.route';
 import VideoRoutes from '../app/modules/video/video.route';
 import MarketplaceRoutes from '../app/modules/marketplace/marketplace.route';
+import ProgressShareRoutes from '../app/modules/progress/progress.route';
+import DailyChallengeRoutes from '../app/modules/dailyChallenge/dailyChallenge.route';
+import EmailRoutes from '../app/modules/email/email.route';
 
 const app: Application = express();
 
@@ -67,6 +70,9 @@ app.use('/api/v1/ai', AIRoutes);
 app.use('/api/v1/forum', ForumRoutes);
 app.use('/api/v1/videos', VideoRoutes);
 app.use('/api/v1/marketplace', MarketplaceRoutes);
+app.use('/api/v1/progress-share', ProgressShareRoutes);
+app.use('/api/v1/daily-challenges', DailyChallengeRoutes);
+app.use('/api/v1/email', EmailRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
