@@ -57,7 +57,7 @@ const emailLogSchema = new Schema<IEmailLog>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false,
       index: true,
     },
     templateType: {

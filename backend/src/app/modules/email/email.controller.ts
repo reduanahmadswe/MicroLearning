@@ -172,6 +172,28 @@ export const trackEmailEvent = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+// ==================== Testing Controller ====================
+
+export const sendTestEmail = catchAsync(async (req: Request, res: Response) => {
+  const { recipient } = req.body;
+  
+  const result = await emailService.sendEmail({
+    recipient: recipient || 'test@example.com',
+    templateType: 'welcome',
+    variables: {
+      username: 'Test User',
+      dashboardUrl: 'http://localhost:3000/dashboard',
+    },
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Test email sent successfully',
+    data: result,
+  });
+});
+
 // ==================== Admin Controllers ====================
 
 export const initializeTemplates = catchAsync(async (_req: Request, res: Response) => {
@@ -200,4 +222,5 @@ export default {
   getEmailStats,
   trackEmailEvent,
   initializeTemplates,
+  sendTestEmail,
 };

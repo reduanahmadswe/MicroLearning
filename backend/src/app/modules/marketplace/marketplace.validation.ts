@@ -43,7 +43,7 @@ export const updateMarketplaceItemSchema = z.object({
 export const createPurchaseSchema = z.object({
   body: z.object({
     itemId: z.string().min(1),
-    paymentMethod: z.enum(['stripe', 'bkash', 'paypal']),
+    paymentMethod: z.enum(['sslcommerz']),
   }),
 });
 

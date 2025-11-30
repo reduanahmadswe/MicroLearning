@@ -11,6 +11,12 @@ router.get('/', MarketplaceController.getMarketplaceItems);
 router.get('/stats', MarketplaceController.getMarketplaceStats);
 router.get('/:itemId', MarketplaceController.getMarketplaceItemDetails);
 
+// Payment callback routes (SSLCommerz)
+router.post('/payment/success', MarketplaceController.paymentSuccess);
+router.post('/payment/fail', MarketplaceController.paymentFail);
+router.post('/payment/cancel', MarketplaceController.paymentCancel);
+router.post('/payment/ipn', MarketplaceController.paymentIPN);
+
 // Protected routes - Items
 router.post(
   '/',

@@ -24,7 +24,7 @@ export const sendBulkEmailSchema = z.object({
   body: z.object({
     recipients: z.array(
       z.object({
-        userId: z.string(),
+        userId: z.string().optional(),
         email: z.string().email(),
         variables: z.record(z.any()).optional(),
       })

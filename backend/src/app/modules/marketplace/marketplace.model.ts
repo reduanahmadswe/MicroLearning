@@ -156,7 +156,7 @@ const purchaseSchema = new Schema<IPurchase>(
     },
     paymentMethod: {
       type: String,
-      enum: ['stripe', 'bkash', 'paypal'],
+      enum: ['sslcommerz'],
       required: true,
     },
     paymentStatus: {

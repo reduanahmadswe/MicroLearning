@@ -11,6 +11,8 @@ import {
 } from './marketplace.types';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
+import SSLCommerzPayment from 'sslcommerz-lts';
+import { User } from '../auth/auth.model';
 
 // Marketplace Item Services
 export const createMarketplaceItem = async (creatorId: string, data: ICreateMarketplaceItemRequest) => {
@@ -208,18 +210,121 @@ export const createPurchase = async (buyerId: string, data: ICreatePurchaseReque
     paymentStatus: 'pending',
   });
 
-  // In a real app, integrate with payment gateway here
-  // For now, mark as completed
+  // Initialize SSLCommerz Payment
+  const paymentUrl = await initializeSSLCommerzPayment(purchase._id.toString(), buyerId, item, finalPrice);
+
+  return { purchase: await purchase.populate('item'), paymentUrl };
+};
+
+// SSLCommerz Payment Integration
+const initializeSSLCommerzPayment = async (
+  purchaseId: string,
+  buyerId: string,
+  item: any,
+  amount: number
+): Promise<string> => {
+  const buyer = await User.findById(buyerId);
+  if (!buyer) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
+  const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
+  const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
+
+  if (!store_id || !store_passwd) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'SSLCommerz credentials not configured');
+  }
+
+  const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  
+  const data = {
+    total_amount: amount,
+    currency: item.currency || 'BDT',
+    tran_id: purchaseId,
+    success_url: `${baseUrl}/api/marketplace/payment/success?tran_id=${purchaseId}`,
+    fail_url: `${baseUrl}/api/marketplace/payment/fail?tran_id=${purchaseId}`,
+    cancel_url: `${baseUrl}/api/marketplace/payment/cancel?tran_id=${purchaseId}`,
+    ipn_url: `${baseUrl}/api/marketplace/payment/ipn`,
+    product_name: item.title,
+    product_category: item.category,
+    product_profile: 'general',
+    cus_name: buyer.name || 'Customer',
+    cus_email: buyer.email,
+    cus_add1: 'Dhaka',
+    cus_city: 'Dhaka',
+    cus_state: 'Dhaka',
+    cus_postcode: '1000',
+    cus_country: 'Bangladesh',
+    cus_phone: buyer.phone || '01700000000',
+    shipping_method: 'NO',
+    multi_card_name: 'mastercard,visacard,amexcard,bkash,nagad,rocket',
+    value_a: buyerId,
+    value_b: item._id.toString(),
+    value_c: purchaseId,
+  };
+
+  const apiResponse = await sslcz.init(data);
+  
+  if (apiResponse.status === 'SUCCESS') {
+    return apiResponse.GatewayPageURL;
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Payment initialization failed');
+  }
+};
+
+// Payment Success Handler
+export const handlePaymentSuccess = async (tranId: string, data: any) => {
+  const purchase = await Purchase.findById(tranId);
+  
+  if (!purchase) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Purchase not found');
+  }
+
+  // Update purchase status
   purchase.paymentStatus = 'completed';
+  purchase.transactionId = data.bank_tran_id || data.tran_id;
+  purchase.paymentIntentId = data.val_id;
   purchase.purchasedAt = new Date();
   await purchase.save();
 
   // Update item stats
-  item.salesCount += 1;
-  item.revenue += finalPrice;
-  await item.save();
+  const item = await MarketplaceItem.findById(purchase.item);
+  if (item) {
+    item.salesCount += 1;
+    item.revenue += purchase.amount;
+    await item.save();
+  }
 
-  return purchase.populate('item');
+  return purchase;
+};
+
+// Payment Fail Handler
+export const handlePaymentFail = async (tranId: string) => {
+  const purchase = await Purchase.findById(tranId);
+  
+  if (!purchase) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Purchase not found');
+  }
+
+  purchase.paymentStatus = 'failed';
+  await purchase.save();
+
+  return purchase;
+};
+
+// Payment Validation
+export const validatePayment = async (data: any) => {
+  const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
+  const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
+  const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
+
+  const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+  const validation = await sslcz.validate(data);
+
+  return validation;
 };
 
 export const getUserPurchases = async (userId: string, page = 1, limit = 20) => {

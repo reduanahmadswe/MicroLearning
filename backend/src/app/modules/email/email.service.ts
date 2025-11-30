@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import nodemailer from 'nodemailer';
 import ApiError from '../../../utils/ApiError';
 import { EmailTemplate, EmailLog, EmailPreference } from './email.model';
 import {
@@ -10,8 +11,63 @@ import {
   EmailStats,
 } from './email.types';
 
-// ==================== Email Provider Configuration ====================
+// ==================== Nodemailer Configuration ====================
 
+interface MailConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+}
+
+// Create transporter based on environment
+const createTransporter = () => {
+  const emailProvider = process.env.EMAIL_PROVIDER || 'gmail';
+  
+  let config: MailConfig;
+
+  if (emailProvider === 'gmail') {
+    // Gmail configuration
+    config = {
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || '', // Use App Password for Gmail
+      },
+    };
+  } else if (emailProvider === 'outlook') {
+    // Outlook/Office365 configuration
+    config = {
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || '',
+      },
+    };
+  } else {
+    // Custom SMTP configuration
+    config = {
+      host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || '',
+      },
+    };
+  }
+
+  return nodemailer.createTransport(config);
+};
+
+// Email Provider Interface
 interface EmailProvider {
   send: (to: string, subject: string, html: string, text: string) => Promise<{
     messageId: string;
@@ -19,73 +75,51 @@ interface EmailProvider {
   }>;
 }
 
-// SendGrid Provider (requires @sendgrid/mail package)
-class SendGridProvider implements EmailProvider {
-  private apiKey: string;
+// Nodemailer Provider
+class NodemailerProvider implements EmailProvider {
+  private transporter: nodemailer.Transporter;
   private fromEmail: string;
   private fromName: string;
 
   constructor() {
-    this.apiKey = process.env.SENDGRID_API_KEY || '';
-    this.fromEmail = process.env.EMAIL_FROM || 'noreply@microlearning.com';
+    this.transporter = createTransporter();
+    this.fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@microlearning.com';
     this.fromName = process.env.EMAIL_FROM_NAME || 'MicroLearning Platform';
   }
 
   async send(to: string, subject: string, html: string, text: string) {
-    if (!this.apiKey) {
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        'SendGrid API key not configured'
-      );
-    }
-
     try {
-      // Note: Actual SendGrid integration would use @sendgrid/mail
-      // For now, this is a placeholder structure
-      // html and text parameters will be used when SendGrid is properly configured
-      console.log('[SendGrid] Sending email:', {
+      const mailOptions = {
+        from: `"${this.fromName}" <${this.fromEmail}>`,
         to,
-        subject,
-        from: `${this.fromName} <${this.fromEmail}>`,
-        htmlLength: html.length,
-        textLength: text.length,
-      });
-
-      // Simulated response
-      return {
-        messageId: `sendgrid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        status: 'sent',
-      };
-
-      /* Actual SendGrid implementation:
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(this.apiKey);
-      
-      const msg = {
-        to,
-        from: {
-          email: this.fromEmail,
-          name: this.fromName,
-        },
         subject,
         text,
         html,
       };
-      
-      const [response] = await sgMail.send(msg);
+
+      const info = await this.transporter.sendMail(mailOptions);
+
+      console.log('[Nodemailer] Email sent:', {
+        messageId: info.messageId,
+        to,
+        subject,
+      });
+
       return {
-        messageId: response.headers['x-message-id'],
+        messageId: info.messageId,
         status: 'sent',
       };
-      */
     } catch (error: any) {
-      console.error('[SendGrid] Error:', error);
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+      console.error('[Nodemailer] Error sending email:', error);
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        `Failed to send email: ${error.message}`
+      );
     }
   }
 }
 
-// Console Provider (for development)
+// Console Provider (for development/testing)
 class ConsoleProvider implements EmailProvider {
   async send(to: string, subject: string, html: string, text: string) {
     console.log('\n==================== EMAIL ====================');
@@ -104,15 +138,13 @@ class ConsoleProvider implements EmailProvider {
 
 // Provider Factory
 const getEmailProvider = (): EmailProvider => {
-  const provider = process.env.EMAIL_PROVIDER || 'console';
-
-  switch (provider) {
-    case 'sendgrid':
-      return new SendGridProvider();
-    case 'console':
-    default:
-      return new ConsoleProvider();
+  const useConsole = process.env.NODE_ENV === 'development' && process.env.EMAIL_PROVIDER === 'console';
+  
+  if (useConsole) {
+    return new ConsoleProvider();
   }
+  
+  return new NodemailerProvider();
 };
 
 // ==================== Email Sending Services ====================

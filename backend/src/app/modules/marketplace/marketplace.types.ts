@@ -40,7 +40,7 @@ export interface IPurchase {
   item: Types.ObjectId;
   amount: number;
   currency: string;
-  paymentMethod: 'stripe' | 'bkash' | 'paypal';
+  paymentMethod: 'sslcommerz';
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
   paymentIntentId?: string;
   transactionId?: string;
@@ -113,7 +113,7 @@ export interface IUpdateMarketplaceItemRequest {
 
 export interface ICreatePurchaseRequest {
   itemId: string;
-  paymentMethod: 'stripe' | 'bkash' | 'paypal';
+  paymentMethod: 'sslcommerz';
 }
 
 export interface ICreateReviewRequest {

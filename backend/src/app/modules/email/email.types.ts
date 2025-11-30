@@ -15,7 +15,7 @@ export interface IEmailTemplate {
 
 export interface IEmailLog {
   _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId;
   templateType: IEmailTemplate['templateType'];
   recipient: string;
   subject: string;
@@ -50,7 +50,7 @@ export interface IEmailPreference {
 }
 
 export interface SendEmailInput {
-  userId: string;
+  userId?: string;
   recipient: string;
   templateType: IEmailTemplate['templateType'];
   variables: Record<string, any>;
@@ -58,7 +58,7 @@ export interface SendEmailInput {
 }
 
 export interface SendBulkEmailInput {
-  recipients: { userId: string; email: string; variables?: Record<string, any> }[];
+  recipients: { userId?: string; email: string; variables?: Record<string, any> }[];
   templateType: IEmailTemplate['templateType'];
   globalVariables?: Record<string, any>;
 }

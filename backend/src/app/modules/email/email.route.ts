@@ -111,6 +111,14 @@ router.post(
   emailController.trackEmailEvent
 );
 
+// ==================== Testing Routes ====================
+
+// Send test email (no auth required for testing)
+router.post(
+  '/test',
+  emailController.sendTestEmail
+);
+
 // ==================== Admin Routes ====================
 
 // Initialize default templates (admin only)
