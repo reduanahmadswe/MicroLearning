@@ -12,7 +12,7 @@ import {
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
 import SSLCommerzPayment from 'sslcommerz-lts';
-import { User } from '../auth/auth.model';
+import User from '../auth/auth.model';
 
 // Marketplace Item Services
 export const createMarketplaceItem = async (creatorId: string, data: ICreateMarketplaceItemRequest) => {
@@ -268,7 +268,7 @@ const initializeSSLCommerzPayment = async (
 
   const apiResponse = await sslcz.init(data);
   
-  if (apiResponse.status === 'SUCCESS') {
+  if (apiResponse.status === 'SUCCESS' && apiResponse.GatewayPageURL) {
     return apiResponse.GatewayPageURL;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Payment initialization failed');
