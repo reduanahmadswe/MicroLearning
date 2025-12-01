@@ -12,7 +12,9 @@ const router = Router();
 
 // Public routes
 router.get('/', quizController.getQuizzes);
+router.get('/lesson/:lessonId', quizController.getQuizByLesson);
 router.get('/:id', quizController.getQuizById);
+router.get('/:id/attempts', authGuard(), quizController.getQuizAttempts);
 
 // Protected routes
 router.post(

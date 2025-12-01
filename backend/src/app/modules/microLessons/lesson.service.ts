@@ -328,7 +328,7 @@ class LessonService {
       lessonId,
       { $inc: { completions: 1 } },
       { new: true }
-    );
+    ).populate('course');
 
     if (!lesson) {
       console.error('Lesson not found:', lessonId);
@@ -372,12 +372,112 @@ class LessonService {
 
     console.log('Progress updated:', progress);
 
+    // Update course enrollment progress if lesson belongs to a course
+    if (lesson.course) {
+      try {
+        const Enrollment = require('../enrollment/enrollment.model').default;
+        const courseId = typeof lesson.course === 'object' ? lesson.course._id : lesson.course;
+        
+        const enrollment = await Enrollment.findOne({
+          user: userId,
+          course: courseId,
+        });
+
+        if (enrollment) {
+          // Add lesson to completed if not already there
+          if (!enrollment.completedLessons.some((id: any) => id.toString() === lessonId)) {
+            enrollment.completedLessons.push(lessonId);
+          }
+
+          // Update last accessed lesson
+          enrollment.lastAccessedLesson = lessonId;
+
+          // Calculate progress based on actual lessons in database
+          const totalLessons = await Lesson.countDocuments({ course: courseId, isPublished: true });
+          const completedLessons = enrollment.completedLessons.length;
+          enrollment.progress = Math.round((completedLessons / totalLessons) * 100);
+
+          console.log('Enrollment progress:', { 
+            completedLessons, 
+            totalLessons, 
+            progress: enrollment.progress 
+          });
+
+          // Check if course is 100% complete
+          if (enrollment.progress === 100 && !enrollment.completedAt) {
+            enrollment.completedAt = new Date();
+
+            // Award bonus XP for course completion
+            updatedUser.xp += 200;
+            const newLevel = Math.floor(updatedUser.xp / 100) + 1;
+            if (newLevel > updatedUser.level) {
+              updatedUser.level = newLevel;
+            }
+            await updatedUser.save();
+
+            // Generate certificate for course completion
+            await this.generateCourseCertificate(userId, courseId.toString());
+            
+            console.log('Course completed! Certificate generated.');
+          }
+
+          await enrollment.save();
+        }
+      } catch (error) {
+        console.error('Error updating enrollment:', error);
+        // Don't throw error, just log it
+      }
+    }
+
     return { 
       lesson, 
       xpEarned: xpAmount,
       totalXP: updatedUser.xp,
       level: updatedUser.level
     };
+  }
+
+  // Generate certificate for course completion
+  private async generateCourseCertificate(userId: string, courseId: string) {
+    try {
+      const Certificate = require('../certificate/certificate.model').default;
+      const Course = require('../course/course.model').default;
+
+      // Check if certificate already exists
+      const existingCertificate = await Certificate.findOne({
+        user: userId,
+        course: courseId,
+      });
+
+      if (existingCertificate) {
+        return existingCertificate;
+      }
+
+      const course = await Course.findById(courseId).populate('author', 'name');
+      if (!course) {
+        console.error('Course not found for certificate:', courseId);
+        return;
+      }
+
+      // Generate unique certificate ID
+      const certificateId = `CERT-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+      const verificationCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const certificate = await Certificate.create({
+        user: userId,
+        course: courseId,
+        certificateId,
+        verificationCode,
+        issueDate: new Date(),
+        instructorName: course.author?.name || 'Unknown Instructor',
+      });
+
+      console.log('Certificate created:', certificateId);
+      return certificate;
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+      // Don't throw, just log
+    }
   }
 
   // Get trending lessons

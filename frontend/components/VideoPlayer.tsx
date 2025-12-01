@@ -63,21 +63,32 @@ export default function VideoPlayer({
     video.addEventListener('ended', handleEnded);
 
     return () => {
+      // Pause video before cleanup to prevent play() interruption error
+      if (video && !video.paused) {
+        video.pause();
+      }
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('ended', handleEnded);
     };
   }, [duration, onEnded, onProgress]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!videoRef.current) return;
 
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
+    try {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        await videoRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      // Silently handle play() interruption errors
+      console.debug('Video play interrupted:', error);
+      setIsPlaying(false);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

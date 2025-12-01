@@ -118,6 +118,7 @@ export const coursesAPI = {
   enrollCourse: (id: string) => api.post(`/courses/${id}/enroll`),
   getMyCourses: () => api.get('/courses/my-courses'),
   getEnrolledCourses: () => api.get('/courses/enrollments/me'),
+  togglePublish: (id: string) => api.patch(`/courses/${id}/publish`),
   // Instructor APIs
   getInstructorCourses: () => api.get('/courses/instructor/my-courses'),
   getInstructorAnalytics: () => api.get('/courses/instructor/analytics'),
@@ -198,10 +199,11 @@ export const notificationAPI = notificationsAPI;
 export const commentAPI = {
   getComments: (params?: any) => api.get('/comments', { params }),
   getLessonComments: (lessonId: string) => api.get(`/comments/lesson/${lessonId}`),
-  createComment: (data: any) => api.post('/comments', data),
-  updateComment: (id: string, data: any) => api.put(`/comments/${id}`, data),
-  deleteComment: (id: string) => api.delete(`/comments/${id}`),
-  likeComment: (id: string) => api.post(`/comments/${id}/like`),
+  getForumComments: (postId: string) => api.get(`/forum/posts/${postId}/comments`),
+  createComment: (data: any) => api.post('/forum/comments', data),
+  updateComment: (id: string, data: any) => api.patch(`/forum/comments/${id}`, data),
+  deleteComment: (id: string) => api.delete(`/forum/comments/${id}`),
+  likeComment: (id: string) => api.post(`/forum/comments/${id}/like`),
   getReplies: (commentId: string) => api.get(`/comments/${commentId}/replies`),
 };
 
@@ -209,17 +211,18 @@ export const commentsAPI = commentAPI;
 
 // Forum APIs
 export const forumAPI = {
-  getAllPosts: (params?: any) => api.get('/forum', { params }),
-  getPosts: (params?: any) => api.get('/forum', { params }),
-  getPostById: (id: string) => api.get(`/forum/${id}`),
-  getPost: (id: string) => api.get(`/forum/${id}`),
-  createPost: (data: any) => api.post('/forum', data),
-  updatePost: (id: string, data: any) => api.put(`/forum/${id}`, data),
-  deletePost: (id: string) => api.delete(`/forum/${id}`),
-  votePost: (id: string, vote: 1 | -1) => api.post(`/forum/${id}/vote`, { vote }),
-  upvotePost: (id: string) => api.post(`/forum/${id}/vote`, { vote: 1 }),
-  getTrendingTopics: () => api.get('/forum/trending'),
-  moderatePost: (id: string, data: { status: string }) => api.patch(`/forum/${id}/moderate`, data),
+  getAllPosts: (params?: any) => api.get('/forum/posts', { params }),
+  getPosts: (params?: any) => api.get('/forum/posts', { params }),
+  getPostById: (id: string) => api.get(`/forum/posts/${id}`),
+  getPost: (id: string) => api.get(`/forum/posts/${id}`),
+  createPost: (data: any) => api.post('/forum/posts', data),
+  updatePost: (id: string, data: any) => api.patch(`/forum/posts/${id}`, data),
+  deletePost: (id: string) => api.delete(`/forum/posts/${id}`),
+  likePost: (id: string) => api.post(`/forum/posts/${id}/like`),
+  votePost: (id: string, vote: 1 | -1) => api.post(`/forum/posts/${id}/like`, { vote }),
+  upvotePost: (id: string) => api.post(`/forum/posts/${id}/like`, { vote: 1 }),
+  getTrendingTopics: () => api.get('/forum/stats'),
+  moderatePost: (id: string, data: { status: string }) => api.post(`/forum/posts/${id}/report`, data),
 };
 
 // Analytics APIs

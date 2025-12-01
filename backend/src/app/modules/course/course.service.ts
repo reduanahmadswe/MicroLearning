@@ -30,6 +30,7 @@ class CourseService {
       author: userId,
       estimatedDuration,
       lessons: courseData.lessons || [],
+      isPublished: true, // Auto-publish courses created by instructors
     });
 
     return await Course.findById(course._id)
@@ -79,8 +80,23 @@ class CourseService {
       Course.countDocuments(query),
     ]);
 
+    // Add lesson count for each course
+    const coursesWithLessonCount = await Promise.all(
+      courses.map(async (course) => {
+        const lessonCount = await Lesson.countDocuments({ 
+          course: course._id, 
+          isPublished: true 
+        });
+        return {
+          ...course,
+          lessons: [], // Empty array to maintain structure
+          lessonCount, // Add lesson count field
+        };
+      })
+    );
+
     return {
-      courses,
+      courses: coursesWithLessonCount,
       pagination: {
         page,
         limit,
@@ -96,12 +112,31 @@ class CourseService {
       $or: [{ _id: identifier }, { slug: identifier }],
     })
       .populate('author', 'name profilePicture bio')
-      .populate('lessons.lesson', 'title description estimatedTime difficulty')
       .lean();
 
     if (!course) {
       throw new ApiError(404, 'Course not found');
     }
+
+    // Fetch lessons directly from Lesson collection instead of course.lessons array
+    const lessons = await Lesson.find({ 
+      course: course._id,
+      isPublished: true 
+    })
+      .select('title description estimatedTime difficulty order')
+      .sort({ order: 1 })
+      .lean();
+
+    console.log('📚 getCourseById - Course ID:', course._id);
+    console.log('📚 getCourseById - Course Title:', course.title);
+    console.log('📚 getCourseById - Lessons from Lesson collection:', lessons.length);
+    console.log('📚 getCourseById - Lesson IDs:', lessons.map((l: any) => l._id));
+    
+    // Also check unpublished lessons
+    const allLessons = await Lesson.find({ course: course._id }).lean();
+    console.log('📊 Total lessons (including unpublished):', allLessons.length);
+    console.log('📊 Published lessons:', lessons.length);
+    console.log('📊 Unpublished lessons:', allLessons.length - lessons.length);
 
     // Check enrollment status if user is provided
     let isEnrolled = false;
@@ -118,6 +153,7 @@ class CourseService {
 
     return {
       ...course,
+      lessons: lessons, // Use lessons from Lesson collection
       isEnrolled,
       enrollment,
     };
@@ -224,6 +260,22 @@ class CourseService {
     return await Enrollment.findById(enrollment._id)
       .populate('course', 'title thumbnailUrl')
       .lean();
+  }
+
+  // Get single enrollment for a course
+  async getEnrollment(userId: string, courseId: string) {
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: courseId,
+    })
+      .populate('course', 'title thumbnailUrl')
+      .lean();
+
+    if (!enrollment) {
+      throw new ApiError(404, 'Not enrolled in this course');
+    }
+
+    return enrollment;
   }
 
   // Get user enrollments
@@ -457,6 +509,26 @@ class CourseService {
     });
 
     return certificate;
+  }
+
+  // Toggle course publish status
+  async togglePublishStatus(courseId: string, userId: string, userRole: string) {
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      throw new ApiError(404, 'Course not found');
+    }
+
+    // Check if user is the author or admin
+    if (course.author.toString() !== userId && userRole !== 'admin') {
+      throw new ApiError(403, 'You are not authorized to publish/unpublish this course');
+    }
+
+    // Toggle publish status
+    course.isPublished = !course.isPublished;
+    await course.save();
+
+    return course;
   }
 }
 

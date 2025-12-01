@@ -16,6 +16,7 @@ router.get('/instructor/:courseId/students', authGuard('instructor', 'admin'), c
 
 // Enrollment routes (before /:id)
 router.get('/enrollments/me', authGuard(), courseController.getMyEnrollments);
+router.get('/:id/enrollment', authGuard(), courseController.getEnrollment);
 router.post('/progress/update', authGuard(), courseController.updateProgress);
 
 // Protected routes
@@ -34,6 +35,9 @@ router.put(
 );
 
 router.delete('/:id', authGuard('instructor', 'admin'), courseController.deleteCourse);
+
+// Publish/Unpublish course
+router.patch('/:id/publish', authGuard('instructor', 'admin'), courseController.togglePublish);
 
 // Enrollment actions
 router.post('/:id/enroll', authGuard(), courseController.enrollInCourse);

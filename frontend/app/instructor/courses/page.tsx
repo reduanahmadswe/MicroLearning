@@ -45,6 +45,17 @@ export default function InstructorCoursesPage() {
     }
   };
 
+  const handleTogglePublish = async (courseId: string, currentStatus: boolean) => {
+    try {
+      await coursesAPI.togglePublish(courseId);
+      toast.success(`Course ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+      fetchCourses();
+    } catch (error) {
+      console.error('Error toggling publish status:', error);
+      toast.error('Failed to update course status');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -126,8 +137,8 @@ export default function InstructorCoursesPage() {
                     </div>
                   </div>
 
-                  {/* Price Badge */}
-                  <div className="mb-4">
+                  {/* Price & Publish Status */}
+                  <div className="flex items-center gap-2 mb-4">
                     {course.isPremium ? (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                         <DollarSign className="w-3 h-3" />
@@ -136,6 +147,16 @@ export default function InstructorCoursesPage() {
                     ) : (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                         Free
+                      </span>
+                    )}
+                    {course.isPublished ? (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                        ✅ Published
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                        <Lock className="w-3 h-3" />
+                        Draft
                       </span>
                     )}
                   </div>
@@ -151,25 +172,44 @@ export default function InstructorCoursesPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    <Link href={`/instructor/courses/${course._id}/lessons`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <BookOpen className="w-4 h-4 mr-1" />
-                        Manage Lessons
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/instructor/courses/${course._id}/lessons`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          Manage Lessons
+                        </Button>
+                      </Link>
+                      <Link href={`/courses/${course._id}`}>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(course._id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    </Link>
-                    <Link href={`/courses/${course._id}`}>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </Link>
+                    </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(course._id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => handleTogglePublish(course._id, course.isPublished)}
+                      className={`w-full ${course.isPublished ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-50' : 'border-green-300 text-green-700 hover:bg-green-50'}`}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {course.isPublished ? (
+                        <>
+                          <Lock className="w-4 h-4 mr-1" />
+                          Unpublish
+                        </>
+                      ) : (
+                        <>
+                          ✅ Publish
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>

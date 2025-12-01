@@ -51,20 +51,30 @@ export default function CreateLessonForCoursePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!lessonData.title || !lessonData.content || !lessonData.topic) {
-      toast.warning('Please fill in all required fields');
+    if (!lessonData.title || !lessonData.description || !lessonData.content || !lessonData.topic) {
+      toast.warning('Please fill in all required fields (title, description, content, topic)');
       return;
     }
 
+    if (lessonData.content.length < 50) {
+      toast.warning('Content must be at least 50 characters');
+      return;
+    }
+
+    if (lessonData.description.length < 10) {
+      toast.warning('Description must be at least 10 characters');
+      return;
+    }
+
+    const payload = {
+      ...lessonData,
+      course: courseId,
+      estimatedTime: Number(lessonData.estimatedTime),
+      tags: lessonData.tags.split(',').map(t => t.trim()).filter(t => t),
+    };
+
     try {
       setSubmitting(true);
-
-      const payload = {
-        ...lessonData,
-        course: courseId,
-        estimatedTime: Number(lessonData.estimatedTime),
-        tags: lessonData.tags.split(',').map(t => t.trim()).filter(t => t),
-      };
 
       const res = await axios.post(
         'http://localhost:5000/api/v1/lessons/create',
@@ -158,6 +168,9 @@ export default function CreateLessonForCoursePage() {
                 placeholder="e.g., Introduction to Variables"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {lessonData.title.length}/200 characters (minimum 3)
+              </p>
             </div>
 
             {/* Description */}
@@ -173,6 +186,9 @@ export default function CreateLessonForCoursePage() {
                 placeholder="Brief description of what students will learn"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {lessonData.description.length}/1000 characters (minimum 10 required)
+              </p>
             </div>
 
             {/* Content */}
@@ -188,7 +204,9 @@ export default function CreateLessonForCoursePage() {
                 placeholder="Write your lesson content here... (supports markdown)"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Minimum 50 characters required</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {lessonData.content.length} characters (minimum 50 required) • Supports Markdown
+              </p>
             </div>
 
             {/* Topic */}
@@ -204,6 +222,7 @@ export default function CreateLessonForCoursePage() {
                 placeholder="e.g., JavaScript Fundamentals"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">Main topic or category for this lesson</p>
             </div>
 
             {/* Tags */}
@@ -251,6 +270,7 @@ export default function CreateLessonForCoursePage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">1-60 minutes</p>
               </div>
             </div>
 

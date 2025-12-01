@@ -96,6 +96,20 @@ class CourseController {
     });
   });
 
+  // Get single enrollment
+  getEnrollment = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const { id } = req.params;
+    const result = await courseService.getEnrollment(userId, id);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Enrollment retrieved successfully',
+      data: result,
+    });
+  });
+
   // Get my enrollments
   getMyEnrollments = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;
@@ -173,6 +187,21 @@ class CourseController {
       statusCode: 200,
       success: true,
       message: 'Course students retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Toggle course publish status
+  togglePublish = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const userRole = req.user?.role as string;
+    const result = await courseService.togglePublishStatus(id, userId, userRole);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: `Course ${result.isPublished ? 'published' : 'unpublished'} successfully`,
       data: result,
     });
   });

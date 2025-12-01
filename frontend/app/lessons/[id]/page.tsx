@@ -3,6 +3,28 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+
+// Utility function to extract YouTube video ID
+const getYouTubeVideoId = (url: string): string | null => {
+  if (!url) return null;
+  
+  // Handle different YouTube URL formats
+  const patterns = [
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+    /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+};
 import {
   BookOpen,
   Clock,
@@ -18,7 +40,6 @@ import {
   Play,
   FileQuestion,
   Video as VideoIcon,
-  Award,
   Trophy,
   Lock,
 } from 'lucide-react';
@@ -220,16 +241,32 @@ export default function LessonDetailPage() {
       setCompleting(true);
       const response = await lessonsAPI.completeLesson(lessonId);
       const xpEarned = response.data.data?.xpEarned || 50;
+      
+      // Show success with option to continue
       toast.success(`🎉 Lesson completed! +${xpEarned} XP earned`, {
         duration: 4000,
+        action: {
+          label: 'Next Lesson',
+          onClick: () => {
+            if (lesson?.course) {
+              router.push(`/courses/${lesson.course}?refresh=true`);
+            }
+          }
+        }
       });
+      
       if (lesson) {
         setLesson({ ...lesson, isCompleted: true });
       }
-      // Reload page to update stats
+      
+      // Redirect to course page after 3 seconds to see unlocked lessons
       setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+        if (lesson?.course) {
+          router.push(`/courses/${lesson.course}?refresh=true`);
+        } else {
+          router.push('/dashboard');
+        }
+      }, 3000);
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || 'Failed to complete lesson';
       toast.error(errorMsg);
@@ -498,23 +535,43 @@ export default function LessonDetailPage() {
             <CardContent className="p-4">
               {lesson.media
                 .filter(m => m.type === 'video')
-                .map((media, index) => (
-                  <VideoPlayer
-                    key={index}
-                    src={media.url}
-                    poster={lesson.thumbnailUrl || media.thumbnail}
-                    onEnded={() => {
-                      toast.success('🎉 Video completed! +30 XP earned');
-                      handleComplete();
-                    }}
-                    onProgress={(progress) => {
-                      // Track video progress for analytics
-                      if (progress > 90) {
-                        console.log('Video almost complete:', progress);
-                      }
-                    }}
-                  />
-                ))}
+                .map((media, index) => {
+                  const youtubeId = getYouTubeVideoId(media.url);
+                  
+                  if (youtubeId) {
+                    // Render YouTube iframe embed
+                    return (
+                      <div key={index} className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          className="absolute top-0 left-0 w-full h-full rounded-lg"
+                          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                          title={media.title || 'Video Lesson'}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  } else {
+                    // Render native VideoPlayer for direct video files
+                    return (
+                      <VideoPlayer
+                        key={index}
+                        src={media.url}
+                        poster={lesson.thumbnailUrl || media.thumbnail}
+                        onEnded={() => {
+                          toast.success('🎉 Video completed! +30 XP earned');
+                        }}
+                        onProgress={(progress) => {
+                          // Track video progress for analytics
+                          if (progress > 90) {
+                            console.log('Video almost complete:', progress);
+                          }
+                        }}
+                      />
+                    );
+                  }
+                })}
               
               {/* Video Info */}
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
@@ -614,35 +671,6 @@ export default function LessonDetailPage() {
                   </div>
                 </div>
               </Link>
-
-              {/* Certificate */}
-              {lesson.isCompleted ? (
-                <Link href={`/certificates?lessonId=${lessonId}`}>
-                  <div className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-400 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
-                        <Award className="w-6 h-6 text-yellow-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Certificate</h3>
-                        <p className="text-xs text-gray-600">Download yours</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50 opacity-60 cursor-not-allowed">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                      <Award className="w-6 h-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-500">Certificate</h3>
-                      <p className="text-xs text-gray-500">Complete to unlock</p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -678,22 +706,22 @@ export default function LessonDetailPage() {
         {lesson.isCompleted && (
           <Card className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-1">Lesson Completed! 🎉</h3>
-                    <p className="text-white/90 text-sm">You've mastered this topic. Keep learning!</p>
-                  </div>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8" />
                 </div>
-                <Link href={`/certificates?lessonId=${lessonId}`}>
-                  <Button className="bg-white text-green-600 hover:bg-gray-100">
-                    <Award className="w-4 h-4 mr-2" />
-                    Get Certificate
-                  </Button>
-                </Link>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-1">Lesson Completed! 🎉</h3>
+                  <p className="text-white/90 text-sm">Great job! Continue to the next lesson or complete all course lessons to earn your certificate.</p>
+                </div>
+                {lesson?.course && (
+                  <Link href={`/courses/${lesson.course}`}>
+                    <Button className="bg-white text-green-600 hover:bg-gray-100">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Back to Course
+                    </Button>
+                  </Link>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -11,7 +11,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "seed:admin": "ts-node src/scripts/seedAdmin.ts",
     "seed:instructor": "ts-node src/scripts/seedInstructor.ts",
-    "seed:demo": "ts-node src/scripts/seedDemoData.ts"
+    "seed:demo": "ts-node src/scripts/seedDemoData.ts",
+    "publish:lessons": "ts-node src/scripts/publishAllLessons.ts"
   },
   "keywords": [
     "microlearning",

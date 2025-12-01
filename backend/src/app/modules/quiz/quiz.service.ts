@@ -151,6 +151,31 @@ class QuizService {
     return quiz;
   }
 
+  // Get quiz by lesson ID
+  async getQuizByLesson(lessonId: string) {
+    const quiz = await Quiz.findOne({ lesson: lessonId, isPublished: true })
+      .populate('author', 'name profilePicture')
+      .populate('lesson', 'title topic');
+
+    if (!quiz) {
+      throw new ApiError(404, 'No quiz found for this lesson');
+    }
+
+    return quiz;
+  }
+
+  // Get quiz attempts for a specific quiz
+  async getQuizAttempts(quizId: string, userId: string) {
+    const attempts = await QuizAttempt.find({ 
+      quiz: quizId, 
+      user: userId 
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return attempts;
+  }
+
   // Submit quiz attempt
   async submitQuiz(userId: string, submitData: ISubmitQuizRequest) {
     const { quizId, answers, timeTaken } = submitData;

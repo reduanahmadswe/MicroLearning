@@ -53,10 +53,10 @@ export default function ForumPostPage() {
 
   const loadComments = async () => {
     try {
-      const response = await commentAPI.getLessonComments(postId);
+      const response = await commentAPI.getForumComments(postId);
       setComments(response.data.data || []);
     } catch (error: any) {
-      console.error(error);
+      console.error('Failed to load comments:', error);
     }
   };
 
@@ -76,16 +76,16 @@ export default function ForumPostPage() {
     setSubmitting(true);
     try {
       await commentAPI.createComment({
-        resourceType: 'forum',
-        resourceId: postId,
+        postId: postId,
         content: newComment,
       });
       setNewComment('');
-      toast.success('Comment posted!');
+      toast.success('Comment posted! 💬');
       loadComments();
       loadPost();
     } catch (error: any) {
       toast.error('Failed to post comment');
+      console.error('Comment error:', error);
     } finally {
       setSubmitting(false);
     }

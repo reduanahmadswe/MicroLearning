@@ -59,6 +59,33 @@ class QuizController {
     });
   });
 
+  // Get quiz by lesson ID
+  getQuizByLesson = catchAsync(async (req: Request, res: Response) => {
+    const { lessonId } = req.params;
+    const result = await quizService.getQuizByLesson(lessonId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get quiz attempts
+  getQuizAttempts = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await quizService.getQuizAttempts(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz attempts retrieved successfully',
+      data: result,
+    });
+  });
+
   // Submit quiz
   submitQuiz = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;

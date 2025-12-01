@@ -239,7 +239,7 @@ export default function CoursesPage() {
                       <div className="space-y-2 mb-4 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-4 h-4" />
-                          <span>{course.lessons?.length || 0} lessons</span>
+                          <span>{(course as any).lessonCount || course.lessons?.length || 0} lessons</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />

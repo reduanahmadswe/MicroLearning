@@ -41,11 +41,33 @@ export default function CourseDetailPage() {
     }
   }, [courseId]);
 
+  // Refresh enrollment when coming back from lesson completion
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('refresh') === 'true' && courseId) {
+      console.log('🔄 Refreshing enrollment after lesson completion');
+      setTimeout(() => {
+        checkEnrollment();
+      }, 500);
+    }
+  }, [courseId]);
+
+  useEffect(() => {
+    // Re-check lesson unlock status when enrollment changes
+    if (enrollment && course?.lessons) {
+      checkLessonUnlockStatus(course.lessons, enrollment);
+    }
+  }, [enrollment, course]);
+
   const loadCourse = async () => {
     try {
       setLoading(true);
       const response = await coursesAPI.getCourse(courseId);
-      setCourse(response.data.data);
+      const courseData = response.data.data;
+      console.log('📚 Course Data:', courseData);
+      console.log('📖 Lessons:', courseData.lessons);
+      console.log('📊 Lesson Count:', courseData.lessons?.length || 0);
+      setCourse(courseData);
     } catch (error: any) {
       toast.error('Failed to load course');
       console.error(error);
@@ -61,8 +83,8 @@ export default function CourseDetailPage() {
       setEnrollment(enrollmentData);
       
       // Check unlock status for each lesson if enrolled
-      if (enrollmentData && course?.lessons) {
-        checkLessonUnlockStatus(course.lessons, enrollmentData);
+      if (enrollmentData) {
+        await loadCourseWithLessons();
       }
     } catch (error: any) {
       // Not enrolled
@@ -70,13 +92,33 @@ export default function CourseDetailPage() {
     }
   };
 
+  const loadCourseWithLessons = async () => {
+    try {
+      const response = await coursesAPI.getCourse(courseId);
+      const courseData = response.data.data;
+      setCourse(courseData);
+      
+      // Check unlock status if enrolled
+      if (enrollment && courseData.lessons) {
+        checkLessonUnlockStatus(courseData.lessons, enrollment);
+      }
+    } catch (error) {
+      console.error('Error loading course:', error);
+    }
+  };
+
   const checkLessonUnlockStatus = async (lessons: any[], enrollmentData: any) => {
+    console.log('🔓 Checking lesson unlock status...');
+    console.log('📚 Total lessons:', lessons.length);
+    console.log('✅ Completed lessons:', enrollmentData.completedLessons);
+    
     const unlockStatus: Record<string, boolean> = {};
     const quizData: Record<string, any> = {};
     
-    // First lesson always unlocked
+    // First lesson always unlocked for enrolled students
     if (lessons.length > 0 && lessons[0].order === 1) {
       unlockStatus[lessons[0]._id] = true;
+      console.log('✓ First lesson unlocked:', lessons[0].title);
     }
     
     // Check subsequent lessons
@@ -85,18 +127,34 @@ export default function CourseDetailPage() {
       
       if (lesson.order === 1) continue; // Already handled
       
-      // Check if previous lesson quiz was passed
+      console.log(`\n🔍 Checking lesson ${lesson.order}: ${lesson.title}`);
+      
+      // Find previous lesson
       const previousLesson = lessons.find((l: any) => l.order === lesson.order - 1);
       
       if (previousLesson) {
+        console.log(`  Previous lesson: ${previousLesson.title}`);
+        
+        // Check if previous lesson is completed
+        const isPreviousCompleted = enrollmentData.completedLessons?.includes(previousLesson._id);
+        console.log(`  Previous completed:`, isPreviousCompleted);
+        
+        if (!isPreviousCompleted) {
+          // Previous lesson not even completed
+          unlockStatus[lesson._id] = false;
+          console.log(`  ❌ Locked - previous not completed`);
+          continue;
+        }
+        
         try {
-          // Check if quiz exists and was passed for previous lesson
+          // Check if quiz exists for previous lesson
           const quizResponse = await fetch(
             `http://localhost:5000/api/v1/quizzes/lesson/${previousLesson._id}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );
           
           if (quizResponse.ok) {
+            // Quiz exists - check if passed (80%+)
             const quizInfo = await quizResponse.json();
             const quiz = quizInfo.data;
             
@@ -116,16 +174,18 @@ export default function CourseDetailPage() {
               quizData[previousLesson._id] = { quiz, passed: false };
             }
           } else {
-            // No quiz exists, consider unlocked
+            // No quiz exists - lesson completed is enough
             unlockStatus[lesson._id] = true;
+            console.log(`  ✅ Unlocked - no quiz required`);
           }
         } catch (error) {
-          console.error('Error checking unlock status:', error);
+          console.error('  ❌ Error checking quiz:', error);
           unlockStatus[lesson._id] = false;
         }
       }
     }
     
+    console.log('\n📊 Final unlock status:', unlockStatus);
     setLessonUnlockStatus(unlockStatus);
     setQuizResults(quizData);
   };
@@ -134,8 +194,9 @@ export default function CourseDetailPage() {
     setEnrolling(true);
     try {
       await coursesAPI.enrollCourse(courseId);
-      toast.success('Successfully enrolled in course!');
-      checkEnrollment();
+      toast.success('Successfully enrolled in course! 🎉');
+      await checkEnrollment();
+      await loadCourse(); // Reload to show unlock status
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to enroll');
     } finally {
@@ -275,79 +336,126 @@ export default function CourseDetailPage() {
                 <CardTitle>Course Curriculum</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {course.lessons?.map((lesson: any, index: number) => {
-                    const isCompleted = completedLessons.includes(lesson._id);
-                    const isFirstLesson = lesson.order === 1;
-                    const isUnlocked = isFirstLesson || lessonUnlockStatus[lesson._id] === true;
-                    const isLockedByQuiz = isEnrolled && !isFirstLesson && !isUnlocked;
-                    const isLockedByPayment = !isEnrolled && course.isPremium;
+                {!course.lessons || course.lessons.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BookOpen className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Lessons Yet</h3>
+                    <p className="text-gray-600 mb-4">
+                      The instructor hasn't added any lessons to this course yet.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Check back soon or browse other available courses.
+                    </p>
+                    <Link href="/courses" className="inline-block mt-4">
+                      <Button variant="outline">
+                        Browse Other Courses
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {course.lessons.map((lesson: any, index: number) => {
+                      const isCompleted = completedLessons.includes(lesson._id);
+                      const isFirstLesson = lesson.order === 1;
+                      const previousLesson = course.lessons.find((l: any) => l.order === lesson.order - 1);
+                      const isPreviousCompleted = previousLesson ? completedLessons.includes(previousLesson._id) : false;
+                      
+                      // Locking logic
+                      let isUnlocked = false;
+                      let lockReason = '';
+                      
+                      if (!isEnrolled) {
+                        // Not enrolled - all lessons locked
+                        isUnlocked = false;
+                        lockReason = course.isPremium ? '🔒 Enroll & Pay to Unlock' : '🔒 Enroll to Unlock';
+                      } else if (isFirstLesson) {
+                        // First lesson always unlocked for enrolled students
+                        isUnlocked = true;
+                      } else {
+                        // Check unlock status from state
+                        isUnlocked = lessonUnlockStatus[lesson._id] === true;
+                        
+                        // Determine lock reason
+                        if (!isUnlocked) {
+                          if (!isPreviousCompleted) {
+                            lockReason = '🔒 Complete Previous Lesson First';
+                          } else if (quizResults[previousLesson._id]?.quiz) {
+                            // Previous lesson has quiz
+                            lockReason = '🔒 Pass Previous Quiz (80%+)';
+                          } else {
+                            // Should be unlocked if previous completed with no quiz
+                            lockReason = '🔒 Locked';
+                          }
+                        }
+                      }
 
-                    return (
-                      <div
-                        key={lesson._id || index}
-                        className={`flex items-center justify-between p-4 rounded-lg border-2 transition-colors ${
-                          isCompleted ? 'border-green-200 bg-green-50' : 
-                          isLockedByQuiz || isLockedByPayment ? 'border-gray-200 bg-gray-50' :
-                          'border-gray-200 hover:border-blue-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                            isCompleted ? 'bg-green-600 text-white' :
-                            isLockedByQuiz || isLockedByPayment ? 'bg-gray-300 text-gray-600' :
-                            'bg-blue-100 text-blue-600'
-                          }`}>
-                            {isCompleted ? <CheckCircle className="w-5 h-5" /> :
-                             (isLockedByQuiz || isLockedByPayment) ? <Lock className="w-4 h-4" /> :
-                             lesson.order || (index + 1)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className={`font-medium ${
-                                isLockedByQuiz || isLockedByPayment ? 'text-gray-500' : 'text-gray-900'
-                              }`}>
-                                {lesson.title}
-                              </h4>
-                              {isFirstLesson && isEnrolled && (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                                  Always Unlocked
-                                </span>
-                              )}
-                              {isLockedByQuiz && (
-                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
-                                  Pass Previous Quiz (80%+)
-                                </span>
-                              )}
+                      return (
+                        <div
+                          key={lesson._id || index}
+                          className={`flex items-center justify-between p-4 rounded-lg border-2 transition-colors ${
+                            isCompleted ? 'border-green-200 bg-green-50' : 
+                            !isUnlocked ? 'border-gray-200 bg-gray-50' :
+                            'border-gray-200 hover:border-blue-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                              isCompleted ? 'bg-green-600 text-white' :
+                              !isUnlocked ? 'bg-gray-300 text-gray-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {isCompleted ? <CheckCircle className="w-5 h-5" /> :
+                               !isUnlocked ? <Lock className="w-4 h-4" /> :
+                               lesson.order || (index + 1)}
                             </div>
-                            <p className="text-sm text-gray-600">
-                              {lesson.estimatedTime || 10} min • Lesson {lesson.order || (index + 1)}
-                            </p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className={`font-medium ${
+                                  !isUnlocked ? 'text-gray-500' : 'text-gray-900'
+                                }`}>
+                                  {lesson.title}
+                                </h4>
+                                {isEnrolled && isFirstLesson && (
+                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                    ✓ Unlocked
+                                  </span>
+                                )}
+                                {!isUnlocked && lockReason && (
+                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                    {lockReason}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {lesson.estimatedTime || 10} min • Lesson {lesson.order || (index + 1)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isEnrolled && isUnlocked ? (
+                              <Link href={`/lessons/${lesson._id}`}>
+                                <Button 
+                                  size="sm" 
+                                  variant={isCompleted ? "outline" : "default"}
+                                  className={isCompleted ? "" : "bg-blue-600 hover:bg-blue-700"}
+                                >
+                                  <Play className="w-4 h-4 mr-1" />
+                                  {isCompleted ? 'Review' : 'Start'}
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button size="sm" variant="ghost" disabled className="text-gray-400">
+                                <Lock className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {isEnrolled && isUnlocked && (
-                            <Link href={`/lessons/${lesson._id}`}>
-                              <Button 
-                                size="sm" 
-                                variant={isCompleted ? "outline" : "default"}
-                                className={isCompleted ? "" : "bg-blue-600 hover:bg-blue-700"}
-                              >
-                                <Play className="w-4 h-4 mr-1" />
-                                {isCompleted ? 'Review' : 'Start'}
-                              </Button>
-                            </Link>
-                          )}
-                          {isLockedByQuiz && (
-                            <Button size="sm" variant="ghost" disabled className="text-gray-500">
-                              <Lock className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -391,18 +499,31 @@ export default function CourseDetailPage() {
                     </div>
                     <Button
                       onClick={() => {
-                        const nextLesson = course.lessons?.find(
-                          (l: any) => !completedLessons.includes(l._id)
+                        if (!course.lessons || course.lessons.length === 0) {
+                          toast.error('No lessons available yet');
+                          return;
+                        }
+                        
+                        // Find first unlocked incomplete lesson
+                        const nextLesson = course.lessons.find(
+                          (l: any) => !completedLessons.includes(l._id) && 
+                          (l.order === 1 || lessonUnlockStatus[l._id] === true)
                         );
-                        if (nextLesson) {
-                          router.push(`/lessons/${nextLesson._id}`);
+                        
+                        // If all complete or no unlocked found, go to first lesson
+                        const targetLesson = nextLesson || course.lessons[0];
+                        
+                        if (targetLesson) {
+                          router.push(`/lessons/${targetLesson._id}`);
+                        } else {
+                          toast.error('No lessons available');
                         }
                       }}
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                       size="lg"
                     >
                       <Play className="w-4 h-4 mr-2" />
-                      Continue Learning
+                      {completedLessons.length > 0 ? 'Continue Learning' : 'Start Learning'}
                     </Button>
                   </div>
                 )}
