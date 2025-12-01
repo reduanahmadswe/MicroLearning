@@ -56,6 +56,9 @@ export default function LoginPage() {
       if (data.user.role === 'admin') {
         toast.success("Welcome Admin!");
         router.push("/admin");
+      } else if (data.user.role === 'instructor') {
+        toast.success("Welcome Instructor!");
+        router.push("/instructor");
       } else {
         toast.success("Login successful!");
         router.push("/dashboard");

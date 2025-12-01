@@ -3,14 +3,22 @@
 import { useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { getDashboardPath } from "@/lib/navigation";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
+  requireInstructor?: boolean;
+  requireStudent?: boolean;
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({ 
+  children, 
+  requireAdmin = false,
+  requireInstructor = false,
+  requireStudent = false,
+}: ProtectedRouteProps) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -21,12 +29,22 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       return;
     }
 
-    // Check if admin access is required
+    // Check role-specific access
     if (requireAdmin && user?.role !== "admin") {
-      router.push("/dashboard");
+      router.push(getDashboardPath(user?.role));
       return;
     }
-  }, [isAuthenticated, user, requireAdmin, router]);
+
+    if (requireInstructor && user?.role !== "instructor" && user?.role !== "admin") {
+      router.push(getDashboardPath(user?.role));
+      return;
+    }
+
+    if (requireStudent && (user?.role === "admin" || user?.role === "instructor")) {
+      router.push(getDashboardPath(user?.role));
+      return;
+    }
+  }, [isAuthenticated, user, requireAdmin, requireInstructor, requireStudent, router]);
 
   // Show loading state while checking authentication
   if (!isAuthenticated) {
@@ -37,8 +55,24 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  // Show loading for admin check
+  // Show loading for role checks
   if (requireAdmin && user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (requireInstructor && user?.role !== "instructor" && user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (requireStudent && (user?.role === "admin" || user?.role === "instructor")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

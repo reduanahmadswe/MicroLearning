@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { 
   BookOpen, 
   Video, 
@@ -42,8 +43,9 @@ export default function InstructorLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
-      {/* Navbar */}
+    <ProtectedRoute requireInstructor={true}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+        {/* Navbar */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -159,6 +161,7 @@ export default function InstructorLayout({
 
       {/* Main Content */}
       <main>{children}</main>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

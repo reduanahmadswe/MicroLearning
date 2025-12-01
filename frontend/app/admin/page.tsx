@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Shield,
@@ -19,14 +20,18 @@ import {
   Activity,
   DollarSign,
   AlertCircle,
+  LogOut,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminAPI } from '@/services/api.service';
+import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
 export default function AdminPage() {
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'content' | 'analytics'>('overview');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>({});
@@ -34,6 +39,12 @@ export default function AdminPage() {
   const [content, setContent] = useState<any>({ recentLessons: [], recentQuizzes: [], recentCourses: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+    router.push('/auth/login');
+  };
 
   useEffect(() => {
     loadDashboard();
@@ -144,18 +155,17 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
                 <Shield className="w-8 h-8 text-red-600" />
                 Admin Panel
               </h1>
               <p className="text-gray-600 mt-1">Manage platform content and users</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                <p className="text-xs text-gray-500">Administrator</p>
+              </div>
               <Link href="/admin/content">
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -168,6 +178,14 @@ export default function AdminPage() {
                   Marketplace
                 </Button>
               </Link>
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
 

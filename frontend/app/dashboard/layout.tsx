@@ -8,7 +8,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireStudent={true}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {children}
       </div>
