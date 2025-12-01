@@ -127,16 +127,12 @@ class CourseService {
       .sort({ order: 1 })
       .lean();
 
-    console.log('📚 getCourseById - Course ID:', course._id);
-    console.log('📚 getCourseById - Course Title:', course.title);
-    console.log('📚 getCourseById - Lessons from Lesson collection:', lessons.length);
-    console.log('📚 getCourseById - Lesson IDs:', lessons.map((l: any) => l._id));
+    console.log('📚 Course:', course.title, '- ID:', course._id.toString());
+    console.log('📚 Published lessons found:', lessons.length);
     
-    // Also check unpublished lessons
-    const allLessons = await Lesson.find({ course: course._id }).lean();
-    console.log('📊 Total lessons (including unpublished):', allLessons.length);
-    console.log('📊 Published lessons:', lessons.length);
-    console.log('📊 Unpublished lessons:', allLessons.length - lessons.length);
+    if (lessons.length > 0) {
+      console.log('📖 Lessons:', lessons.map((l: any) => `${l.order}. ${l.title}`).join(', '));
+    }
 
     // Check enrollment status if user is provided
     let isEnrolled = false;
@@ -274,6 +270,11 @@ class CourseService {
     if (!enrollment) {
       throw new ApiError(404, 'Not enrolled in this course');
     }
+
+    console.log('📚 Getting enrollment for user:', userId);
+    console.log('📚 Course:', courseId);
+    console.log('📚 Completed lessons:', enrollment.completedLessons);
+    console.log('📚 Completed lessons count:', enrollment.completedLessons?.length || 0);
 
     return enrollment;
   }

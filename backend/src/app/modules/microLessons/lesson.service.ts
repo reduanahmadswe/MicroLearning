@@ -251,15 +251,26 @@ class LessonService {
     lesson.views += 1;
     await lesson.save();
 
-    // Check if user has completed this lesson
+    // Check if user has completed this lesson by checking enrollment
     let isCompleted = false;
-    if (userId) {
-      const userProgress = await UserProgress.findOne({ 
-        user: userId, 
-        lesson: lesson._id,
-        status: 'completed'
-      }).lean();
-      isCompleted = !!userProgress;
+    if (userId && lesson.course) {
+      try {
+        const Enrollment = require('../enrollment/enrollment.model').default;
+        const enrollment = await Enrollment.findOne({
+          user: userId,
+          course: lesson.course,
+        }).lean();
+        
+        if (enrollment && enrollment.completedLessons) {
+          isCompleted = enrollment.completedLessons.some(
+            (id: any) => id.toString() === lesson._id.toString()
+          );
+        }
+        
+        console.log(`📖 Lesson ${lesson._id} completed status for user ${userId}:`, isCompleted);
+      } catch (error) {
+        console.error('Error checking lesson completion:', error);
+      }
     }
 
     return {
@@ -371,22 +382,43 @@ class LessonService {
     );
 
     console.log('Progress updated:', progress);
+    console.log('📚 Lesson.course exists?', !!lesson.course);
+    console.log('📚 Lesson.course value:', lesson.course);
 
     // Update course enrollment progress if lesson belongs to a course
     if (lesson.course) {
+      console.log('✅ Entering enrollment update block');
       try {
-        const Enrollment = require('../enrollment/enrollment.model').default;
+        const { Enrollment } = require('../course/course.model');
         const courseId = typeof lesson.course === 'object' ? lesson.course._id : lesson.course;
+        
+        console.log('🔍 Looking for enrollment - User:', userId, 'Course:', courseId);
         
         const enrollment = await Enrollment.findOne({
           user: userId,
           course: courseId,
         });
 
+        console.log('📝 Enrollment found:', enrollment ? 'Yes' : 'No');
+        if (!enrollment) {
+          console.error('❌ NO ENROLLMENT FOUND! User must enroll in course first.');
+          return { 
+            lesson, 
+            xpEarned: xpAmount,
+            totalXP: updatedUser.xp,
+            level: updatedUser.level
+          };
+        }
+        console.log('📝 Current completedLessons:', enrollment?.completedLessons);
+
         if (enrollment) {
           // Add lesson to completed if not already there
-          if (!enrollment.completedLessons.some((id: any) => id.toString() === lessonId)) {
+          const alreadyCompleted = enrollment.completedLessons.some((id: any) => id.toString() === lessonId);
+          console.log('📝 Already completed?', alreadyCompleted);
+          
+          if (!alreadyCompleted) {
             enrollment.completedLessons.push(lessonId);
+            console.log('✅ Added lesson to completedLessons:', lessonId);
           }
 
           // Update last accessed lesson
@@ -397,7 +429,7 @@ class LessonService {
           const completedLessons = enrollment.completedLessons.length;
           enrollment.progress = Math.round((completedLessons / totalLessons) * 100);
 
-          console.log('Enrollment progress:', { 
+          console.log('📊 Enrollment progress:', { 
             completedLessons, 
             totalLessons, 
             progress: enrollment.progress 
@@ -418,10 +450,11 @@ class LessonService {
             // Generate certificate for course completion
             await this.generateCourseCertificate(userId, courseId.toString());
             
-            console.log('Course completed! Certificate generated.');
+            console.log('🎓 Course completed! Certificate generated.');
           }
 
           await enrollment.save();
+          console.log('💾 Enrollment saved! completedLessons:', enrollment.completedLessons);
         }
       } catch (error) {
         console.error('Error updating enrollment:', error);

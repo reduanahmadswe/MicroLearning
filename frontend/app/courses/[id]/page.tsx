@@ -45,9 +45,12 @@ export default function CourseDetailPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('refresh') === 'true' && courseId) {
-      console.log('🔄 Refreshing enrollment after lesson completion');
-      setTimeout(() => {
-        checkEnrollment();
+      console.log('🔄 Refreshing after lesson completion');
+      // Remove refresh param from URL
+      window.history.replaceState({}, '', `/courses/${courseId}`);
+      // Reload everything with fresh data
+      setTimeout(async () => {
+        await loadCourseWithLessons();
       }, 500);
     }
   }, [courseId]);
@@ -94,13 +97,24 @@ export default function CourseDetailPage() {
 
   const loadCourseWithLessons = async () => {
     try {
-      const response = await coursesAPI.getCourse(courseId);
-      const courseData = response.data.data;
-      setCourse(courseData);
+      const [courseResponse, enrollmentResponse] = await Promise.all([
+        coursesAPI.getCourse(courseId),
+        coursesAPI.getEnrollment(courseId).catch(() => null)
+      ]);
       
-      // Check unlock status if enrolled
-      if (enrollment && courseData.lessons) {
-        checkLessonUnlockStatus(courseData.lessons, enrollment);
+      const courseData = courseResponse.data.data;
+      const enrollmentData = enrollmentResponse?.data?.data || null;
+      
+      console.log('🔄 Refreshed enrollment data:', enrollmentData?.completedLessons);
+      
+      setCourse(courseData);
+      if (enrollmentData) {
+        setEnrollment(enrollmentData);
+      }
+      
+      // Check unlock status with fresh enrollment data
+      if (enrollmentData && courseData.lessons) {
+        await checkLessonUnlockStatus(courseData.lessons, enrollmentData);
       }
     } catch (error) {
       console.error('Error loading course:', error);
@@ -136,7 +150,9 @@ export default function CourseDetailPage() {
         console.log(`  Previous lesson: ${previousLesson.title}`);
         
         // Check if previous lesson is completed
-        const isPreviousCompleted = enrollmentData.completedLessons?.includes(previousLesson._id);
+        const isPreviousCompleted = enrollmentData.completedLessons?.some(
+          (lessonId: any) => lessonId.toString() === previousLesson._id.toString()
+        );
         console.log(`  Previous completed:`, isPreviousCompleted);
         
         if (!isPreviousCompleted) {
