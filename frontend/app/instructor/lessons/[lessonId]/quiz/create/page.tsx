@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 interface QuizQuestion {
   question: string;
@@ -60,7 +61,9 @@ export default function CreateQuizForLessonPage() {
       });
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      alert(error.response?.data?.message || 'Failed to load lesson');
+      toast.error('Failed to load lesson', {
+        description: error.response?.data?.message
+      });
     } finally {
       setLoading(false);
     }
@@ -100,7 +103,7 @@ export default function CreateQuizForLessonPage() {
     e.preventDefault();
 
     if (questions.length === 0) {
-      alert('Please add at least one question');
+      toast.warning('Please add at least one question');
       return;
     }
 
@@ -108,15 +111,15 @@ export default function CreateQuizForLessonPage() {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.question.trim()) {
-        alert(`Question ${i + 1}: Question text is required`);
+        toast.error(`Question ${i + 1}`, { description: 'Question text is required' });
         return;
       }
       if (!q.correctAnswer.trim()) {
-        alert(`Question ${i + 1}: Correct answer is required`);
+        toast.error(`Question ${i + 1}`, { description: 'Correct answer is required' });
         return;
       }
       if (q.type === 'mcq' && q.options.some(opt => !opt.trim())) {
-        alert(`Question ${i + 1}: All options must be filled`);
+        toast.error(`Question ${i + 1}`, { description: 'All options must be filled' });
         return;
       }
     }
@@ -145,11 +148,15 @@ export default function CreateQuizForLessonPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert('Quiz created successfully!');
-      router.push(`/instructor/courses/${courseId || lesson.course}/lessons`);
+      toast.success('Quiz created successfully!', {
+        description: 'Redirecting to lessons page...'
+      });
+      setTimeout(() => router.push(`/instructor/courses/${courseId || lesson.course}/lessons`), 1000);
     } catch (error: any) {
       console.error('Error creating quiz:', error);
-      alert(error.response?.data?.message || 'Failed to create quiz');
+      toast.error('Failed to create quiz', {
+        description: error.response?.data?.message
+      });
     } finally {
       setSaving(false);
     }

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { ArrowLeft, Plus, Edit, Trash2, FileQuestion, Lock, Unlock } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Lesson {
   _id: string;
@@ -33,21 +34,42 @@ export default function CourseLessonsPage() {
     try {
       setLoading(true);
       
-      console.log('Fetching course:', courseId);
+      console.log('🔍 Fetching course:', courseId);
+      console.log('🔑 Token:', token ? 'Present' : 'Missing');
+      
       // Fetch course
       const courseRes = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Course response:', courseRes.data);
+      console.log('✅ Course response:', courseRes.data);
       setCourse(courseRes.data.data || courseRes.data);
 
       // Fetch lessons for this course
+      console.log('🔍 Fetching lessons with URL:', `http://localhost:5000/api/v1/lessons?course=${courseId}`);
       const lessonsRes = await axios.get(`http://localhost:5000/api/v1/lessons?course=${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      console.log('Lessons API response:', lessonsRes.data);
-      const lessonsList = lessonsRes.data.data || lessonsRes.data || [];
+      console.log('✅ Lessons API full response:', lessonsRes);
+      console.log('📦 Lessons data:', lessonsRes.data);
+      console.log('📦 Lessons data.data:', lessonsRes.data?.data);
+      console.log('📦 Type of data.data:', Array.isArray(lessonsRes.data?.data) ? 'Array' : typeof lessonsRes.data?.data);
+      
+      // Handle different response structures
+      let lessonsList = [];
+      if (lessonsRes.data?.data?.lessons) {
+        console.log('📚 Using data.data.lessons path');
+        lessonsList = lessonsRes.data.data.lessons;
+      } else if (Array.isArray(lessonsRes.data?.data)) {
+        console.log('📚 Using data.data array path');
+        lessonsList = lessonsRes.data.data;
+      } else if (Array.isArray(lessonsRes.data)) {
+        console.log('📚 Using data array path');
+        lessonsList = lessonsRes.data;
+      }
+      
+      console.log('✅ Final parsed lessons list:', lessonsList);
+      console.log('📊 Lessons count:', lessonsList.length);
       
       // Check if each lesson has a quiz
       const lessonsWithQuizStatus = await Promise.all(
@@ -72,27 +94,31 @@ export default function CourseLessonsPage() {
       console.error('Error fetching data:', error);
       console.error('Error response:', error.response?.data);
       console.error('Status:', error.response?.status);
-      alert(error.response?.data?.message || 'Failed to load course lessons. Please restart the backend server.');
+      toast.error('Failed to load course lessons', {
+        description: error.response?.data?.message || 'Please restart the backend server.'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!window.confirm('Are you sure you want to delete this lesson? This will also delete any associated quizzes.')) {
-      return;
-    }
-
-    try {
-      await axios.delete(`http://localhost:5000/api/v1/lessons/${lessonId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert('Lesson deleted successfully');
-      fetchCourseAndLessons();
-    } catch (error: any) {
-      console.error('Error deleting lesson:', error);
-      alert(error.response?.data?.message || 'Failed to delete lesson');
-    }
+    toast.promise(
+      axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      {
+        loading: 'Deleting lesson...',
+        success: () => {
+          fetchCourseAndLessons();
+          return 'Lesson deleted successfully';
+        },
+        error: (error: any) => {
+          console.error('Error deleting lesson:', error);
+          return error.response?.data?.message || 'Failed to delete lesson';
+        }
+      }
+    );
   };
 
   if (loading) {
@@ -118,19 +144,25 @@ export default function CourseLessonsPage() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl font-bold mb-2">{course?.title}</h1>
-                <p className="text-gray-600">{course?.description}</p>
-                <div className="mt-4 flex gap-4 text-sm">
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
-                    {lessons.length} Lessons
+                <p className="text-gray-600 mb-4">{course?.description}</p>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-medium">
+                    📚 {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'}
                   </span>
-                  <span className={`px-3 py-1 rounded-full ${
+                  <span className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-medium">
+                    ✅ {lessons.filter(l => l.hasQuiz).length} with Quiz
+                  </span>
+                  <span className={`px-4 py-2 rounded-full font-medium ${
                     course?.isPremium 
                       ? 'bg-yellow-100 text-yellow-700' 
                       : 'bg-green-100 text-green-700'
                   }`}>
-                    {course?.isPremium ? `Paid - ৳${course.price}` : 'Free Course'}
+                    {course?.isPremium ? `💰 ৳${course.price}` : '🆓 Free'}
+                  </span>
+                  <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full font-medium capitalize">
+                    📊 {course?.difficulty}
                   </span>
                 </div>
               </div>
@@ -156,10 +188,16 @@ export default function CourseLessonsPage() {
 
           {lessons.length === 0 ? (
             <div className="p-12 text-center">
-              <p className="text-gray-500 mb-4">No lessons created yet</p>
+              <div className="mb-4">
+                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No lessons yet</h3>
+              <p className="text-gray-500 mb-6">Start building your course by adding your first lesson</p>
               <button
                 onClick={() => router.push(`/instructor/courses/${courseId}/lessons/create`)}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
               >
                 Create First Lesson
               </button>

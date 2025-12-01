@@ -320,13 +320,18 @@ class CourseService {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Get enrollment counts for each course
+    // Get enrollment counts and actual lesson counts for each course
     const coursesWithStats = await Promise.all(
       courses.map(async (course) => {
         const enrollmentCount = await Enrollment.countDocuments({ course: course._id });
+        
+        // Count actual lessons in database for this course
+        const lessonCount = await Lesson.countDocuments({ course: course._id });
+        
         return {
           ...course,
           enrollmentCount,
+          lessonCount,
         };
       })
     );

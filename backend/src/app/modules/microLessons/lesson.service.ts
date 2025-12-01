@@ -49,6 +49,7 @@ class LessonService {
       order: order,
       author: userId,
       aiGenerated: false,
+      isPublished: true, // Auto-publish lessons created by instructors
       media: lessonData.videoUrl ? [{
         type: 'video',
         url: lessonData.videoUrl,
@@ -117,7 +118,28 @@ class LessonService {
 
   // Get lessons with filters and pagination
   async getLessons(filters: ILessonFilterQuery, page: number, limit: number, userId?: string) {
-    const query: any = { isPublished: true };
+    const query: any = {};
+
+    console.log('🔍 getLessons called with:', { filters, userId });
+
+    // Check if user is author of the course (for viewing unpublished lessons)
+    let isOwnCourse = false;
+    if (filters.course && userId) {
+      const { Course } = require('../course/course.model');
+      const course = await Course.findById(filters.course);
+      console.log('📚 Course found:', course ? `Yes (author: ${course.author})` : 'No');
+      console.log('👤 User ID:', userId);
+      if (course && course.author.toString() === userId) {
+        isOwnCourse = true;
+        console.log('✅ User is course author - showing all lessons');
+      }
+    }
+
+    // Only show published lessons unless it's the course author viewing their own lessons
+    if (!isOwnCourse) {
+      query.isPublished = true;
+      console.log('🔒 Not own course - filtering by isPublished: true');
+    }
 
     // Apply filters
     if (filters.course) {
@@ -156,15 +178,21 @@ class LessonService {
 
     const skip = (page - 1) * limit;
 
+    console.log('🔎 Final MongoDB query:', JSON.stringify(query));
+    console.log('📄 Pagination:', { page, limit, skip });
+
     const [lessons, total] = await Promise.all([
       Lesson.find(query)
         .populate('author', 'name email profilePicture')
+        .populate('course', 'title description')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
       Lesson.countDocuments(query),
     ]);
+
+    console.log('✅ Found lessons:', lessons.length, 'Total:', total);
 
     // Check completion status for each lesson if userId provided
     if (userId) {

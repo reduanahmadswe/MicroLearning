@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { ArrowLeft, BookOpen } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CreateLessonForCoursePage() {
   const { courseId } = useParams();
@@ -40,7 +41,7 @@ export default function CreateLessonForCoursePage() {
       setCourse(res.data.data);
     } catch (error: any) {
       console.error('Error fetching course:', error);
-      alert(error.response?.data?.message || 'Failed to load course');
+      toast.error(error.response?.data?.message || 'Failed to load course');
       router.push('/instructor/courses');
     } finally {
       setLoading(false);
@@ -51,7 +52,7 @@ export default function CreateLessonForCoursePage() {
     e.preventDefault();
 
     if (!lessonData.title || !lessonData.content || !lessonData.topic) {
-      alert('Please fill in all required fields');
+      toast.warning('Please fill in all required fields');
       return;
     }
 
@@ -72,15 +73,24 @@ export default function CreateLessonForCoursePage() {
       );
 
       const createdLesson = res.data.data;
-      alert('Lesson created successfully!');
       
-      // Ask if they want to create quiz for this lesson
-      const createQuiz = window.confirm('Lesson created! Would you like to create a quiz for this lesson now?');
-      if (createQuiz) {
-        router.push(`/instructor/courses/${courseId}/lessons/${createdLesson._id}/quiz/create`);
-      } else {
+      toast.success('Lesson created successfully!', {
+        description: 'Would you like to create a quiz for this lesson?',
+        action: {
+          label: 'Create Quiz',
+          onClick: () => router.push(`/instructor/courses/${courseId}/lessons/${createdLesson._id}/quiz/create`)
+        },
+        cancel: {
+          label: 'View Lessons',
+          onClick: () => router.push(`/instructor/courses/${courseId}/lessons`)
+        },
+        duration: 5000,
+      });
+      
+      // Auto redirect after 5 seconds if no action
+      setTimeout(() => {
         router.push(`/instructor/courses/${courseId}/lessons`);
-      }
+      }, 5000);
     } catch (error: any) {
       console.error('Error creating lesson:', error);
       console.error('Error response:', error.response?.data);
@@ -90,7 +100,9 @@ export default function CreateLessonForCoursePage() {
       const errorMsg = error.response?.data?.errorDetails?.[0]?.message || 
                       error.response?.data?.message || 
                       'Failed to create lesson';
-      alert(errorMsg);
+      toast.error('Failed to create lesson', {
+        description: errorMsg
+      });
     } finally {
       setSubmitting(false);
     }

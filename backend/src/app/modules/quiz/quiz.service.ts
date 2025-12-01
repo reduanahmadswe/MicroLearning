@@ -316,7 +316,7 @@ class QuizService {
 
     // Add current lesson to completed if not already there
     if (!enrollment.completedLessons.some((id: any) => id.toString() === lessonId)) {
-      enrollment.completedLessons.push(lessonId);
+      enrollment.completedLessons.push(lessonId as any);
       
       // Update progress
       const course = await Course.findById(lesson.course);

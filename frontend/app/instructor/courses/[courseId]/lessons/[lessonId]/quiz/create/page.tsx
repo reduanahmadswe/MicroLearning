@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface QuizQuestion {
   question: string;
@@ -65,7 +66,9 @@ export default function CreateQuizForCourseLessonPage() {
       });
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      alert(error.response?.data?.message || 'Failed to load data');
+      toast.error('Failed to load data', {
+        description: error.response?.data?.message
+      });
       router.push(`/instructor/courses/${courseId}/lessons`);
     } finally {
       setLoading(false);
@@ -106,7 +109,7 @@ export default function CreateQuizForCourseLessonPage() {
     e.preventDefault();
 
     if (questions.length === 0) {
-      alert('Please add at least one question');
+      toast.warning('Please add at least one question');
       return;
     }
 
@@ -114,19 +117,19 @@ export default function CreateQuizForCourseLessonPage() {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.question.trim()) {
-        alert(`Question ${i + 1}: Question text is required`);
+        toast.error(`Question ${i + 1}`, { description: 'Question text is required' });
         return;
       }
       if (!q.correctAnswer.trim()) {
-        alert(`Question ${i + 1}: Correct answer is required`);
+        toast.error(`Question ${i + 1}`, { description: 'Correct answer is required' });
         return;
       }
       if (q.type === 'mcq' && q.options.some(opt => !opt.trim())) {
-        alert(`Question ${i + 1}: All options must be filled`);
+        toast.error(`Question ${i + 1}`, { description: 'All options must be filled' });
         return;
       }
       if (!q.explanation || q.explanation.trim().length < 10) {
-        alert(`Question ${i + 1}: Explanation must be at least 10 characters`);
+        toast.error(`Question ${i + 1}`, { description: 'Explanation must be at least 10 characters' });
         return;
       }
     }
@@ -155,8 +158,10 @@ export default function CreateQuizForCourseLessonPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert('Quiz created successfully!');
-      router.push(`/instructor/courses/${courseId}/lessons`);
+      toast.success('Quiz created successfully!', {
+        description: 'Redirecting to lessons page...'
+      });
+      setTimeout(() => router.push(`/instructor/courses/${courseId}/lessons`), 1000);
     } catch (error: any) {
       console.error('Error creating quiz:', error);
       console.error('Error details:', error.response?.data);
@@ -166,7 +171,9 @@ export default function CreateQuizForCourseLessonPage() {
       const errorMsg = error.response?.data?.errorDetails?.[0]?.message || 
                       error.response?.data?.message || 
                       'Failed to create quiz';
-      alert(errorMsg);
+      toast.error('Failed to create quiz', {
+        description: errorMsg
+      });
     } finally {
       setSaving(false);
     }

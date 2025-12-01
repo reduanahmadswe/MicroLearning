@@ -19,8 +19,10 @@ export default function InstructorCoursesPage() {
   const fetchCourses = async () => {
     try {
       const response = await coursesAPI.getInstructorCourses();
+      console.log('Instructor courses response:', response.data);
       // API returns { data: { success: true, message: '...', data: [...courses] } }
       const coursesData = response.data?.data || response.data || [];
+      console.log('Courses data:', coursesData);
       setCourses(coursesData);
     } catch (error: any) {
       console.error('Error fetching courses:', error);
@@ -119,7 +121,7 @@ export default function InstructorCoursesPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <BookOpen className="w-4 h-4 text-green-600" />
                       <span className="text-gray-600">
-                        {course.lessons?.length || 0} lessons
+                        {course.lessonCount || course.lessons?.length || 0} lessons
                       </span>
                     </div>
                   </div>

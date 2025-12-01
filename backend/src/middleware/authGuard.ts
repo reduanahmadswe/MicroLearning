@@ -52,3 +52,37 @@ export const authGuard = (...allowedRoles: string[]) => {
     }
   });
 };
+
+// Optional auth - doesn't throw error if no token, just attaches user if token is valid
+export const optionalAuth = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // No token provided, continue without user
+        return next();
+      }
+
+      const token = authHeader.split(' ')[1];
+      const secret = process.env.JWT_ACCESS_SECRET;
+      
+      if (!secret) {
+        return next(); // Continue without auth if secret not configured
+      }
+
+      try {
+        const decoded = jwt.verify(token, secret) as IJwtPayload;
+        req.user = decoded;
+      } catch (error) {
+        // Invalid/expired token, continue without user
+        console.log('Optional auth: Invalid token, continuing without user');
+      }
+      
+      next();
+    } catch (error) {
+      // Any other error, just continue
+      next();
+    }
+  };
+};

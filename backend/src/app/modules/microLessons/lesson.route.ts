@@ -7,12 +7,12 @@ import {
   updateLessonValidation,
   getLessonsValidation,
 } from './lesson.validation';
-import { authGuard } from '../../../middleware/authGuard';
+import { authGuard, optionalAuth } from '../../../middleware/authGuard';
 
 const router = Router();
 
-// Public routes
-router.get('/', validateRequest(getLessonsValidation), lessonController.getLessons);
+// Public routes (with optional auth to check ownership)
+router.get('/', optionalAuth(), validateRequest(getLessonsValidation), lessonController.getLessons);
 router.get('/trending', lessonController.getTrendingLessons);
 
 // Instructor routes (must be before /:id)
