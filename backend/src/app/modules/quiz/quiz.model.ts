@@ -43,6 +43,13 @@ const quizSchema = new Schema<IQuiz>(
     lesson: {
       type: Schema.Types.ObjectId,
       ref: 'Lesson',
+      required: [true, 'Quiz must be linked to a lesson'],
+      index: true,
+    },
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      required: [true, 'Quiz must be linked to a course'],
       index: true,
     },
     topic: {
@@ -72,7 +79,7 @@ const quizSchema = new Schema<IQuiz>(
     },
     passingScore: {
       type: Number,
-      default: 60,
+      default: 80,
       min: 0,
       max: 100,
     },

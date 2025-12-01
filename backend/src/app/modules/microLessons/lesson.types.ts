@@ -27,6 +27,9 @@ export interface ILesson {
   
   // Metadata
   author: mongoose.Types.ObjectId; // User ID
+  course?: mongoose.Types.ObjectId; // Course ID
+  order: number;
+  requiredQuizScore: number;
   isPublished: boolean;
   isPremium: boolean;
   views: number;
@@ -67,6 +70,7 @@ export interface IGenerateLessonRequest {
 }
 
 export interface ILessonFilterQuery {
+  course?: string;
   topic?: string;
   difficulty?: string;
   duration?: string; // "1-5" or "5-10"

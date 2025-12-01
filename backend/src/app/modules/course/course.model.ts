@@ -55,13 +55,7 @@ const courseSchema = new Schema<ICourse>(
     thumbnailUrl: String,
     lessons: {
       type: [courseLessonSchema],
-      required: true,
-      validate: {
-        validator: function (v: any[]) {
-          return v && v.length > 0;
-        },
-        message: 'Course must have at least one lesson',
-      },
+      default: [],
     },
     estimatedDuration: {
       type: Number,

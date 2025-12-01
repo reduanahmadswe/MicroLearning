@@ -14,7 +14,17 @@ const router = Router();
 // Public routes
 router.get('/', validateRequest(getLessonsValidation), lessonController.getLessons);
 router.get('/trending', lessonController.getTrendingLessons);
-router.get('/:id', lessonController.getLessonById);
+
+// Instructor routes (must be before /:id)
+router.get('/instructor/my-lessons', authGuard('instructor', 'admin'), lessonController.getInstructorLessons);
+router.get('/instructor/analytics', authGuard('instructor', 'admin'), lessonController.getInstructorLessonAnalytics);
+
+// Specific routes before dynamic params
+router.get(
+  '/recommendations/me',
+  authGuard(),
+  lessonController.getRecommendedLessons
+);
 
 // Protected routes (authenticated users)
 router.post(
@@ -47,10 +57,10 @@ router.delete(
 router.post('/:id/like', authGuard(), lessonController.likeLesson);
 router.post('/:id/complete', authGuard(), lessonController.completeLesson);
 
-router.get(
-  '/recommendations/me',
-  authGuard(),
-  lessonController.getRecommendedLessons
-);
+// Check lesson access
+router.get('/:id/access', authGuard(), lessonController.checkLessonAccess);
+
+// Dynamic param routes (must be last)
+router.get('/:id', lessonController.getLessonById);
 
 export default router;

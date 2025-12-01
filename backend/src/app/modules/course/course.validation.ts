@@ -35,7 +35,8 @@ export const createCourseValidation = z.object({
     thumbnailUrl: z.string().url().optional(),
     lessons: z
       .array(courseLessonSchema)
-      .min(1, 'Course must have at least one lesson'),
+      .optional()
+      .default([]),
     isPremium: z.boolean().optional().default(false),
     price: z.number().min(0).optional(),
   }),

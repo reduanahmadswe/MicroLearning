@@ -78,6 +78,22 @@ const lessonSchema = new Schema<ILesson>(
       required: true,
       index: true,
     },
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      required: [true, 'Lesson must be linked to a course'],
+      index: true,
+    },
+    order: {
+      type: Number,
+      default: 0,
+    },
+    requiredQuizScore: {
+      type: Number,
+      default: 80,
+      min: 0,
+      max: 100,
+    },
     isPublished: {
       type: Boolean,
       default: false,

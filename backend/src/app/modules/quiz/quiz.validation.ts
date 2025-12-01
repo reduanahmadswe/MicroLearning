@@ -13,12 +13,17 @@ export const createQuizValidation = z.object({
   body: z.object({
     title: z.string().min(3).max(200),
     description: z.string().min(10).max(1000),
-    lesson: z.string().optional(),
+    course: z.string({
+      required_error: 'Course ID is required - must select course first',
+    }).min(1, 'Course ID is required'),
+    lesson: z.string({
+      required_error: 'Lesson ID is required - must select lesson from course',
+    }).min(1, 'Lesson ID is required'),
     topic: z.string().min(2),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
     questions: z.array(quizQuestionSchema).min(1).max(50),
     timeLimit: z.number().min(1).optional(),
-    passingScore: z.number().min(0).max(100).optional().default(60),
+    passingScore: z.number().min(0).max(100).optional().default(80),
     isPremium: z.boolean().optional().default(false),
   }),
 });

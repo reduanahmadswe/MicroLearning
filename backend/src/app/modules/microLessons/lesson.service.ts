@@ -12,6 +12,30 @@ import {
 class LessonService {
   // Create a new lesson
   async createLesson(userId: string, lessonData: any) {
+    // Verify course exists
+    const { Course } = require('../course/course.model');
+    const course = await Course.findById(lessonData.course);
+    if (!course) {
+      throw new ApiError(404, 'Course not found');
+    }
+
+    // Check if user is course author or admin
+    if (course.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only create lessons for your own courses');
+      }
+    }
+
+    // Auto-assign order if not provided
+    let order = lessonData.order;
+    if (!order) {
+      const lastLesson = await Lesson.findOne({ course: lessonData.course })
+        .sort({ order: -1 })
+        .select('order');
+      order = lastLesson ? lastLesson.order + 1 : 1;
+    }
+
     // Create the lesson
     const lesson = await Lesson.create({
       title: lessonData.title,
@@ -21,6 +45,8 @@ class LessonService {
       tags: lessonData.tags || [],
       difficulty: lessonData.difficulty,
       estimatedTime: lessonData.estimatedTime,
+      course: lessonData.course,
+      order: order,
       author: userId,
       aiGenerated: false,
       media: lessonData.videoUrl ? [{
@@ -94,6 +120,10 @@ class LessonService {
     const query: any = { isPublished: true };
 
     // Apply filters
+    if (filters.course) {
+      query.course = filters.course;
+    }
+
     if (filters.topic) {
       query.topic = { $regex: filters.topic, $options: 'i' };
     }
@@ -138,8 +168,13 @@ class LessonService {
 
     // Check completion status for each lesson if userId provided
     if (userId) {
-      const userProgress = await UserProgress.findOne({ user: userId }).lean();
-      const completedLessonIds = userProgress?.completedLessons?.map((id: any) => id.toString()) || [];
+      const lessonIds = lessons.map((l: any) => l._id);
+      const progressRecords = await UserProgress.find({ 
+        user: userId, 
+        lesson: { $in: lessonIds },
+        status: 'completed'
+      }).lean();
+      const completedLessonIds = progressRecords.map((p) => p.lesson.toString());
       
       const lessonsWithStatus = lessons.map((lesson: any) => ({
         ...lesson,
@@ -191,9 +226,12 @@ class LessonService {
     // Check if user has completed this lesson
     let isCompleted = false;
     if (userId) {
-      const userProgress = await UserProgress.findOne({ user: userId }).lean();
-      const completedLessonIds = userProgress?.completedLessons?.map((id: any) => id.toString()) || [];
-      isCompleted = completedLessonIds.includes(lesson._id.toString());
+      const userProgress = await UserProgress.findOne({ 
+        user: userId, 
+        lesson: lesson._id,
+        status: 'completed'
+      }).lean();
+      isCompleted = !!userProgress;
     }
 
     return {
@@ -326,7 +364,7 @@ class LessonService {
   }
 
   // Get recommended lessons based on user preferences
-  async getRecommendedLessons(userId: string, limit: number = 10) {
+  async getRecommendedLessons(_userId: string, limit: number = 10) {
     // TODO: Implement AI-based recommendations
     // For now, returning popular lessons in user's preferred topics
     
@@ -337,6 +375,151 @@ class LessonService {
       .lean();
 
     return lessons;
+  }
+
+  // Get instructor's lessons
+  async getInstructorLessons(userId: string) {
+    const lessons = await Lesson.find({ author: userId })
+      .populate('author', 'name profilePicture')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return lessons;
+  }
+
+  // Get instructor lesson analytics
+  async getInstructorLessonAnalytics(userId: string) {
+    const lessons = await Lesson.find({ author: userId }).lean();
+    
+    const totalLessons = lessons.length;
+    const totalViews = lessons.reduce((sum, lesson) => sum + (lesson.views || 0), 0);
+    const totalLikes = lessons.reduce((sum, lesson) => sum + (lesson.likes || 0), 0);
+    const totalCompletions = lessons.reduce((sum, lesson) => sum + (lesson.completions || 0), 0);
+    
+    // Get completion rate
+    const completionRate = totalViews > 0 ? (totalCompletions / totalViews) * 100 : 0;
+    
+    // Get lessons by difficulty
+    const byDifficulty = lessons.reduce((acc: any, lesson) => {
+      acc[lesson.difficulty] = (acc[lesson.difficulty] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Top performing lessons
+    const topLessons = lessons
+      .sort((a, b) => (b.completions || 0) - (a.completions || 0))
+      .slice(0, 5)
+      .map(lesson => ({
+        id: lesson._id,
+        title: lesson.title,
+        views: lesson.views || 0,
+        completions: lesson.completions || 0,
+        likes: lesson.likes || 0,
+      }));
+
+    return {
+      totalLessons,
+      totalViews,
+      totalLikes,
+      totalCompletions,
+      completionRate: Math.round(completionRate),
+      byDifficulty,
+      topLessons,
+    };
+  }
+
+  // Check if lesson is unlocked for user
+  async checkLessonAccess(lessonId: string, userId: string) {
+    const lesson = await Lesson.findById(lessonId);
+    
+    if (!lesson) {
+      throw new ApiError(404, 'Lesson not found');
+    }
+
+    // If lesson is not part of a course, it's always accessible
+    if (!lesson.course) {
+      return {
+        isUnlocked: true,
+        requiresPayment: lesson.isPremium,
+        message: 'Lesson is accessible',
+      };
+    }
+
+    // Import models
+    const { Course, Enrollment } = require('../course/course.model');
+    const { QuizAttempt } = require('../quiz/quiz.model');
+
+    // Get course
+    const course = await Course.findById(lesson.course).lean();
+    if (!course) {
+      throw new ApiError(404, 'Course not found');
+    }
+
+    // Check if user is enrolled
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: lesson.course,
+    }).lean();
+
+    if (!enrollment) {
+      return {
+        isUnlocked: false,
+        requiresEnrollment: true,
+        requiresPayment: course.isPremium && course.price > 0,
+        courseName: course.title,
+        message: 'You must enroll in the course first',
+      };
+    }
+
+    // Find lesson's order in course
+    const lessonInCourse = course.lessons.find(
+      (l: any) => l.lesson.toString() === lessonId
+    );
+
+    if (!lessonInCourse) {
+      throw new ApiError(400, 'Lesson is not part of this course');
+    }
+
+    // First lesson (order 1) is always unlocked
+    if (lessonInCourse.order === 1) {
+      return {
+        isUnlocked: true,
+        message: 'First lesson is always unlocked',
+      };
+    }
+
+    // Check if previous lesson is completed
+    const previousLessonOrder = lessonInCourse.order - 1;
+    const previousLesson = course.lessons.find((l: any) => l.order === previousLessonOrder);
+
+    if (!previousLesson) {
+      return {
+        isUnlocked: false,
+        message: 'Previous lesson not found',
+      };
+    }
+
+    const isPreviousCompleted = enrollment.completedLessons.some(
+      (id: any) => id.toString() === previousLesson.lesson.toString()
+    );
+
+    if (!isPreviousCompleted) {
+      // Get previous lesson details
+      const prevLessonData = await Lesson.findById(previousLesson.lesson).lean();
+      
+      return {
+        isUnlocked: false,
+        requiresPreviousCompletion: true,
+        previousLessonTitle: prevLessonData?.title || 'Previous Lesson',
+        requiredQuizScore: prevLessonData?.requiredQuizScore || 80,
+        message: `Complete the previous lesson and pass its quiz (${prevLessonData?.requiredQuizScore || 80}%+) to unlock this lesson`,
+      };
+    }
+
+    return {
+      isUnlocked: true,
+      message: 'Lesson is unlocked',
+    };
   }
 }
 

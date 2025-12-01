@@ -152,6 +152,46 @@ class LessonController {
       data: result,
     });
   });
+
+  // Get instructor's lessons
+  getInstructorLessons = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await lessonService.getInstructorLessons(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor lessons retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get instructor lesson analytics
+  getInstructorLessonAnalytics = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await lessonService.getInstructorLessonAnalytics(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor lesson analytics retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Check if lesson is unlocked for user
+  checkLessonAccess = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await lessonService.checkLessonAccess(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Lesson access status retrieved',
+      data: result,
+    });
+  });
 }
 
 export default new LessonController();

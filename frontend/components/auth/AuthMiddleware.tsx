@@ -50,9 +50,11 @@ export default function AuthMiddleware({ children }: { children: React.ReactNode
     // If user is authenticated and trying to access auth routes (login, register)
     if (hasValidAuth && isAuthRoute) {
       hasRedirected.current = true;
-      // Redirect admin to admin dashboard, others to regular dashboard
+      // Redirect based on user role
       if (user?.role === 'admin') {
         router.replace("/admin");
+      } else if (user?.role === 'instructor') {
+        router.replace("/instructor");
       } else {
         router.replace("/dashboard");
       }

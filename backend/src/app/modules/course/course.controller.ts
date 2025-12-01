@@ -135,6 +135,47 @@ class CourseController {
       data: result,
     });
   });
+
+  // Get instructor's courses
+  getInstructorCourses = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await courseService.getInstructorCourses(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor courses retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get instructor analytics
+  getInstructorAnalytics = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await courseService.getInstructorAnalytics(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor analytics retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get course students
+  getCourseStudents = catchAsync(async (req: Request, res: Response) => {
+    const { courseId } = req.params;
+    const userId = req.user?.userId as string;
+    const userRole = req.user?.role as string;
+    const result = await courseService.getCourseStudents(courseId, userId, userRole);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Course students retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new CourseController();

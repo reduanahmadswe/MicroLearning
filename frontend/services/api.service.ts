@@ -34,11 +34,14 @@ export const lessonsAPI = {
   getAllLessons: (params?: any) => api.get('/lessons', { params }),
   getLesson: (id: string) => api.get(`/lessons/${id}`),
   getLessonById: (id: string) => api.get(`/lessons/${id}`),
-  createLesson: (data: any) => api.post('/lessons', data),
+  createLesson: (data: any) => api.post('/lessons/create', data),
   updateLesson: (id: string, data: any) => api.put(`/lessons/${id}`, data),
   deleteLesson: (id: string) => api.delete(`/lessons/${id}`),
   completeLesson: (id: string) => api.post(`/lessons/${id}/complete`),
   bookmarkLesson: (id: string) => api.post(`/lessons/${id}/bookmark`),
+  // Instructor APIs
+  getInstructorLessons: () => api.get('/lessons/instructor/my-lessons'),
+  getInstructorAnalytics: () => api.get('/lessons/instructor/analytics'),
 };
 
 // AI APIs
@@ -114,7 +117,11 @@ export const coursesAPI = {
   enrollInCourse: (id: string) => api.post(`/courses/${id}/enroll`),
   enrollCourse: (id: string) => api.post(`/courses/${id}/enroll`),
   getMyCourses: () => api.get('/courses/my-courses'),
-  getEnrolledCourses: () => api.get('/courses/enrolled'),
+  getEnrolledCourses: () => api.get('/courses/enrollments/me'),
+  // Instructor APIs
+  getInstructorCourses: () => api.get('/courses/instructor/my-courses'),
+  getInstructorAnalytics: () => api.get('/courses/instructor/analytics'),
+  getCourseStudents: (courseId: string) => api.get(`/courses/instructor/${courseId}/students`),
 };
 
 // Leaderboard APIs

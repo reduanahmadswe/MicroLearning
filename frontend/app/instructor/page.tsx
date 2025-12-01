@@ -37,19 +37,41 @@ export default function InstructorDashboard() {
   const fetchData = async () => {
     try {
       // Fetch instructor's lessons
-      const lessonsRes = await lessonsAPI.getLessons({ instructor: 'me' });
-      setLessons(lessonsRes.data || []);
+      const lessonsRes = await lessonsAPI.getInstructorLessons();
+      console.log('Lessons response:', lessonsRes);
+      const lessonsList = lessonsRes.data?.data || lessonsRes.data || [];
+      setLessons(lessonsList);
 
       // Fetch instructor's courses
-      const coursesRes = await coursesAPI.getCourses();
-      setCourses(coursesRes.data || []);
+      const coursesRes = await coursesAPI.getInstructorCourses();
+      console.log('Courses response:', coursesRes);
+      const coursesList = coursesRes.data?.data || coursesRes.data || [];
+      setCourses(coursesList);
+
+      // Fetch instructor analytics
+      let totalStudents = 0;
+      let totalViews = 0;
+
+      try {
+        const lessonsAnalytics = await lessonsAPI.getInstructorAnalytics();
+        totalViews = lessonsAnalytics.data?.data?.totalViews || lessonsAnalytics.data?.totalViews || 0;
+      } catch (err) {
+        console.log('Analytics not available yet');
+      }
+
+      try {
+        const coursesAnalytics = await coursesAPI.getInstructorAnalytics();
+        totalStudents = coursesAnalytics.data?.data?.totalStudents || coursesAnalytics.data?.totalStudents || 0;
+      } catch (err) {
+        console.log('Course analytics not available yet');
+      }
 
       // Calculate stats
       setStats({
-        totalLessons: lessonsRes.data?.length || 0,
-        totalCourses: coursesRes.data?.length || 0,
-        totalStudents: 0, // Will be calculated from enrollments
-        totalViews: 0, // Will be calculated from analytics
+        totalLessons: Array.isArray(lessonsList) ? lessonsList.length : 0,
+        totalCourses: Array.isArray(coursesList) ? coursesList.length : 0,
+        totalStudents: totalStudents,
+        totalViews: totalViews,
       });
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -259,10 +281,10 @@ export default function InstructorDashboard() {
                         {course.description}
                       </p>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">{course.enrollmentCount || 0} students</span>
-                        <Link href={`/instructor/courses/${course._id}/edit`}>
+                        <span className="text-gray-600">{course.enrolledCount || 0} students</span>
+                        <Link href={`/instructor/courses/${course._id}/lessons`}>
                           <Button variant="ghost" size="sm">
-                            <Edit className="w-4 h-4" />
+                            Manage Lessons
                           </Button>
                         </Link>
                       </div>

@@ -39,6 +39,15 @@ export const createLessonValidation = z.object({
       })
       .min(1, 'Estimated time must be at least 1 minute')
       .max(60, 'Estimated time cannot exceed 60 minutes'),
+    course: z
+      .string({
+        required_error: 'Course ID is required - lessons must be created under a course',
+      })
+      .min(1, 'Course ID is required'),
+    order: z
+      .number()
+      .min(1, 'Order must be at least 1')
+      .optional(),
     media: z.array(mediaSchema).optional().default([]),
     thumbnailUrl: z.string().url().optional(),
     keyPoints: z.array(z.string()).optional().default([]),
@@ -86,6 +95,7 @@ export const updateLessonValidation = z.object({
 
 export const getLessonsValidation = z.object({
   query: z.object({
+    course: z.string().optional(),
     topic: z.string().optional(),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     duration: z.string().optional(), // "1-5" or "5-10"

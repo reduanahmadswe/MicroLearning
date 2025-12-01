@@ -8,8 +8,15 @@ const router = Router();
 
 // Public routes
 router.get('/', courseController.getCourses);
-router.get('/:id', courseController.getCourseById);
-router.get('/:id/statistics', courseController.getCourseStatistics);
+
+// Instructor routes (must come before /:id routes)
+router.get('/instructor/my-courses', authGuard('instructor', 'admin'), courseController.getInstructorCourses);
+router.get('/instructor/analytics', authGuard('instructor', 'admin'), courseController.getInstructorAnalytics);
+router.get('/instructor/:courseId/students', authGuard('instructor', 'admin'), courseController.getCourseStudents);
+
+// Enrollment routes (before /:id)
+router.get('/enrollments/me', authGuard(), courseController.getMyEnrollments);
+router.post('/progress/update', authGuard(), courseController.updateProgress);
 
 // Protected routes
 router.post(
@@ -28,9 +35,11 @@ router.put(
 
 router.delete('/:id', authGuard('instructor', 'admin'), courseController.deleteCourse);
 
-// Enrollment routes
+// Enrollment actions
 router.post('/:id/enroll', authGuard(), courseController.enrollInCourse);
-router.get('/enrollments/me', authGuard(), courseController.getMyEnrollments);
-router.post('/progress/update', authGuard(), courseController.updateProgress);
+
+// Dynamic routes (must be last)
+router.get('/:id/statistics', courseController.getCourseStatistics);
+router.get('/:id', courseController.getCourseById);
 
 export default router;

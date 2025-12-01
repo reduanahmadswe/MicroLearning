@@ -39,6 +39,8 @@ export interface Lesson {
   isCompleted?: boolean;
   audioUrl?: string;
   thumbnailUrl?: string;
+  course?: string; // Course ID reference
+  order?: number; // Lesson order in course
   media?: Array<{
     type: 'video' | 'audio' | 'image';
     url: string;

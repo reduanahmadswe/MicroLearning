@@ -13,6 +13,7 @@ export interface IQuiz {
   title: string;
   description: string;
   lesson?: mongoose.Types.ObjectId;
+  course: mongoose.Types.ObjectId;
   topic: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   questions: IQuizQuestion[];
@@ -53,6 +54,7 @@ export interface ICreateQuizRequest {
   title: string;
   description: string;
   lesson?: string;
+  course: string;
   topic: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   questions: IQuizQuestion[];

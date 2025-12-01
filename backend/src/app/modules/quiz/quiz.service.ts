@@ -2,6 +2,7 @@ import ApiError from '../../../utils/ApiError';
 import { Quiz, QuizAttempt } from './quiz.model';
 import User from '../auth/auth.model';
 import Lesson from '../microLessons/lesson.model';
+import { Course, Enrollment } from '../course/course.model';
 import {
   ICreateQuizRequest,
   IGenerateQuizRequest,
@@ -11,9 +12,41 @@ import {
 class QuizService {
   // Create quiz
   async createQuiz(userId: string, quizData: ICreateQuizRequest) {
+    // Verify course exists
+    const { Course } = require('../course/course.model');
+    const course = await Course.findById((quizData as any).course);
+    if (!course) {
+      throw new ApiError(404, 'Course not found');
+    }
+
+    // Verify lesson exists and belongs to the course
+    const lesson = await Lesson.findById(quizData.lesson);
+    if (!lesson) {
+      throw new ApiError(404, 'Lesson not found');
+    }
+    
+    if (lesson.course?.toString() !== (quizData as any).course) {
+      throw new ApiError(400, 'Lesson does not belong to the selected course');
+    }
+
+    // Check if user is course author or admin
+    if (course.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only create quizzes for your own courses');
+      }
+    }
+
+    // Check if quiz already exists for this lesson
+    const existingQuiz = await Quiz.findOne({ lesson: quizData.lesson });
+    if (existingQuiz) {
+      throw new ApiError(400, 'A quiz already exists for this lesson. Please update the existing quiz instead.');
+    }
+
     const quiz = await Quiz.create({
       ...quizData,
       author: userId,
+      course: (quizData as any).course, // Ensure course is saved
     });
 
     return quiz;
@@ -180,6 +213,11 @@ class QuizService {
     // Award XP if passed
     if (passed) {
       await this.awardQuizXP(userId, earnedPoints);
+      
+      // Unlock next lesson if this quiz is linked to a lesson
+      if (quiz.lesson) {
+        await this.unlockNextLesson(userId, quiz.lesson.toString());
+      }
     }
 
     return {
@@ -195,6 +233,7 @@ class QuizService {
         totalPoints,
         correctAnswers: gradedAnswers.filter(a => a.isCorrect).length,
         totalQuestions: quiz.questions.length,
+        nextLessonUnlocked: passed && !!quiz.lesson,
       },
     };
   }
@@ -260,6 +299,48 @@ class QuizService {
     user.level = Math.floor(user.xp / 100) + 1;
     
     await user.save();
+  }
+
+  // Helper: Unlock next lesson after passing quiz
+  private async unlockNextLesson(userId: string, lessonId: string) {
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson || !lesson.course) return;
+    
+    // Find enrollment
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: lesson.course,
+    });
+
+    if (!enrollment) return;
+
+    // Add current lesson to completed if not already there
+    if (!enrollment.completedLessons.some((id: any) => id.toString() === lessonId)) {
+      enrollment.completedLessons.push(lessonId);
+      
+      // Update progress
+      const course = await Course.findById(lesson.course);
+      if (course) {
+        const totalLessons = course.lessons.length;
+        const completedCount = enrollment.completedLessons.length;
+        enrollment.progress = Math.round((completedCount / totalLessons) * 100);
+        
+        // Mark course as completed if 100%
+        if (enrollment.progress === 100 && !enrollment.completedAt) {
+          enrollment.completedAt = new Date();
+          
+          // Award completion XP
+          const user = await User.findById(userId);
+          if (user) {
+            user.xp += 200;
+            user.level = Math.floor(user.xp / 100) + 1;
+            await user.save();
+          }
+        }
+      }
+      
+      await enrollment.save();
+    }
   }
 }
 
