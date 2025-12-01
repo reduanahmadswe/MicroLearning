@@ -46,6 +46,18 @@ const commentSchema = new Schema<IComment>(
       type: Boolean,
       default: false,
     },
+    isApproved: {
+      type: Boolean,
+      default: true,
+    },
+    isFlagged: {
+      type: Boolean,
+      default: false,
+    },
+    moderationReason: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

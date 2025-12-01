@@ -15,13 +15,15 @@ export interface IMarketplaceItem {
   features: string[];
   category: string;
   tags: string[];
-  status: 'draft' | 'published' | 'suspended';
+  status: 'draft' | 'published' | 'suspended' | 'pending' | 'rejected';
   salesCount: number;
   revenue: number;
   rating: number;
   reviewCount: number;
   isPublished: boolean;
   publishedAt?: Date;
+  isReported?: boolean;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }

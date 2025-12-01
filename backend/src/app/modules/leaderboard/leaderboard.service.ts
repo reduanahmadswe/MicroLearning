@@ -1,6 +1,7 @@
 import User from '../auth/auth.model';
 import UserProgress from '../progressTracking/progress.model';
 import Lesson from '../microLessons/lesson.model';
+import Notification from '../notification/notification.model';
 import { ILeaderboardEntry } from './leaderboard.types';
 import ApiError from '../../../utils/ApiError';
 
@@ -186,6 +187,61 @@ class LeaderboardService {
       userRank: rank,
       surroundingPlayers,
       totalPlayers: leaderboard.length,
+    };
+  }
+
+  // Admin: Reset leaderboard
+  async resetLeaderboard(type: string, topic?: string) {
+    if (type === 'global') {
+      // Reset all users' XP
+      await User.updateMany({}, { xp: 0, level: 1 });
+    } else if (type === 'topic' && topic) {
+      // Reset progress for specific topic
+      const lessons = await Lesson.find({ topic: new RegExp(topic, 'i') }).select('_id');
+      const lessonIds = lessons.map((l) => l._id);
+      await UserProgress.deleteMany({ lesson: { $in: lessonIds } });
+    }
+
+    return { message: 'Leaderboard reset successfully' };
+  }
+
+  // Admin: Adjust user score
+  async adjustUserScore(userId: string, xpChange: number, reason: string) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    user.xp = Math.max(0, user.xp + xpChange);
+    // Recalculate level based on XP
+    user.level = Math.floor(user.xp / 1000) + 1;
+    await user.save();
+
+    // Create notification
+    await Notification.create({
+      user: userId,
+      type: 'system',
+      title: 'Score Adjustment',
+      message: `Your score has been adjusted by ${xpChange} XP. Reason: ${reason}`,
+    });
+
+    return user;
+  }
+
+  // Admin: Get leaderboard statistics
+  async getLeaderboardStats() {
+    const [totalUsers, activeUsers, topPerformers, avgXP] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ isActive: true }),
+      User.find({ isActive: true }).sort({ xp: -1 }).limit(10).select('name xp level'),
+      User.aggregate([{ $match: { isActive: true } }, { $group: { _id: null, avgXP: { $avg: '$xp' } } }]),
+    ]);
+
+    return {
+      totalUsers,
+      activeUsers,
+      topPerformers,
+      averageXP: avgXP[0]?.avgXP || 0,
     };
   }
 }

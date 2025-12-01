@@ -123,6 +123,78 @@ const getChallengeStats = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Admin: Get all challenges
+const getAllChallengesAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { page, limit, status, type } = req.query;
+  const result = await ChallengeService.getAllChallengesAdmin({
+    page: page ? parseInt(page as string) : 1,
+    limit: limit ? parseInt(limit as string) : 20,
+    status: status as string,
+    type: type as string,
+  });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'All challenges retrieved successfully',
+    data: result,
+  });
+});
+
+// Admin: Update challenge
+const updateChallenge = catchAsync(async (req: Request, res: Response) => {
+  const { challengeId } = req.params;
+  const result = await ChallengeService.updateChallenge(challengeId, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Challenge updated successfully',
+    data: result,
+  });
+});
+
+// Admin: Delete challenge
+const deleteChallenge = catchAsync(async (req: Request, res: Response) => {
+  const { challengeId } = req.params;
+  await ChallengeService.deleteChallenge(challengeId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Challenge deleted successfully',
+    data: null,
+  });
+});
+
+// Admin: Create quiz battle
+const createQuizBattle = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChallengeService.createQuizBattle(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: 'Quiz battle created successfully',
+    data: result,
+  });
+});
+
+// Admin: Get quiz battles
+const getQuizBattles = catchAsync(async (req: Request, res: Response) => {
+  const { page, limit } = req.query;
+  const result = await ChallengeService.getQuizBattles({
+    page: page ? parseInt(page as string) : 1,
+    limit: limit ? parseInt(limit as string) : 20,
+  });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Quiz battles retrieved successfully',
+    data: result,
+  });
+});
+
 export const ChallengeController = {
   createChallenge,
   getDailyChallenge,
@@ -132,4 +204,10 @@ export const ChallengeController = {
   respondToChallenge,
   getMyChallenges,
   getChallengeStats,
+  // Admin methods
+  getAllChallengesAdmin,
+  updateChallenge,
+  deleteChallenge,
+  createQuizBattle,
+  getQuizBattles,
 };

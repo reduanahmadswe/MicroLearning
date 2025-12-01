@@ -86,8 +86,8 @@ const marketplaceItemSchema = new Schema<IMarketplaceItem>(
     }],
     status: {
       type: String,
-      enum: ['draft', 'published', 'suspended'],
-      default: 'draft',
+      enum: ['draft', 'published', 'suspended', 'pending', 'rejected'],
+      default: 'pending',
       index: true,
     },
     salesCount: {
@@ -117,6 +117,14 @@ const marketplaceItemSchema = new Schema<IMarketplaceItem>(
       index: true,
     },
     publishedAt: Date,
+    isReported: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    rejectionReason: {
+      type: String,
+    },
   },
   {
     timestamps: true,

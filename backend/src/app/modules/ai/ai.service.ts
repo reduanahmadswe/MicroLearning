@@ -57,8 +57,8 @@ const makeOpenAIRequest = async (
   temperature: number = AI_CONFIG.defaultTemperature,
   maxTokens: number = AI_CONFIG.defaultMaxTokens
 ): Promise<IOpenAIResponse> => {
-  if (!AI_CONFIG.openai.apiKey) {
-    throw new ApiError(500, 'OpenAI API key not configured');
+  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
+    throw new ApiError(500, 'OpenAI API key not configured. Please set OPENAI_API_KEY in .env file or use AI_PROVIDER=mock for testing.');
   }
 
   try {
@@ -126,6 +126,12 @@ export const generateLesson = async (
   userId: Types.ObjectId,
   data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
+  // Use mock service if no API key configured
+  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
+    const mockService = await import('./ai.mock.service');
+    return mockService.generateMockLesson(userId, data);
+  }
+
   const systemPrompt = `You are an expert educational content creator specializing in micro-learning. 
 Create concise, engaging, and well-structured lessons that are easy to understand and remember.
 Focus on clarity, practical examples, and actionable insights.`;
@@ -199,6 +205,12 @@ export const generateQuiz = async (
   userId: Types.ObjectId,
   data: IGenerateQuizRequest
 ): Promise<IGeneratedQuiz> => {
+  // Use mock service if no API key configured
+  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
+    const mockService = await import('./ai.mock.service');
+    return mockService.generateMockQuiz(userId, data);
+  }
+
   const systemPrompt = `You are an expert quiz creator for educational platforms.
 Create challenging yet fair questions that test understanding, not just memorization.
 Include clear explanations for each answer to promote learning.`;
@@ -282,6 +294,12 @@ export const generateFlashcards = async (
   userId: Types.ObjectId,
   data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
+  // Use mock service if no API key configured
+  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
+    const mockService = await import('./ai.mock.service');
+    return mockService.generateMockFlashcards(userId, data);
+  }
+
   const systemPrompt = `You are an expert at creating effective flashcards for spaced repetition learning.
 Create concise cards with clear questions and comprehensive answers.
 Focus on one concept per card for optimal memorization.`;
@@ -360,6 +378,12 @@ Format your response as a JSON object:
  * AI Chat Tutor
  */
 export const chat = async (userId: Types.ObjectId, data: IChatRequest): Promise<IChatResponse> => {
+  // Use mock service if no API key configured
+  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
+    const mockService = await import('./ai.mock.service');
+    return mockService.generateMockChat(userId, data);
+  }
+
   let session;
 
   // Get or create chat session

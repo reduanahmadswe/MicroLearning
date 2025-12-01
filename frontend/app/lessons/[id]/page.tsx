@@ -15,12 +15,18 @@ import {
   ChevronLeft,
   Star,
   User,
+  Play,
+  FileQuestion,
+  Video as VideoIcon,
+  Award,
+  Trophy,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { lessonsAPI, bookmarkAPI, commentAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { Lesson } from '@/types';
+import VideoPlayer from '@/components/VideoPlayer';
 
 export default function LessonDetailPage() {
   const router = useRouter();
@@ -58,7 +64,7 @@ export default function LessonDetailPage() {
 
   const loadComments = async () => {
     try {
-      const response = await commentAPI.getComments({ lessonId, limit: 20 });
+      const response = await commentAPI.getLessonComments(lessonId);
       setComments(response.data.data || []);
     } catch (error: any) {
       console.error('Failed to load comments:', error);
@@ -68,13 +74,22 @@ export default function LessonDetailPage() {
   const handleComplete = async () => {
     try {
       setCompleting(true);
-      await lessonsAPI.completeLesson(lessonId);
-      toast.success('Lesson completed! +50 XP');
+      const response = await lessonsAPI.completeLesson(lessonId);
+      const xpEarned = response.data.data?.xpEarned || 50;
+      toast.success(`🎉 Lesson completed! +${xpEarned} XP earned`, {
+        duration: 4000,
+      });
       if (lesson) {
-        setLesson({ ...lesson });
+        setLesson({ ...lesson, isCompleted: true });
       }
+      // Reload page to update stats
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to complete lesson');
+      const errorMsg = error?.response?.data?.message || 'Failed to complete lesson';
+      toast.error(errorMsg);
+      console.error('Complete lesson error:', error);
     } finally {
       setCompleting(false);
     }
@@ -214,6 +229,15 @@ export default function LessonDetailPage() {
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{lesson.title}</h1>
                 <p className="text-gray-600">{lesson.summary}</p>
+                
+                {/* Completed Badge */}
+                {lesson.isCompleted && (
+                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Lesson Completed</span>
+                    <Trophy className="w-5 h-5" />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -253,6 +277,59 @@ export default function LessonDetailPage() {
           </CardContent>
         </Card>
 
+        {/* Video Player (if available) */}
+        {lesson.media && lesson.media.some(m => m.type === 'video') && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Play className="w-5 h-5 text-blue-600" />
+                Video Lesson
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                Watch the video to understand the concepts better
+              </p>
+            </CardHeader>
+            <CardContent className="p-4">
+              {lesson.media
+                .filter(m => m.type === 'video')
+                .map((media, index) => (
+                  <VideoPlayer
+                    key={index}
+                    src={media.url}
+                    poster={lesson.thumbnailUrl || media.thumbnail}
+                    onEnded={() => {
+                      toast.success('🎉 Video completed! +30 XP earned');
+                      handleComplete();
+                    }}
+                    onProgress={(progress) => {
+                      // Track video progress for analytics
+                      if (progress > 90) {
+                        console.log('Video almost complete:', progress);
+                      }
+                    }}
+                  />
+                ))}
+              
+              {/* Video Info */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1 text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      {lesson.media.find(m => m.type === 'video')?.duration || lesson.estimatedTime} min
+                    </span>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-600">HD Quality</span>
+                  </div>
+                  <div className="text-gray-600">
+                    💡 Tip: Use playback speed controls to learn faster
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Lesson Content */}
         <Card className="mb-6">
           <CardContent className="p-6">
@@ -281,31 +358,126 @@ export default function LessonDetailPage() {
           </Card>
         )}
 
-        {/* Complete Lesson */}
-        <Card className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold mb-1">Mark as Complete</h3>
-                <p className="text-white/90 text-sm">Earn 50 XP by completing this lesson</p>
-              </div>
-              <Button
-                onClick={handleComplete}
-                disabled={completing}
-                className="bg-white text-blue-600 hover:bg-gray-100"
-              >
-                {completing ? (
-                  'Completing...'
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Complete
-                  </>
-                )}
-              </Button>
+        {/* Quick Actions - Quiz, Video, Certificate */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Related Resources</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Quiz */}
+              <Link href={`/quiz?lessonId=${lessonId}`}>
+                <div className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-400 transition-all cursor-pointer group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                      <FileQuestion className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Take Quiz</h3>
+                      <p className="text-xs text-gray-600">Test your knowledge</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Video */}
+              <Link href={`/videos?lessonId=${lessonId}`}>
+                <div className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all cursor-pointer group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                      <VideoIcon className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Watch Video</h3>
+                      <p className="text-xs text-gray-600">Visual learning</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Certificate */}
+              {lesson.isCompleted ? (
+                <Link href={`/certificates?lessonId=${lessonId}`}>
+                  <div className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-400 transition-all cursor-pointer group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                        <Award className="w-6 h-6 text-yellow-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Certificate</h3>
+                        <p className="text-xs text-gray-600">Download yours</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50 opacity-60 cursor-not-allowed">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                      <Award className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-500">Certificate</h3>
+                      <p className="text-xs text-gray-500">Complete to unlock</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Complete Lesson */}
+        {!lesson.isCompleted && (
+          <Card className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold mb-1">Mark as Complete</h3>
+                  <p className="text-white/90 text-sm">Earn 50 XP by completing this lesson</p>
+                </div>
+                <Button
+                  onClick={handleComplete}
+                  disabled={completing}
+                  className="bg-white text-blue-600 hover:bg-gray-100"
+                >
+                  {completing ? (
+                    'Completing...'
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Complete
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        {lesson.isCompleted && (
+          <Card className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                    <Trophy className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-1">Lesson Completed! 🎉</h3>
+                    <p className="text-white/90 text-sm">You've mastered this topic. Keep learning!</p>
+                  </div>
+                </div>
+                <Link href={`/certificates?lessonId=${lessonId}`}>
+                  <Button className="bg-white text-green-600 hover:bg-gray-100">
+                    <Award className="w-4 h-4 mr-2" />
+                    Get Certificate
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Comments Section */}
         <Card>

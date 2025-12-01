@@ -1,5 +1,8 @@
 import ApiError from '../../../utils/ApiError';
 import Lesson from './lesson.model';
+import User from '../auth/auth.model';
+import UserProgress from '../progressTracking/progress.model';
+import { Quiz } from '../quiz/quiz.model';
 import {
   ICreateLessonRequest,
   IGenerateLessonRequest,
@@ -8,12 +11,45 @@ import {
 
 class LessonService {
   // Create a new lesson
-  async createLesson(userId: string, lessonData: ICreateLessonRequest) {
+  async createLesson(userId: string, lessonData: any) {
+    // Create the lesson
     const lesson = await Lesson.create({
-      ...lessonData,
+      title: lessonData.title,
+      description: lessonData.description || lessonData.content?.substring(0, 200),
+      content: lessonData.content,
+      topic: lessonData.topic,
+      tags: lessonData.tags || [],
+      difficulty: lessonData.difficulty,
+      estimatedTime: lessonData.estimatedTime,
       author: userId,
       aiGenerated: false,
+      media: lessonData.videoUrl ? [{
+        type: 'video',
+        url: lessonData.videoUrl,
+        title: `${lessonData.title} - Video`,
+      }] : [],
     });
+
+    // Create quiz if questions provided
+    if (lessonData.quizQuestions && lessonData.quizQuestions.length > 0) {
+      const quizData = {
+        title: `${lessonData.title} - Quiz`,
+        description: `Test your knowledge on ${lessonData.title}`,
+        lesson: lesson._id,
+        difficulty: lessonData.difficulty,
+        passingScore: lessonData.passingScore || 70,
+        questions: lessonData.quizQuestions.map((q: any) => ({
+          question: q.question,
+          type: 'mcq',
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation || '',
+          points: 10,
+        })),
+      };
+
+      await Quiz.create(quizData);
+    }
 
     return lesson;
   }
@@ -54,7 +90,7 @@ class LessonService {
   }
 
   // Get lessons with filters and pagination
-  async getLessons(filters: ILessonFilterQuery, page: number, limit: number) {
+  async getLessons(filters: ILessonFilterQuery, page: number, limit: number, userId?: string) {
     const query: any = { isPublished: true };
 
     // Apply filters
@@ -100,6 +136,27 @@ class LessonService {
       Lesson.countDocuments(query),
     ]);
 
+    // Check completion status for each lesson if userId provided
+    if (userId) {
+      const userProgress = await UserProgress.findOne({ user: userId }).lean();
+      const completedLessonIds = userProgress?.completedLessons?.map((id: any) => id.toString()) || [];
+      
+      const lessonsWithStatus = lessons.map((lesson: any) => ({
+        ...lesson,
+        isCompleted: completedLessonIds.includes(lesson._id.toString()),
+      }));
+
+      return {
+        lessons: lessonsWithStatus,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
     return {
       lessons,
       pagination: {
@@ -131,7 +188,18 @@ class LessonService {
     lesson.views += 1;
     await lesson.save();
 
-    return lesson;
+    // Check if user has completed this lesson
+    let isCompleted = false;
+    if (userId) {
+      const userProgress = await UserProgress.findOne({ user: userId }).lean();
+      const completedLessonIds = userProgress?.completedLessons?.map((id: any) => id.toString()) || [];
+      isCompleted = completedLessonIds.includes(lesson._id.toString());
+    }
+
+    return {
+      ...lesson.toObject(),
+      isCompleted,
+    };
   }
 
   // Update lesson
@@ -187,7 +255,9 @@ class LessonService {
   }
 
   // Mark lesson as completed
-  async completeLesson(lessonId: string) {
+  async completeLesson(lessonId: string, userId: string) {
+    console.log('Service - Complete lesson:', { lessonId, userId });
+    
     const lesson = await Lesson.findByIdAndUpdate(
       lessonId,
       { $inc: { completions: 1 } },
@@ -195,10 +265,53 @@ class LessonService {
     );
 
     if (!lesson) {
+      console.error('Lesson not found:', lessonId);
       throw new ApiError(404, 'Lesson not found');
     }
 
-    return lesson;
+    console.log('Lesson found, awarding XP to user:', userId);
+
+    // Award XP to user
+    const xpAmount = 50;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { 
+        $inc: { 
+          xp: xpAmount
+        } 
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      console.error('User not found:', userId);
+      throw new ApiError(404, 'User not found');
+    }
+
+    console.log('User XP updated:', { oldXP: updatedUser.xp - xpAmount, newXP: updatedUser.xp });
+
+    // Update user progress
+    const progress = await UserProgress.findOneAndUpdate(
+      { user: userId },
+      {
+        $inc: { 
+          totalXP: xpAmount,
+          lessonsCompleted: 1 
+        },
+        $addToSet: { completedLessons: lessonId }
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log('Progress updated:', progress);
+
+    return { 
+      lesson, 
+      xpEarned: xpAmount,
+      totalXP: updatedUser.xp,
+      level: updatedUser.level
+    };
   }
 
   // Get trending lessons

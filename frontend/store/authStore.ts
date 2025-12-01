@@ -10,6 +10,8 @@ interface User {
   xp?: number;
   level?: number;
   streak?: number;
+  totalLessonsCompleted?: number;
+  totalQuizzesCompleted?: number;
 }
 
 interface AuthState {
@@ -23,18 +25,22 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
       login: (user, token) => {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("token", token);
+          localStorage.setItem("user", JSON.stringify(user));
+        }
         set({ user, token, isAuthenticated: true });
       },
       logout: () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
         set({ user: null, token: null, isAuthenticated: false });
       },
       updateUser: (userData) =>
@@ -44,6 +50,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          return JSON.parse(str);
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => localStorage.removeItem(name),
+      },
     }
   )
 );

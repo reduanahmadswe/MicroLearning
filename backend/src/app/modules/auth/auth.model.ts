@@ -120,6 +120,19 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: Date,
     },
     
+    // Seller Verification & Moderation
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
+    suspensionReason: {
+      type: String,
+    },
+    
     refreshToken: {
       type: String,
       select: false,

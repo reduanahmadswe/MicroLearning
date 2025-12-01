@@ -264,6 +264,181 @@ class AdminService {
       recentCourses: courses,
     };
   }
+
+  // Get system statistics
+  async getSystemStats() {
+    const [totalUsers, activeUsers, totalRevenue, apiCalls] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ 'streak.lastActivityDate': { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }),
+      this.getTotalRevenue(),
+      this.getAPICallsCount(),
+    ]);
+
+    return {
+      totalUsers,
+      activeUsers,
+      inactiveUsers: totalUsers - activeUsers,
+      totalRevenue,
+      apiCalls,
+      uptime: process.uptime(),
+      memoryUsage: process.memoryUsage(),
+    };
+  }
+
+  // Get performance metrics
+  async getPerformanceMetrics() {
+    return {
+      cpuUsage: process.cpuUsage(),
+      memoryUsage: process.memoryUsage(),
+      uptime: process.uptime(),
+      nodeVersion: process.version,
+      platform: process.platform,
+    };
+  }
+
+  // Get error logs
+  async getErrorLogs(options: { page: number; limit: number }) {
+    // In production, this would fetch from error logging service (e.g., Sentry, LogRocket)
+    // For now, return mock data
+    return {
+      logs: [],
+      pagination: {
+        currentPage: options.page,
+        totalPages: 0,
+        totalItems: 0,
+      },
+      message: 'Error logging service not configured',
+    };
+  }
+
+  // Get database health
+  async getDatabaseHealth() {
+    const mongoose = await import('mongoose');
+    const db = mongoose.connection.db;
+
+    if (!db) {
+      return { status: 'disconnected', collections: 0 };
+    }
+
+    const collections = await db.listCollections().toArray();
+    const stats = await db.stats();
+
+    return {
+      status: 'connected',
+      collections: collections.length,
+      dataSize: stats.dataSize,
+      indexSize: stats.indexSize,
+      storageSize: stats.storageSize,
+    };
+  }
+
+  // Get comments for moderation
+  async getCommentsForModeration(options: { status?: string; page: number; limit: number }) {
+    const Comment = (await import('../comment/comment.model')).default;
+    const { status, page, limit } = options;
+    const skip = (page - 1) * limit;
+
+    const query: any = {};
+    if (status === 'flagged') query.isFlagged = true;
+    if (status === 'pending') query.isApproved = false;
+
+    const [comments, total] = await Promise.all([
+      Comment.find(query)
+        .populate('user', 'name email profilePicture')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Comment.countDocuments(query),
+    ]);
+
+    return {
+      comments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+      },
+    };
+  }
+
+  // Moderate comment
+  async moderateComment(commentId: string, action: string, reason?: string) {
+    const Comment = (await import('../comment/comment.model')).default;
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new ApiError(404, 'Comment not found');
+    }
+
+    if (action === 'approve') {
+      comment.isApproved = true;
+      comment.isFlagged = false;
+    } else if (action === 'reject' || action === 'delete') {
+      comment.isApproved = false;
+      comment.moderationReason = reason;
+    }
+
+    await comment.save();
+    return comment;
+  }
+
+  // Get flagged content
+  async getFlaggedContent(options: { page: number; limit: number }) {
+    const Comment = (await import('../comment/comment.model')).default;
+    const { page, limit } = options;
+    const skip = (page - 1) * limit;
+
+    const [comments, total] = await Promise.all([
+      Comment.find({ isFlagged: true })
+        .populate('user', 'name email profilePicture')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Comment.countDocuments({ isFlagged: true }),
+    ]);
+
+    return {
+      flaggedComments: comments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+      },
+    };
+  }
+
+  // Remove spam content
+  async removeSpamContent(contentId: string, contentType: string) {
+    if (contentType === 'comment') {
+      const Comment = (await import('../comment/comment.model')).default;
+      await Comment.findByIdAndDelete(contentId);
+    } else if (contentType === 'post') {
+      const Post = (await import('../forum/forum.model')).Post;
+      await Post.findByIdAndDelete(contentId);
+    }
+
+    return { message: 'Spam content removed successfully' };
+  }
+
+  // Helper: Get total revenue
+  private async getTotalRevenue() {
+    try {
+      const Purchase = (await import('../marketplace/marketplace.model')).Purchase;
+      const result = await Purchase.aggregate([
+        { $match: { paymentStatus: 'completed' } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]);
+      return result[0]?.total || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  // Helper: Get API calls count (mock for now)
+  private async getAPICallsCount() {
+    // In production, integrate with API monitoring service
+    return Math.floor(Math.random() * 100000);
+  }
 }
 
 export default new AdminService();

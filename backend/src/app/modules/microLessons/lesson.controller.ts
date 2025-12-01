@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import catchAsync from '../../../utils/catchAsync';
 import sendResponse from '../../../utils/sendResponse';
+import ApiError from '../../../utils/ApiError';
 import lessonService from './lesson.service';
 
 class LessonController {
@@ -34,8 +35,9 @@ class LessonController {
   getLessons = catchAsync(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const userId = req.user?.userId;
 
-    const result = await lessonService.getLessons(req.query, page, limit);
+    const result = await lessonService.getLessons(req.query, page, limit, userId);
 
     sendResponse(res, {
       statusCode: 200,
@@ -104,12 +106,22 @@ class LessonController {
   // Complete lesson
   completeLesson = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await lessonService.completeLesson(id);
+    const userId = req.user?.userId;
+    
+    console.log('Complete lesson request:', { id, userId, user: req.user });
+    
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
+    
+    const result = await lessonService.completeLesson(id, userId);
+    
+    console.log('Lesson completion result:', result);
 
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: 'Lesson marked as completed',
+      message: `Lesson completed! +${result.xpEarned} XP earned`,
       data: result,
     });
   });

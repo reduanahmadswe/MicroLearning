@@ -37,6 +37,11 @@ export interface IUser {
   isPremium: boolean;
   premiumExpiresAt?: Date;
   
+  // Seller Verification & Moderation
+  isVerified?: boolean;
+  isSuspended?: boolean;
+  suspensionReason?: string;
+  
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -64,6 +69,9 @@ export interface IAuthResponse {
     email: string;
     name: string;
     role: string;
+    xp?: number;
+    level?: number;
+    streak?: number;
   };
   accessToken: string;
   refreshToken: string;

@@ -41,6 +41,76 @@ class AnalyticsController {
       data: result,
     });
   });
+
+  // Admin: Get revenue analytics
+  getRevenueAnalytics = catchAsync(async (req: Request, res: Response) => {
+    const { startDate, endDate } = req.query;
+    const result = await analyticsService.getRevenueAnalytics(
+      startDate as string,
+      endDate as string
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Revenue analytics retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get engagement report
+  getEngagementReport = catchAsync(async (req: Request, res: Response) => {
+    const { timeframe } = req.query;
+    const result = await analyticsService.getEngagementReport(timeframe as string);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Engagement report retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get popular content
+  getPopularContent = catchAsync(async (req: Request, res: Response) => {
+    const { limit } = req.query;
+    const result = await analyticsService.getPopularContent(
+      limit ? parseInt(limit as string) : 10
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Popular content retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get learning trends
+  getLearningTrends = catchAsync(async (req: Request, res: Response) => {
+    const { period } = req.query;
+    const result = await analyticsService.getLearningTrends(period as string);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Learning trends retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get user growth
+  getUserGrowth = catchAsync(async (req: Request, res: Response) => {
+    const { period } = req.query;
+    const result = await analyticsService.getUserGrowth(period as string);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'User growth data retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new AnalyticsController();

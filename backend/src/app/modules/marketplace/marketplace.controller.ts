@@ -214,3 +214,76 @@ export const getCreatorEarnings = catchAsync(async (req: Request, res: Response)
     data: result,
   });
 });
+
+// Admin Moderation Controllers
+export const getModerationStats = catchAsync(async (req: Request, res: Response) => {
+  const result = await MarketplaceService.getModerationStats();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Moderation statistics retrieved successfully',
+    data: result,
+  });
+});
+
+export const getItemsByStatus = catchAsync(async (req: Request, res: Response) => {
+  const status = req.query.status as string;
+  const result = await MarketplaceService.getItemsByStatus(status);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Items retrieved successfully',
+    data: result,
+  });
+});
+
+export const getAllSellers = catchAsync(async (req: Request, res: Response) => {
+  const result = await MarketplaceService.getAllSellers();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Sellers retrieved successfully',
+    data: result,
+  });
+});
+
+export const moderateItem = catchAsync(async (req: Request, res: Response) => {
+  const { itemId } = req.params;
+  const { status, reason } = req.body;
+  const result = await MarketplaceService.moderateItem(itemId, status, reason);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `Item ${status} successfully`,
+    data: result,
+  });
+});
+
+export const verifySeller = catchAsync(async (req: Request, res: Response) => {
+  const { sellerId } = req.params;
+  const result = await MarketplaceService.verifySeller(sellerId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Seller verified successfully',
+    data: result,
+  });
+});
+
+export const suspendSeller = catchAsync(async (req: Request, res: Response) => {
+  const { sellerId } = req.params;
+  const { reason } = req.body;
+  const result = await MarketplaceService.suspendSeller(sellerId, reason);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Seller suspended successfully',
+    data: result,
+  });
+});

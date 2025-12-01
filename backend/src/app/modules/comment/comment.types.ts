@@ -9,6 +9,9 @@ export interface IComment {
   likedBy: mongoose.Types.ObjectId[];
   isEdited: boolean;
   isDeleted: boolean;
+  isApproved: boolean;
+  isFlagged: boolean;
+  moderationReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }

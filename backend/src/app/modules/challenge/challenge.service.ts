@@ -375,6 +375,85 @@ const getChallengeStats = async (userId: string): Promise<IChallengeStats> => {
   };
 };
 
+// Admin: Get all challenges
+const getAllChallengesAdmin = async (filters: { page: number; limit: number; status?: string; type?: string }) => {
+  const { page, limit, status, type } = filters;
+  const skip = (page - 1) * limit;
+
+  const query: any = {};
+  if (status) query.isActive = status === 'active';
+  if (type) query.type = type;
+
+  const [challenges, total] = await Promise.all([
+    Challenge.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('createdBy', 'name email'),
+    Challenge.countDocuments(query),
+  ]);
+
+  return {
+    challenges,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      itemsPerPage: limit,
+    },
+  };
+};
+
+// Admin: Update challenge
+const updateChallenge = async (challengeId: string, data: Partial<ICreateChallengeRequest>) => {
+  const challenge = await Challenge.findByIdAndUpdate(challengeId, data, { new: true });
+
+  if (!challenge) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Challenge not found');
+  }
+
+  return challenge;
+};
+
+// Admin: Delete challenge
+const deleteChallenge = async (challengeId: string) => {
+  const challenge = await Challenge.findByIdAndDelete(challengeId);
+
+  if (!challenge) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Challenge not found');
+  }
+
+  // Delete associated progress
+  await ChallengeProgress.deleteMany({ challenge: challengeId });
+};
+
+// Admin: Create quiz battle event
+const createQuizBattle = async (data: any) => {
+  const battle = await Challenge.create({
+    ...data,
+    type: 'multiplayer',
+    isActive: true,
+  });
+
+  return battle;
+};
+
+// Admin: Get quiz battles
+const getQuizBattles = async (filters: { page: number; limit: number }) => {
+  const { page, limit } = filters;
+  const skip = (page - 1) * limit;
+
+  const [battles, total] = await Promise.all([
+    Challenge.find({ type: 'multiplayer' }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Challenge.countDocuments({ type: 'multiplayer' }),
+  ]);
+
+  return {
+    battles,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+    },
+  };
+};
+
 export const ChallengeService = {
   createChallenge,
   getDailyChallenge,
@@ -384,4 +463,10 @@ export const ChallengeService = {
   respondToFriendChallenge,
   getMyChallenges,
   getChallengeStats,
+  // Admin methods
+  getAllChallengesAdmin,
+  updateChallenge,
+  deleteChallenge,
+  createQuizBattle,
+  getQuizBattles,
 };

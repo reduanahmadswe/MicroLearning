@@ -25,11 +25,12 @@ import {
   GraduationCap,
   Zap,
   Map,
+  Video,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { progressAPI, badgesAPI, leaderboardAPI, lessonsAPI, notificationAPI } from '@/services/api.service';
+import { progressAPI, badgesAPI, leaderboardAPI, lessonsAPI, notificationsAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 
 export default function DashboardPage() {
@@ -42,29 +43,59 @@ export default function DashboardPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user) {
+    const { token } = useAuthStore.getState();
+    console.log('Dashboard useEffect - user:', user, 'token:', token ? 'exists' : 'missing');
+    
+    if (!user || !token) {
+      console.log('No user or token, redirecting to login');
+      setLoading(false);
       router.push('/auth/login');
       return;
     }
+    
     loadDashboardData();
   }, [user, router]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('Loading dashboard data...');
       const [progressRes, badgesRes, leaderboardRes, lessonsRes] = await Promise.all([
-        progressAPI.getProgress().catch(() => ({ data: { data: null } })),
-        badgesAPI.getUserBadges().catch(() => ({ data: { data: [] } })),
-        leaderboardAPI.getGlobalLeaderboard({ limit: 5 }).catch(() => ({ data: { data: [] } })),
-        lessonsAPI.getLessons({ limit: 5, sort: 'createdAt', order: 'desc' }).catch(() => ({ data: { data: [] } })),
+        progressAPI.getProgress().catch((err) => { 
+          console.error('Progress API error:', err.response?.status, err.response?.data); 
+          return { data: { data: null } };
+        }),
+        badgesAPI.getUserBadges().catch((err) => { 
+          console.error('Badges API error:', err.response?.status, err.response?.data); 
+          return { data: { data: [] } };
+        }),
+        leaderboardAPI.getGlobalLeaderboard({ limit: 5 }).catch((err) => { 
+          console.error('Leaderboard API error:', err.response?.status, err.response?.data); 
+          return { data: { data: [] } };
+        }),
+        lessonsAPI.getLessons({ limit: 5, sort: 'createdAt', order: 'desc' }).catch((err) => { 
+          console.error('Lessons API error:', err.response?.status, err.response?.data); 
+          return { data: { data: [] } };
+        }),
       ]);
 
-      setStats(progressRes.data.data || { totalXP: user?.xp || 0, level: user?.level || 1, currentStreak: user?.streak || 0 });
+      console.log('Dashboard data loaded:', { 
+        progressRes: progressRes.data, 
+        badgesRes: badgesRes.data,
+        leaderboardRes: leaderboardRes.data,
+        lessonsRes: lessonsRes.data
+      });
+      
+      const statsData = progressRes.data.data || { totalXP: user?.xp || 0, level: user?.level || 1, currentStreak: user?.streak || 0 };
+      console.log('Setting stats:', statsData);
+      console.log('User object:', user);
+      
+      setStats(statsData);
       setBadges(badgesRes.data.data?.slice(0, 6) || []);
       setLeaderboard(leaderboardRes.data.data || []);
       setRecentLessons(lessonsRes.data.data || []);
     } catch (error: any) {
-      console.error(error);
+      console.error('Dashboard loading error:', error);
     } finally {
       setLoading(false);
     }
@@ -81,6 +112,8 @@ export default function DashboardPage() {
     { icon: Brain, label: 'Quiz', href: '/quiz', color: 'text-pink-600', bg: 'bg-pink-50' },
     { icon: Sparkles, label: 'Flashcards', href: '/flashcards', color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { icon: GraduationCap, label: 'Courses', href: '/courses', color: 'text-green-600', bg: 'bg-green-50' },
+    { icon: Zap, label: 'AI Tutor', href: '/ai-tutor', color: 'text-violet-600', bg: 'bg-violet-50' },
+    { icon: Video, label: 'Videos', href: '/videos', color: 'text-rose-600', bg: 'bg-rose-50' },
     { icon: Trophy, label: 'Leaderboard', href: '/leaderboard', color: 'text-yellow-600', bg: 'bg-yellow-50' },
     { icon: Award, label: 'Badges', href: '/badges', color: 'text-orange-600', bg: 'bg-orange-50' },
     { icon: Users, label: 'Friends', href: '/friends', color: 'text-teal-600', bg: 'bg-teal-50' },
@@ -89,7 +122,6 @@ export default function DashboardPage() {
     { icon: ShoppingBag, label: 'Marketplace', href: '/marketplace', color: 'text-purple-600', bg: 'bg-purple-50' },
     { icon: BarChart3, label: 'Analytics', href: '/analytics', color: 'text-cyan-600', bg: 'bg-cyan-50' },
     { icon: Map, label: 'Roadmap', href: '/roadmap', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { icon: Zap, label: 'AI Tutor', href: '/ai-tutor', color: 'text-violet-600', bg: 'bg-violet-50' },
   ];
 
   const statCards = [

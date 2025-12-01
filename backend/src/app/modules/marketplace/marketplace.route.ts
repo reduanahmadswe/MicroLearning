@@ -62,4 +62,12 @@ router.patch(
 // Protected routes - Earnings
 router.get('/earnings/me', authGuard(), MarketplaceController.getCreatorEarnings);
 
+// Admin routes - Moderation
+router.get('/admin/stats', authGuard('admin'), MarketplaceController.getModerationStats);
+router.get('/admin/items', authGuard('admin'), MarketplaceController.getItemsByStatus);
+router.get('/admin/sellers', authGuard('admin'), MarketplaceController.getAllSellers);
+router.patch('/:itemId/moderate', authGuard('admin'), MarketplaceController.moderateItem);
+router.patch('/sellers/:sellerId/verify', authGuard('admin'), MarketplaceController.verifySeller);
+router.patch('/sellers/:sellerId/suspend', authGuard('admin'), MarketplaceController.suspendSeller);
+
 export default router;

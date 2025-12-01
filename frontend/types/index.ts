@@ -32,10 +32,19 @@ export interface Lesson {
   estimatedTime: number;
   author: User;
   tags: string[];
+  description?: string;
   views: number;
   likes: number;
   isPublished: boolean;
+  isCompleted?: boolean;
   audioUrl?: string;
+  thumbnailUrl?: string;
+  media?: Array<{
+    type: 'video' | 'audio' | 'image';
+    url: string;
+    thumbnail?: string;
+    duration?: number;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -146,6 +155,13 @@ export interface Badge {
   xpReward: number;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   unlockedBy: number;
+  color?: string;
+  criteria?: {
+    xpRequired?: number;
+    lessonsCompleted?: number;
+    streakDays?: number;
+    quizzesCompleted?: number;
+  };
 }
 
 export interface UserBadge {

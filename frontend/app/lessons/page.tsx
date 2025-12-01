@@ -15,6 +15,11 @@ import {
   Eye,
   Star,
   ChevronRight,
+  CheckCircle,
+  Video,
+  FileQuestion,
+  Award,
+  PlayCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -243,10 +248,53 @@ export default function LessonsPage() {
                     ))}
                   </div>
 
+                  {/* Lesson Status & Actions */}
+                  {lesson.isCompleted && (
+                    <div className="mb-3 flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Completed</span>
+                    </div>
+                  )}
+
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <Link href={`/quiz?lessonId=${lesson._id}`}>
+                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-purple-50 transition-colors group">
+                        <FileQuestion className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs text-gray-600 group-hover:text-purple-600">Quiz</span>
+                      </button>
+                    </Link>
+                    
+                    <Link href={`/videos?lessonId=${lesson._id}`}>
+                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 transition-colors group">
+                        <Video className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs text-gray-600 group-hover:text-blue-600">Video</span>
+                      </button>
+                    </Link>
+                    
+                    {lesson.isCompleted && (
+                      <Link href={`/certificates?lessonId=${lesson._id}`}>
+                        <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-yellow-50 transition-colors group">
+                          <Award className="w-5 h-5 text-yellow-600 group-hover:scale-110 transition-transform" />
+                          <span className="text-xs text-gray-600 group-hover:text-yellow-600">Certificate</span>
+                        </button>
+                      </Link>
+                    )}
+                  </div>
+
                   <Link href={`/lessons/${lesson._id}`}>
-                    <Button className="w-full">
-                      Start Learning
-                      <ChevronRight className="w-4 h-4 ml-1" />
+                    <Button className="w-full" variant={lesson.isCompleted ? 'outline' : 'default'}>
+                      {lesson.isCompleted ? (
+                        <>
+                          <PlayCircle className="w-4 h-4 mr-2" />
+                          Review Lesson
+                        </>
+                      ) : (
+                        <>
+                          Start Learning
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </>
+                      )}
                     </Button>
                   </Link>
                 </CardContent>

@@ -104,6 +104,57 @@ class BadgeController {
       data: result,
     });
   });
+
+  // Admin: Update badge
+  updateBadge = catchAsync(async (req: Request, res: Response) => {
+    const { badgeId } = req.params;
+    const result = await badgeService.updateBadge(badgeId, req.body);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Badge updated successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Delete badge
+  deleteBadge = catchAsync(async (req: Request, res: Response) => {
+    const { badgeId } = req.params;
+    await badgeService.deleteBadge(badgeId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Badge deleted successfully',
+      data: null,
+    });
+  });
+
+  // Admin: Manually award badge
+  manuallyAwardBadge = catchAsync(async (req: Request, res: Response) => {
+    const { userId, badgeId, reason } = req.body;
+    const result = await badgeService.manuallyAwardBadge(userId, badgeId, reason);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Badge awarded successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get all badges with statistics
+  getAllBadgesAdmin = catchAsync(async (req: Request, res: Response) => {
+    const result = await badgeService.getAllBadgesWithStats();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'All badges with statistics retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new BadgeController();

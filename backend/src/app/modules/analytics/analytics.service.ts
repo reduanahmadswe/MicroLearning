@@ -386,6 +386,140 @@ class AnalyticsService {
       },
     };
   }
+
+  // Admin: Get revenue analytics
+  async getRevenueAnalytics(startDate?: string, endDate?: string) {
+    const Purchase = (await import('../marketplace/marketplace.model')).Purchase;
+    
+    const dateFilter: any = { paymentStatus: 'completed' };
+    if (startDate) dateFilter.purchasedAt = { $gte: new Date(startDate) };
+    if (endDate) dateFilter.purchasedAt = { ...dateFilter.purchasedAt, $lte: new Date(endDate) };
+
+    const [totalRevenue, dailyRevenue, topSellingItems] = await Promise.all([
+      Purchase.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } },
+      ]),
+      Purchase.aggregate([
+        { $match: dateFilter },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$purchasedAt' } },
+            revenue: { $sum: '$amount' },
+            sales: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Purchase.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$item', revenue: { $sum: '$amount' }, sales: { $sum: 1 } } },
+        { $sort: { revenue: -1 } },
+        { $limit: 10 },
+      ]),
+    ]);
+
+    return {
+      totalRevenue: totalRevenue[0]?.total || 0,
+      totalSales: totalRevenue[0]?.count || 0,
+      dailyRevenue,
+      topSellingItems,
+    };
+  }
+
+  // Admin: Get engagement report
+  async getEngagementReport(timeframe: string = '7d') {
+    const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const [activeUsers, lessonsCompleted, quizzesAttempted] = await Promise.all([
+      User.countDocuments({ 'streak.lastActivityDate': { $gte: startDate } }),
+      UserProgress.countDocuments({ completedAt: { $gte: startDate }, status: 'completed' }),
+      QuizAttempt.countDocuments({ submittedAt: { $gte: startDate } }),
+    ]);
+
+    return {
+      timeframe,
+      activeUsers,
+      lessonsCompleted,
+      quizzesAttempted,
+      avgLessonsPerUser: activeUsers > 0 ? Math.round(lessonsCompleted / activeUsers) : 0,
+    };
+  }
+
+  // Admin: Get popular content
+  async getPopularContent(limit: number = 10) {
+    const [popularLessons, popularQuizzes] = await Promise.all([
+      UserProgress.aggregate([
+        { $match: { status: 'completed' } },
+        { $group: { _id: '$lesson', completions: { $sum: 1 } } },
+        { $sort: { completions: -1 } },
+        { $limit: limit },
+        { $lookup: { from: 'lessons', localField: '_id', foreignField: '_id', as: 'lesson' } },
+        { $unwind: '$lesson' },
+      ]),
+      QuizAttempt.aggregate([
+        { $group: { _id: '$quiz', attempts: { $sum: 1 }, avgScore: { $avg: '$score' } } },
+        { $sort: { attempts: -1 } },
+        { $limit: limit },
+        { $lookup: { from: 'quizzes', localField: '_id', foreignField: '_id', as: 'quiz' } },
+        { $unwind: '$quiz' },
+      ]),
+    ]);
+
+    return { popularLessons, popularQuizzes };
+  }
+
+  // Admin: Get learning trends
+  async getLearningTrends(period: string = '30d') {
+    const days = period === '30d' ? 30 : period === '90d' ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const trends = await UserProgress.aggregate([
+      { $match: { completedAt: { $gte: startDate }, status: 'completed' } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt' } },
+          completions: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$user' },
+        },
+      },
+      { $sort: { _id: 1 } },
+      { $project: { date: '$_id', completions: 1, uniqueUsers: { $size: '$uniqueUsers' } } },
+    ]);
+
+    return trends;
+  }
+
+  // Admin: Get user growth
+  async getUserGrowth(period: string = '30d') {
+    const days = period === '30d' ? 30 : period === '90d' ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const growth = await User.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          newUsers: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const totalUsers = await User.countDocuments({});
+    const premiumUsers = await User.countDocuments({ isPremium: true });
+
+    return {
+      growth,
+      totalUsers,
+      premiumUsers,
+      conversionRate: totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0,
+    };
+  }
 }
 
 export default new AnalyticsService();

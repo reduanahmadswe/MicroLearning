@@ -27,11 +27,39 @@ export default function LoginPage() {
 
     try {
       const response = await api.post("/auth/login", formData);
+      console.log('Login response:', response.data);
       const { data } = response.data;
       
-      login(data.user, data.token);
-      toast.success("Login successful!");
-      router.push("/dashboard");
+      // Backend returns: { user: {id, email, name, role, xp, level, streak}, accessToken, refreshToken }
+      const userData = {
+        _id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: data.user.role,
+        xp: data.user.xp || 0,
+        level: data.user.level || 1,
+        streak: data.user.streak || 0,
+      };
+      
+      console.log('Calling login with:', userData, 'token:', data.accessToken);
+      login(userData, data.accessToken);
+      
+      // Verify token was stored
+      setTimeout(() => {
+        const storedToken = localStorage.getItem('token');
+        const storeState = useAuthStore.getState();
+        console.log('After login - localStorage token:', storedToken);
+        console.log('After login - store state:', storeState);
+      }, 100);
+      
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        toast.success("Welcome Admin!");
+        router.push("/admin");
+      } else {
+        toast.success("Login successful!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Login failed");
     } finally {

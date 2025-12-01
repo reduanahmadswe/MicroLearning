@@ -4,6 +4,7 @@ import User from '../auth/auth.model';
 import UserProgress from '../progressTracking/progress.model';
 import { QuizAttempt } from '../quiz/quiz.model';
 import Flashcard from '../flashcard/flashcard.model';
+import Notification from '../notification/notification.model';
 
 class BadgeService {
   // Create badge (admin only)
@@ -324,6 +325,74 @@ class BadgeService {
     }
 
     return createdBadges;
+  }
+
+  // Admin: Update badge
+  async updateBadge(badgeId: string, data: any) {
+    const badge = await Badge.findByIdAndUpdate(badgeId, data, { new: true });
+    if (!badge) {
+      throw new ApiError(404, 'Badge not found');
+    }
+    return badge;
+  }
+
+  // Admin: Delete badge
+  async deleteBadge(badgeId: string) {
+    const badge = await Badge.findByIdAndDelete(badgeId);
+    if (!badge) {
+      throw new ApiError(404, 'Badge not found');
+    }
+    // Remove badge from all users
+    await User.updateMany({ badges: badgeId }, { $pull: { badges: badgeId } });
+    return { message: 'Badge deleted successfully' };
+  }
+
+  // Admin: Manually award badge
+  async manuallyAwardBadge(userId: string, badgeId: string, reason?: string) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    const badge = await Badge.findById(badgeId);
+    if (!badge) {
+      throw new ApiError(404, 'Badge not found');
+    }
+
+    // Check if user already has this badge
+    if (user.badges.includes(badgeId as any)) {
+      throw new ApiError(400, 'User already has this badge');
+    }
+
+    user.badges.push(badgeId as any);
+    await user.save();
+
+    // Create notification
+    await Notification.create({
+      user: userId,
+      type: 'achievement',
+      title: 'Badge Awarded!',
+      message: `You have been awarded the "${badge.name}" badge! ${reason ? `Reason: ${reason}` : ''}`,
+    });
+
+    return { user, badge };
+  }
+
+  // Admin: Get all badges with statistics
+  async getAllBadgesWithStats() {
+    const badges = await Badge.find({});
+
+    const badgesWithStats = await Promise.all(
+      badges.map(async (badge) => {
+        const earnedCount = await User.countDocuments({ badges: badge._id });
+        return {
+          ...badge.toObject(),
+          earnedByCount: earnedCount,
+        };
+      })
+    );
+
+    return badgesWithStats;
   }
 }
 

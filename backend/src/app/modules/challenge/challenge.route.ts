@@ -42,4 +42,11 @@ router.post(
   ChallengeController.createChallenge
 );
 
+// Admin routes
+router.get('/admin/all', authGuard('admin'), ChallengeController.getAllChallengesAdmin);
+router.patch('/admin/:challengeId', authGuard('admin'), ChallengeController.updateChallenge);
+router.delete('/admin/:challengeId', authGuard('admin'), ChallengeController.deleteChallenge);
+router.post('/admin/quiz-battle', authGuard('admin'), ChallengeController.createQuizBattle);
+router.get('/admin/quiz-battles', authGuard('admin'), ChallengeController.getQuizBattles);
+
 export const ChallengeRoutes = router;

@@ -497,6 +497,144 @@ export const getCreatorEarnings = async (creatorId: string) => {
   return earnings;
 };
 
+// Admin Moderation Services
+export const getModerationStats = async () => {
+  const [pending, approved, rejected, reported, revenue] = await Promise.all([
+    MarketplaceItem.countDocuments({ status: 'pending' }),
+    MarketplaceItem.countDocuments({ status: 'published' }),
+    MarketplaceItem.countDocuments({ status: 'rejected' }),
+    MarketplaceItem.countDocuments({ isReported: true }),
+    Purchase.aggregate([
+      { $match: { paymentStatus: 'completed' } },
+      { $group: { _id: null, totalRevenue: { $sum: '$amount' } } },
+    ]),
+  ]);
+
+  return {
+    pendingReview: pending,
+    approved,
+    rejected,
+    reported,
+    totalRevenue: revenue[0]?.totalRevenue || 0,
+  };
+};
+
+export const getItemsByStatus = async (status: string) => {
+  const filter: any = {};
+
+  if (status === 'pending') {
+    filter.status = 'pending';
+  } else if (status === 'approved') {
+    filter.status = 'published';
+  } else if (status === 'rejected') {
+    filter.status = 'rejected';
+  } else if (status === 'reported') {
+    filter.isReported = true;
+  }
+
+  const items = await MarketplaceItem.find(filter)
+    .populate('creator', 'name email avatar')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return items;
+};
+
+export const getAllSellers = async () => {
+  const creators = await MarketplaceItem.aggregate([
+    {
+      $group: {
+        _id: '$creator',
+        totalItems: { $sum: 1 },
+        totalSales: { $sum: '$salesCount' },
+        totalRevenue: { $sum: '$revenue' },
+        avgRating: { $avg: '$rating' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    { $unwind: '$user' },
+    {
+      $project: {
+        _id: '$user._id',
+        name: '$user.name',
+        email: '$user.email',
+        avatar: '$user.avatar',
+        isVerified: '$user.isVerified',
+        isSuspended: '$user.isSuspended',
+        totalItems: 1,
+        totalSales: 1,
+        totalRevenue: 1,
+        rating: { $round: ['$avgRating', 1] },
+      },
+    },
+    { $sort: { totalRevenue: -1 } },
+  ]);
+
+  return creators;
+};
+
+export const moderateItem = async (itemId: string, status: string, reason?: string) => {
+  const item = await MarketplaceItem.findById(itemId);
+
+  if (!item) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Marketplace item not found');
+  }
+
+  if (status === 'approved') {
+    item.status = 'published';
+    item.isPublished = true;
+    item.publishedAt = new Date();
+    item.isReported = false;
+  } else if (status === 'rejected') {
+    item.status = 'rejected';
+    item.isPublished = false;
+    item.rejectionReason = reason;
+  }
+
+  await item.save();
+  return item;
+};
+
+export const verifySeller = async (sellerId: string) => {
+  const user = await User.findById(sellerId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+  }
+
+  user.isVerified = true;
+  await user.save();
+
+  return user;
+};
+
+export const suspendSeller = async (sellerId: string, reason: string) => {
+  const user = await User.findById(sellerId);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+  }
+
+  user.isSuspended = true;
+  user.suspensionReason = reason;
+  await user.save();
+
+  // Unpublish all seller's items
+  await MarketplaceItem.updateMany(
+    { creator: sellerId },
+    { status: 'rejected', isPublished: false }
+  );
+
+  return user;
+};
+
 export default {
   createMarketplaceItem,
   getMarketplaceItems,
@@ -509,4 +647,10 @@ export default {
   updateReview,
   getMarketplaceStats,
   getCreatorEarnings,
+  getModerationStats,
+  getItemsByStatus,
+  getAllSellers,
+  moderateItem,
+  verifySeller,
+  suspendSeller,
 };

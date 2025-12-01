@@ -65,6 +65,45 @@ class LeaderboardController {
       data: result,
     });
   });
+
+  // Admin: Reset leaderboard
+  resetLeaderboard = catchAsync(async (req: Request, res: Response) => {
+    const { type, topic } = req.body;
+    await leaderboardService.resetLeaderboard(type, topic);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Leaderboard reset successfully',
+      data: null,
+    });
+  });
+
+  // Admin: Adjust user score
+  adjustUserScore = catchAsync(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { xpChange, reason } = req.body;
+    const result = await leaderboardService.adjustUserScore(userId, xpChange, reason);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'User score adjusted successfully',
+      data: result,
+    });
+  });
+
+  // Admin: Get leaderboard statistics
+  getLeaderboardStats = catchAsync(async (req: Request, res: Response) => {
+    const result = await leaderboardService.getLeaderboardStats();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Leaderboard statistics retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new LeaderboardController();

@@ -106,6 +106,119 @@ class AdminController {
       data: result,
     });
   });
+
+  // Get system statistics
+  getSystemStats = catchAsync(async (_req: Request, res: Response) => {
+    const result = await adminService.getSystemStats();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'System statistics retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get performance metrics
+  getPerformanceMetrics = catchAsync(async (_req: Request, res: Response) => {
+    const result = await adminService.getPerformanceMetrics();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Performance metrics retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get error logs
+  getErrorLogs = catchAsync(async (req: Request, res: Response) => {
+    const { page, limit } = req.query;
+    const result = await adminService.getErrorLogs({
+      page: page ? parseInt(page as string) : 1,
+      limit: limit ? parseInt(limit as string) : 50,
+    });
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Error logs retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get database health
+  getDatabaseHealth = catchAsync(async (_req: Request, res: Response) => {
+    const result = await adminService.getDatabaseHealth();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Database health retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Get comments for moderation
+  getComments = catchAsync(async (req: Request, res: Response) => {
+    const { status, page, limit } = req.query;
+    const result = await adminService.getCommentsForModeration({
+      status: status as string,
+      page: page ? parseInt(page as string) : 1,
+      limit: limit ? parseInt(limit as string) : 20,
+    });
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Comments retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Moderate comment
+  moderateComment = catchAsync(async (req: Request, res: Response) => {
+    const { commentId } = req.params;
+    const { action, reason } = req.body;
+    const result = await adminService.moderateComment(commentId, action, reason);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: `Comment ${action}d successfully`,
+      data: result,
+    });
+  });
+
+  // Get flagged content
+  getFlaggedContent = catchAsync(async (req: Request, res: Response) => {
+    const { page, limit } = req.query;
+    const result = await adminService.getFlaggedContent({
+      page: page ? parseInt(page as string) : 1,
+      limit: limit ? parseInt(limit as string) : 20,
+    });
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Flagged content retrieved successfully',
+      data: result,
+    });
+  });
+
+  // Remove spam
+  removeSpam = catchAsync(async (req: Request, res: Response) => {
+    const { contentId } = req.params;
+    const { contentType } = req.body;
+    await adminService.removeSpamContent(contentId, contentType);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Spam content removed successfully',
+      data: null,
+    });
+  });
 }
 
 export default new AdminController();

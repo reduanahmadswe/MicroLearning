@@ -16,7 +16,13 @@ router.post(
 
 router.get('/me', authGuard(), progressController.getUserProgress);
 router.get('/stats', authGuard(), progressController.getUserStats);
+router.get('/stats/me', authGuard(), progressController.getUserStats);
+router.get('/stats/:userId', authGuard(), progressController.getUserStats);
 router.get('/timeline', authGuard(), progressController.getLearningTimeline);
+router.get('/activity', authGuard(), progressController.getLearningTimeline);
+router.get('/milestones/me', authGuard(), progressController.getUserProgress);
+router.get('/leaderboard', authGuard(), progressController.getUserStats);
 router.get('/lesson/:lessonId', authGuard(), progressController.getLessonProgress);
+router.get('/course/:courseId', authGuard(), progressController.getLessonProgress);
 
 export default router;
