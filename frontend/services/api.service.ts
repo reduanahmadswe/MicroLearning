@@ -235,8 +235,8 @@ export const analyticsAPI = {
 
 // Certificates APIs
 export const certificatesAPI = {
-  getMyCertificates: () => api.get('/certificates/my-certificates'),
-  getCertificateById: (id: string) => api.get(`/certificates/${id}`),
+  getMyCertificates: () => api.get('/certificates/me'),
+  getCertificateById: (id: string) => api.get(`/certificates/view/${id}`),
   generateCertificate: (courseId: string) => api.post('/certificates/generate', { courseId }),
   verifyCertificate: (certificateId: string) => api.get(`/certificates/verify/${certificateId}`),
 };

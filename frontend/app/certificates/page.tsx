@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
-import { Award, Download, Share2, CheckCircle } from 'lucide-react';
+import { Award, Download, Share2, CheckCircle, Lock } from 'lucide-react';
 
 interface Certificate {
   _id: string;
@@ -28,29 +28,81 @@ interface Certificate {
   createdAt: string;
 }
 
+interface EnrolledCourse {
+  _id: string;
+  course: {
+    _id: string;
+    title: string;
+    description: string;
+    thumbnailUrl: string;
+  };
+  progress: number;
+  completedAt?: string;
+}
+
 export default function CertificatesPage() {
   const router = useRouter();
   const { token } = useAuthStore();
 
   const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
-    fetchCertificates();
+    fetchData();
   }, []);
 
-  const fetchCertificates = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/v1/certificates/my-certificates', {
+      
+      // Fetch earned certificates
+      const certRes = await axios.get('http://localhost:5000/api/v1/certificates/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCertificates(res.data.data);
+      setCertificates(certRes.data.data);
+
+      // Fetch enrolled courses
+      const enrollRes = await axios.get('http://localhost:5000/api/v1/courses/enrollments/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEnrolledCourses(enrollRes.data.data);
     } catch (error: any) {
-      console.error('Error fetching certificates:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewCertificate = async (courseId: string, courseName: string) => {
+    try {
+      // Check if certificate already exists
+      const existingCert = certificates.find(cert => cert.course._id === courseId);
+      
+      if (existingCert) {
+        // Certificate exists, show it
+        setSelectedCertificate(existingCert);
+      } else {
+        // Certificate doesn't exist, generate it
+        const generateRes = await axios.post(
+          'http://localhost:5000/api/v1/certificates/generate',
+          { courseId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (generateRes.data.success) {
+          const newCert = generateRes.data.data;
+          setCertificates([...certificates, newCert]);
+          setSelectedCertificate(newCert);
+          
+          // Remove from enrolled courses since it's now complete
+          setEnrolledCourses(enrolledCourses.filter(e => e.course._id !== courseId));
+        }
+      }
+    } catch (error: any) {
+      console.error('Error handling certificate:', error);
+      alert(error.response?.data?.message || 'Failed to load certificate');
     }
   };
 
@@ -84,14 +136,11 @@ export default function CertificatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">My Certificates</h1>
-          <p className="text-gray-600">View and download your course completion certificates</p>
-        </div>
-
-        {certificates.length === 0 ? (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Certificates</h1>
+        
+        {certificates.length === 0 && enrolledCourses.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <Award size={64} className="mx-auto text-gray-300 mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
@@ -108,70 +157,199 @@ export default function CertificatesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {certificates.map((cert) => (
-              <div
-                key={cert._id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
-                onClick={() => setSelectedCertificate(cert)}
-              >
-                <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-6 text-white">
-                  <div className="flex items-start justify-between mb-4">
-                    <Award size={40} />
-                    <CheckCircle size={24} className="text-green-300" />
-                  </div>
-                  <h3 className="font-bold text-lg mb-2 line-clamp-2">
-                    {cert.course.title}
-                  </h3>
-                  <p className="text-sm opacity-90">Certificate of Completion</p>
-                </div>
-
-                <div className="p-4">
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-500">Issued to:</span>
-                      <p className="font-medium">{cert.metadata.userName}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Date:</span>
-                      <p className="font-medium">
-                        {new Date(cert.metadata.completionDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Certificate ID:</span>
-                      <p className="font-mono text-xs">{cert.certificateId}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownload(cert);
-                      }}
-                      className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center justify-center gap-2"
+          <div>
+            {/* Earned Certificates */}
+            {certificates.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Your Certificates ({certificates.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {certificates.map((cert) => (
+                    <div
+                      key={cert._id}
+                      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
+                      onClick={() => setSelectedCertificate(cert)}
                     >
-                      <Download size={16} />
-                      Download
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare(cert);
-                      }}
-                      className="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-50 flex items-center justify-center gap-2"
-                    >
-                      <Share2 size={16} />
-                      Share
-                    </button>
-                  </div>
+                      <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-6 text-white">
+                        <div className="flex items-start justify-between mb-4">
+                          <Award size={40} />
+                          <CheckCircle size={24} className="text-green-300" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                          {cert.course.title}
+                        </h3>
+                        <p className="text-sm opacity-90">Certificate of Completion</p>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <span className="text-gray-500">Issued to:</span>
+                            <p className="font-medium">{cert.metadata.userName}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Date:</span>
+                            <p className="font-medium">
+                              {new Date(cert.metadata.completionDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Certificate ID:</span>
+                            <p className="font-mono text-xs">{cert.certificateId}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(cert);
+                            }}
+                            className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center justify-center gap-2"
+                          >
+                            <Download size={16} />
+                            Download
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(cert);
+                            }}
+                            className="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-50 flex items-center justify-center gap-2"
+                          >
+                            <Share2 size={16} />
+                            Share
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Completed Courses - Ready for Certificate */}
+            {enrolledCourses.filter(e => e.completedAt && !certificates.find(cert => cert.course._id === e.course._id)).length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Ready for Certificate ({enrolledCourses.filter(e => e.completedAt && !certificates.find(cert => cert.course._id === e.course._id)).length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrolledCourses
+                    .filter(e => e.completedAt && !certificates.find(cert => cert.course._id === e.course._id))
+                    .map((enrollment) => (
+                      <div
+                        key={enrollment._id}
+                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                      >
+                        <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-6 text-white">
+                          <div className="flex items-start justify-between mb-4">
+                            <Award size={40} />
+                            <CheckCircle size={24} className="text-green-300" />
+                          </div>
+                          <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                            {enrollment.course.title}
+                          </h3>
+                          <p className="text-sm opacity-90">100% Complete - Generate Certificate</p>
+                        </div>
+
+                        <div className="p-4">
+                          <div className="space-y-2 text-sm mb-4">
+                            <div>
+                              <span className="text-gray-500">Completed on:</span>
+                              <p className="font-medium">
+                                {enrollment.completedAt ? new Date(enrollment.completedAt).toLocaleDateString() : 'N/A'}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Progress:</span>
+                              <p className="font-medium text-green-600">{enrollment.progress}%</p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleViewCertificate(enrollment.course._id, enrollment.course.title)}
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 flex items-center justify-center gap-2"
+                          >
+                            <Award size={16} />
+                            View Certificate
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Locked Certificates - Courses in Progress */}
+            {enrolledCourses.filter(e => !e.completedAt).length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Certificates in Progress ({enrolledCourses.filter(e => !e.completedAt).length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrolledCourses
+                    .filter(e => !e.completedAt)
+                    .map((enrollment) => (
+                      <div
+                        key={enrollment._id}
+                        className="bg-white rounded-lg shadow overflow-hidden relative"
+                      >
+                        <div className="bg-gradient-to-br from-gray-400 to-gray-500 p-6 text-white relative">
+                          {/* Lock Overlay */}
+                          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                            <div className="text-center">
+                              <Lock size={48} className="mx-auto mb-2" />
+                              <p className="text-sm font-medium">Certificate Locked</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start justify-between mb-4">
+                            <Award size={40} className="opacity-50" />
+                          </div>
+                          <h3 className="font-bold text-lg mb-2 line-clamp-2 opacity-50">
+                            {enrollment.course.title}
+                          </h3>
+                          <p className="text-sm opacity-75">Certificate of Completion</p>
+                        </div>
+
+                        <div className="p-4">
+                          <div className="space-y-3 text-sm">
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-gray-500">Progress:</span>
+                                <span className="font-medium text-blue-600">{enrollment.progress}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-blue-500 h-2 rounded-full transition-all"
+                                  style={{ width: `${enrollment.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                            
+                            <div className="text-center pt-2">
+                              <p className="text-gray-600 text-xs mb-2">
+                                Complete this course to unlock your certificate
+                              </p>
+                              <button
+                                onClick={() => router.push(`/courses/${enrollment.course._id}`)}
+                                className="w-full bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
+                              >
+                                Continue Learning
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
-
+        
         {/* Certificate Detail Modal */}
         {selectedCertificate && (
           <div

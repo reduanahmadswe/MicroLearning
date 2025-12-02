@@ -331,17 +331,44 @@ export default function CourseDetailPage() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-sm mb-4">
                     <span className="text-gray-600">
                       {completedLessons.length} / {course.lessons?.length || 0} lessons completed
                     </span>
                     {enrollment.progress === 100 && (
                       <span className="flex items-center gap-1 text-green-600 font-medium">
-                        <Award className="w-4 h-4" />
+                        <CheckCircle className="w-4 h-4" />
                         Completed!
                       </span>
                     )}
                   </div>
+                  
+                  {/* Certificate Button */}
+                  {enrollment.progress === 100 && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Award className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-1">
+                              Certificate Available!
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-3">
+                              Congratulations! You've completed this course. Download your certificate and share your achievement.
+                            </p>
+                            <Link href="/certificates">
+                              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                                <Award className="w-4 h-4 mr-2" />
+                                View Certificate
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -397,7 +424,7 @@ export default function CourseDetailPage() {
                         if (!isUnlocked) {
                           if (!isPreviousCompleted) {
                             lockReason = '🔒 Complete Previous Lesson First';
-                          } else if (quizResults[previousLesson._id]?.quiz) {
+                          } else if (previousLesson && quizResults[previousLesson._id]?.quiz) {
                             // Previous lesson has quiz
                             lockReason = '🔒 Pass Previous Quiz (80%+)';
                           } else {
@@ -553,12 +580,20 @@ export default function CourseDetailPage() {
                     <Clock className="w-4 h-4" />
                     <span>{course.estimatedDuration} hours total</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>Certificate upon completion</span>
+                  <div className={`flex items-center gap-2 ${
+                    isEnrolled && enrollment?.progress === 100 
+                      ? 'text-green-600 font-medium' 
+                      : 'text-gray-600'
+                  }`}>
+                    <Award className="w-4 h-4" />
+                    <span>
+                      {isEnrolled && enrollment?.progress === 100 
+                        ? '✓ Certificate earned!' 
+                        : 'Certificate upon completion'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <Award className="w-4 h-4" />
+                    <GraduationCap className="w-4 h-4" />
                     <span>Lifetime access</span>
                   </div>
                 </div>
