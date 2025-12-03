@@ -39,6 +39,7 @@ export const lessonsAPI = {
   deleteLesson: (id: string) => api.delete(`/lessons/${id}`),
   completeLesson: (id: string) => api.post(`/lessons/${id}/complete`),
   bookmarkLesson: (id: string) => api.post(`/lessons/${id}/bookmark`),
+  likeLesson: (id: string) => api.post(`/lessons/${id}/like`),
   // Instructor APIs
   getInstructorLessons: () => api.get('/lessons/instructor/my-lessons'),
   getInstructorAnalytics: () => api.get('/lessons/instructor/analytics'),
@@ -307,13 +308,14 @@ export const careerMentorAPI = {
 
 // Bookmarks APIs
 export const bookmarkAPI = {
-  getMyBookmarks: () => api.get('/bookmarks'),
-  getBookmarks: () => api.get('/bookmarks'),
-  createBookmark: (data: { resourceType: string; resourceId: string }) => 
-    api.post('/bookmarks', data),
-  addBookmark: (data: { resourceType: string; resourceId: string }) => 
-    api.post('/bookmarks', data),
-  removeBookmark: (id: string) => api.delete(`/bookmarks/${id}`),
+  getMyBookmarks: () => api.get('/bookmarks/me'),
+  getBookmarks: () => api.get('/bookmarks/me'),
+  createBookmark: (data: { lessonId: string; collection?: string; notes?: string }) => 
+    api.post('/bookmarks/add', data),
+  addBookmark: (data: { lessonId: string; collection?: string; notes?: string }) => 
+    api.post('/bookmarks/add', data),
+  removeBookmark: (lessonId: string) => api.delete(`/bookmarks/remove/${lessonId}`),
+  checkBookmark: (lessonId: string) => api.get(`/bookmarks/check/${lessonId}`),
 };
 
 export const bookmarksAPI = bookmarkAPI;

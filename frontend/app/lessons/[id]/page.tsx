@@ -73,8 +73,72 @@ export default function LessonDetailPage() {
     if (lessonId) {
       checkAccessAndLoadLesson();
       loadComments();
+      checkBookmarkStatus();
     }
   }, [lessonId]);
+
+  useEffect(() => {
+    if (lesson) {
+      checkLikeStatus();
+    }
+  }, [lesson]);
+
+  const checkBookmarkStatus = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await bookmarkAPI.checkBookmark(lessonId);
+      const isBookmarked = response.data.data.isBookmarked || false;
+      setBookmarked(isBookmarked);
+      console.log('Bookmark status loaded:', isBookmarked);
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+      setBookmarked(false);
+    }
+  };
+
+  const checkLikeStatus = async () => {
+    if (!token || !lesson) return;
+    
+    try {
+      // Check if current user's ID is in the likedBy array
+      const response = await lessonsAPI.getLesson(lessonId);
+      const lessonData = response.data.data;
+      
+      // Get user ID from profile endpoint
+      const userResponse = await fetch('http://localhost:5000/api/v1/profile/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!userResponse.ok) {
+        console.error('Failed to fetch user data');
+        setLiked(false);
+        return;
+      }
+      
+      const userData = await userResponse.json();
+      const userId = userData?.data?._id;
+      
+      if (!userId) {
+        console.error('User ID not found');
+        setLiked(false);
+        return;
+      }
+      
+      // Check if user has liked
+      const hasLiked = lessonData.likedBy?.some((id: string) => id === userId) || false;
+      setLiked(hasLiked);
+      console.log('Like status check:', { 
+        userId, 
+        likedBy: lessonData.likedBy, 
+        hasLiked,
+        lessonLikes: lessonData.likes 
+      });
+    } catch (error) {
+      console.error('Error checking like status:', error);
+      setLiked(false);
+    }
+  };
 
   const checkAccessAndLoadLesson = async () => {
     try {
@@ -281,29 +345,49 @@ export default function LessonDetailPage() {
       if (bookmarked) {
         await bookmarkAPI.removeBookmark(lessonId);
         toast.success('Bookmark removed');
+        setBookmarked(false);
       } else {
-        await bookmarkAPI.createBookmark({ resourceId: lessonId, resourceType: 'lesson' });
+        await bookmarkAPI.createBookmark({ lessonId });
         toast.success('Lesson bookmarked');
+        setBookmarked(true);
       }
-      setBookmarked(!bookmarked);
     } catch (error: any) {
-      toast.error('Failed to bookmark lesson');
+      const errorMsg = error?.response?.data?.message || 'Failed to bookmark lesson';
+      toast.error(errorMsg);
+      console.error('Bookmark error:', error?.response?.data || error);
     }
   };
 
   const handleLike = async () => {
+    if (!token) {
+      toast.error('Please login to like lessons');
+      return;
+    }
+
     try {
-      // Like logic would be implemented here
-      setLiked(!liked);
+      // Call API to toggle like
+      const response = await lessonsAPI.likeLesson(lessonId);
+      const updatedLesson = response.data.data;
+      
+      console.log('Like response:', { hasLiked: updatedLesson.hasLiked, likes: updatedLesson.likes });
+      
+      // Update local state immediately
+      const newLikedState = updatedLesson.hasLiked;
+      setLiked(newLikedState);
+      
       if (lesson) {
         setLesson({
           ...lesson,
-          likes: liked ? (lesson.likes || 0) - 1 : (lesson.likes || 0) + 1,
+          likes: updatedLesson.likes,
+          likedBy: updatedLesson.likedBy,
         });
       }
-      toast.success(liked ? 'Like removed' : 'Lesson liked!');
+      
+      toast.success(newLikedState ? 'Lesson liked!' : 'Like removed');
     } catch (error: any) {
-      toast.error('Failed to like lesson');
+      const errorMsg = error?.response?.data?.message || 'Failed to like lesson';
+      toast.error(errorMsg);
+      console.error('Like error:', error?.response?.data || error);
     }
   };
 
@@ -507,10 +591,18 @@ export default function LessonDetailPage() {
                   </Button>
                 )}
                 <Button variant="outline" size="sm" onClick={handleBookmark}>
-                  <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-blue-500' : ''}`} />
+                  <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleLike}>
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500' : ''}`} />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleLike}
+                  className={liked ? 'border-red-200 bg-red-50' : ''}
+                >
+                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                  <span className={`ml-1 ${liked ? 'text-red-600 font-medium' : ''}`}>
+                    {liked ? 'Liked' : 'Like'}
+                  </span>
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleShare}>
                   <Share2 className="w-4 h-4" />

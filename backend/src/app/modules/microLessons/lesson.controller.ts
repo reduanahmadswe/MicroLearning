@@ -93,12 +93,13 @@ class LessonController {
   // Like lesson
   likeLesson = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await lessonService.likeLesson(id);
+    const userId = req.user?.userId as string;
+    const result = await lessonService.likeLesson(id, userId);
 
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: 'Lesson liked successfully',
+      message: result.hasLiked ? 'Lesson liked successfully' : 'Like removed successfully',
       data: result,
     });
   });

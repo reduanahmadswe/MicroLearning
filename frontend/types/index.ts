@@ -35,6 +35,7 @@ export interface Lesson {
   description?: string;
   views: number;
   likes: number;
+  likedBy?: string[]; // Array of user IDs who liked this lesson
   isPublished: boolean;
   isCompleted?: boolean;
   audioUrl?: string;

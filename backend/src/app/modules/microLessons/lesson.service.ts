@@ -316,19 +316,40 @@ class LessonService {
     return { message: 'Lesson deleted successfully' };
   }
 
-  // Like lesson
-  async likeLesson(lessonId: string) {
-    const lesson = await Lesson.findByIdAndUpdate(
-      lessonId,
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
+  // Like lesson (toggle like/unlike)
+  async likeLesson(lessonId: string, userId: string) {
+    const lesson = await Lesson.findById(lessonId);
 
     if (!lesson) {
       throw new ApiError(404, 'Lesson not found');
     }
 
-    return lesson;
+    const likedBy = lesson.likedBy || [];
+    const hasLiked = likedBy.some((id: any) => id.toString() === userId);
+
+    if (hasLiked) {
+      // Unlike
+      const updated = await Lesson.findByIdAndUpdate(
+        lessonId,
+        { 
+          $pull: { likedBy: userId },
+          $inc: { likes: -1 }
+        },
+        { new: true }
+      );
+      return { ...updated?.toObject(), hasLiked: false };
+    } else {
+      // Like
+      const updated = await Lesson.findByIdAndUpdate(
+        lessonId,
+        { 
+          $addToSet: { likedBy: userId },
+          $inc: { likes: 1 }
+        },
+        { new: true }
+      );
+      return { ...updated?.toObject(), hasLiked: true };
+    }
   }
 
   // Mark lesson as completed

@@ -31,6 +31,7 @@ import { Lesson } from '@/types';
 export default function LessonsPage() {
   const router = useRouter();
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
@@ -46,8 +47,26 @@ export default function LessonsPage() {
   const difficulties = ['beginner', 'intermediate', 'advanced'];
 
   useEffect(() => {
+    loadEnrolledCourses();
     loadLessons();
   }, [selectedDifficulty, selectedTopic]);
+
+  const loadEnrolledCourses = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/courses/enrollments/me', {
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}` 
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const courseIds = data.data.map((enrollment: any) => enrollment.course._id);
+        setEnrolledCourseIds(courseIds);
+      }
+    } catch (error) {
+      console.error('Error loading enrolled courses:', error);
+    }
+  };
 
   const loadLessons = async () => {
     try {
@@ -97,6 +116,11 @@ export default function LessonsPage() {
   };
 
   const filteredLessons = lessons.filter(lesson => {
+    // Only show lessons from enrolled courses
+    const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course?._id;
+    if (courseId && enrolledCourseIds.length > 0 && !enrolledCourseIds.includes(courseId)) {
+      return false;
+    }
     if (searchQuery && !lesson.title.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }

@@ -112,6 +112,7 @@ export default function DashboardPage() {
     { icon: Brain, label: 'Quiz', href: '/quiz', color: 'text-pink-600', bg: 'bg-pink-50' },
     { icon: Sparkles, label: 'Flashcards', href: '/flashcards', color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { icon: GraduationCap, label: 'Courses', href: '/courses', color: 'text-green-600', bg: 'bg-green-50' },
+    { icon: Star, label: 'Bookmarks', href: '/bookmarks', color: 'text-amber-600', bg: 'bg-amber-50' },
     { icon: Zap, label: 'AI Tutor', href: '/ai-tutor', color: 'text-violet-600', bg: 'bg-violet-50' },
     { icon: Video, label: 'Videos', href: '/videos', color: 'text-rose-600', bg: 'bg-rose-50' },
     { icon: Trophy, label: 'Leaderboard', href: '/leaderboard', color: 'text-yellow-600', bg: 'bg-yellow-50' },

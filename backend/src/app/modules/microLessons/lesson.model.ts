@@ -114,6 +114,10 @@ const lessonSchema = new Schema<ILesson>(
       default: 0,
       min: 0,
     },
+    likedBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
     completions: {
       type: Number,
       default: 0,
