@@ -34,10 +34,11 @@ export interface ILesson {
   isPremium: boolean;
   views: number;
   likes: number;
+  likedBy: mongoose.Types.ObjectId[];
   completions: number;
   
   // SEO
-  slug: string;
+  slug?: string;
   metaDescription?: string;
   
   createdAt: Date;

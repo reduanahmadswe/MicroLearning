@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import RichTextEditor from '@/components/ui/rich-text-editor';
 import { lessonsAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2, Video, FileQuestion } from 'lucide-react';
@@ -15,6 +16,7 @@ export default function InstructorCreateLessonPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
+    description: '',
     content: '',
     topic: '',
     difficulty: 'beginner',
@@ -114,16 +116,30 @@ export default function InstructorCreateLessonPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
+                  Description *
+                </label>
+                <RichTextEditor
+                  value={formData.description || ''}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Write a brief description of the lesson..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Brief overview of what students will learn
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
                   Content *
                 </label>
-                <textarea
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Enter lesson content"
-                  rows={8}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setFormData({ ...formData, content: value })}
+                  placeholder="Write your lesson content with rich formatting..."
                 />
+                <p className="text-xs text-gray-500 mt-2">
+                  Use the toolbar to format your lesson with headings, bold, italic, lists, links, and images
+                </p>
               </div>
 
               <div className="space-y-2">

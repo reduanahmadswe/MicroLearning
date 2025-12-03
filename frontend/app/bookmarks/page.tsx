@@ -45,11 +45,11 @@ export default function BookmarksPage() {
     try {
       setLoading(true);
       const response = await bookmarkAPI.getMyBookmarks();
-      const bookmarksData = response.data.data || [];
+      const bookmarksData: BookmarkedLesson[] = response.data.data || [];
       setBookmarks(bookmarksData);
 
       // Extract unique collections
-      const uniqueCollections = ['All', ...new Set(bookmarksData.map((b: BookmarkedLesson) => b.collection))];
+      const uniqueCollections: string[] = ['All', ...Array.from(new Set(bookmarksData.map((b) => b.collection)))];
       setCollections(uniqueCollections);
     } catch (error: any) {
       console.error('Error loading bookmarks:', error);

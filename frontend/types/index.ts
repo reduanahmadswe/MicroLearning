@@ -40,7 +40,7 @@ export interface Lesson {
   isCompleted?: boolean;
   audioUrl?: string;
   thumbnailUrl?: string;
-  course?: string; // Course ID reference
+  course?: string | { _id: string; title: string }; // Course ID reference or populated course
   order?: number; // Lesson order in course
   media?: Array<{
     type: 'video' | 'audio' | 'image';

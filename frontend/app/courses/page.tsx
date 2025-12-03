@@ -234,7 +234,10 @@ export default function CoursesPage() {
                       <CardTitle className="text-lg line-clamp-2">{course.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{course.description}</p>
+                      <div 
+                        className="text-sm text-gray-600 mb-4 line-clamp-2 prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: course.description }}
+                      />
 
                       <div className="space-y-2 mb-4 text-sm text-gray-600">
                         <div className="flex items-center gap-2">

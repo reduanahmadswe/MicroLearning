@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { ArrowLeft, BookOpen, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import RichTextEditor from '@/components/ui/rich-text-editor';
 
 export default function EditLessonPage() {
   const { lessonId } = useParams();
@@ -169,16 +170,13 @@ export default function EditLessonPage() {
               <label className="block text-sm font-medium mb-2">
                 Lesson Content <span className="text-red-500">*</span>
               </label>
-              <textarea
+              <RichTextEditor
                 value={lessonData.content}
-                onChange={(e) => setLessonData({ ...lessonData, content: e.target.value })}
-                rows={12}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Write the full lesson content here..."
-                required
+                onChange={(value) => setLessonData({ ...lessonData, content: value })}
+                placeholder="Write your lesson content with rich formatting..."
               />
-              <p className="text-sm text-gray-500 mt-1">
-                You can use Markdown formatting for better presentation
+              <p className="text-xs text-gray-500 mt-2">
+                Use the toolbar to format your lesson with headings, bold, italic, lists, links, and images
               </p>
             </div>
 

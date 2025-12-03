@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import RichTextEditor from '@/components/ui/rich-text-editor';
 import { coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, DollarSign, Unlock } from 'lucide-react';
@@ -83,14 +84,14 @@ export default function CreateCoursePage() {
                 <label className="text-sm font-medium text-gray-700">
                   Description *
                 </label>
-                <textarea
+                <RichTextEditor
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter course description"
-                  rows={6}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Write a detailed course description with formatting..."
                 />
+                <p className="text-xs text-gray-500 mt-2">
+                  Use the toolbar to format your text with bold, italic, headings, lists, links, and images
+                </p>
               </div>
 
               {/* Topic */}

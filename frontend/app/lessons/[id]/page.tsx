@@ -687,9 +687,15 @@ export default function LessonDetailPage() {
 
         {/* Lesson Content */}
         <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              Lesson Content
+            </CardTitle>
+          </CardHeader>
           <CardContent className="p-6">
             <div
-              className="prose prose-blue max-w-none"
+              className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ __html: lesson.content }}
             />
           </CardContent>

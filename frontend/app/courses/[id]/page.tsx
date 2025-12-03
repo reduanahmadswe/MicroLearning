@@ -289,7 +289,10 @@ export default function CourseDetailPage() {
                 </div>
 
                 <h1 className="text-3xl font-bold text-gray-900 mb-3">{course.title}</h1>
-                <p className="text-gray-600 mb-4">{course.description}</p>
+                <div 
+                  className="prose prose-sm max-w-none text-gray-600 mb-4"
+                  dangerouslySetInnerHTML={{ __html: course.description }}
+                />
 
                 <div className="flex items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
