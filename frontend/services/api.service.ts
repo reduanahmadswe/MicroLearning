@@ -288,6 +288,25 @@ export const asrAPI = {
   getTranscriptions: () => api.get('/asr/transcriptions'),
 };
 
+// AI Tutor APIs
+export const aiTutorAPI = {
+  chat: (data: { 
+    message: string; 
+    sessionId?: string;
+    topic?: string;
+    lessonId?: string;
+    courseId?: string;
+    conversationHistory?: Array<{ role: string; content: string }>;
+  }) => api.post('/ai-tutor/chat', data),
+  getSessions: (params?: { page?: number; limit?: number }) => 
+    api.get('/ai-tutor/sessions', { params }),
+  getSession: (sessionId: string) => api.get(`/ai-tutor/sessions/${sessionId}`),
+  deleteSession: (sessionId: string) => api.delete(`/ai-tutor/sessions/${sessionId}`),
+  updateSessionTitle: (sessionId: string, title: string) => 
+    api.patch(`/ai-tutor/sessions/${sessionId}/title`, { title }),
+  clearSession: (sessionId: string) => api.patch(`/ai-tutor/sessions/${sessionId}/clear`),
+};
+
 // Roadmap APIs
 export const roadmapAPI = {
   generateRoadmap: (data: { goal: string; currentLevel?: string; timeframe?: string }) => 
