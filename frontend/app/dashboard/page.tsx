@@ -112,6 +112,7 @@ export default function DashboardPage() {
     { icon: Brain, label: 'Quiz', href: '/quiz', color: 'text-pink-600', bg: 'bg-pink-50' },
     { icon: Sparkles, label: 'Flashcards', href: '/flashcards', color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { icon: GraduationCap, label: 'Courses', href: '/courses', color: 'text-green-600', bg: 'bg-green-50' },
+    { icon: ShoppingBag, label: 'Purchased', href: '/purchased-courses', color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { icon: Star, label: 'Bookmarks', href: '/bookmarks', color: 'text-amber-600', bg: 'bg-amber-50' },
     { icon: Zap, label: 'AI Tutor', href: '/ai-tutor', color: 'text-violet-600', bg: 'bg-violet-50' },
     { icon: Video, label: 'Videos', href: '/videos', color: 'text-rose-600', bg: 'bg-rose-50' },
@@ -120,9 +121,8 @@ export default function DashboardPage() {
     { icon: Users, label: 'Friends', href: '/friends', color: 'text-teal-600', bg: 'bg-teal-50' },
     { icon: Target, label: 'Challenges', href: '/challenges', color: 'text-red-600', bg: 'bg-red-50' },
     { icon: MessageSquare, label: 'Forum', href: '/forum', color: 'text-blue-600', bg: 'bg-blue-50' },
-    { icon: ShoppingBag, label: 'Marketplace', href: '/marketplace', color: 'text-purple-600', bg: 'bg-purple-50' },
     { icon: BarChart3, label: 'Analytics', href: '/analytics', color: 'text-cyan-600', bg: 'bg-cyan-50' },
-    { icon: Map, label: 'Roadmap', href: '/roadmap', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { icon: Map, label: 'Roadmap', href: '/roadmap', color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   const statCards = [

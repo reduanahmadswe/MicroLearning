@@ -209,10 +209,23 @@ export default function CourseDetailPage() {
   const handleEnroll = async () => {
     setEnrolling(true);
     try {
-      await coursesAPI.enrollCourse(courseId);
-      toast.success('Successfully enrolled in course! 🎉');
-      await checkEnrollment();
-      await loadCourse(); // Reload to show unlock status
+      // Check if course is premium
+      if (course?.isPremium && course?.price && course.price > 0) {
+        // Initiate payment for premium course
+        const response = await coursesAPI.initiatePayment(courseId);
+        const { paymentUrl } = response.data.data;
+        
+        toast.success('Redirecting to payment gateway...');
+        
+        // Redirect to SSLCommerz payment page
+        window.location.href = paymentUrl;
+      } else {
+        // Free course - direct enrollment
+        await coursesAPI.enrollCourse(courseId);
+        toast.success('Successfully enrolled in course! 🎉');
+        await checkEnrollment();
+        await loadCourse(); // Reload to show unlock status
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to enroll');
     } finally {

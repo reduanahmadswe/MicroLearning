@@ -52,3 +52,22 @@ export interface IEnrollment {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface ICoursePayment {
+  user: mongoose.Types.ObjectId;
+  course: mongoose.Types.ObjectId;
+  amount: number;
+  currency: string;
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: 'sslcommerz';
+  transactionId?: string;
+  sslSessionId?: string;
+  bankTransactionId?: string;
+  cardType?: string;
+  cardBrand?: string;
+  paymentCompletedAt?: Date;
+  refundedAt?: Date;
+  refundReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -2,14 +2,28 @@ import Notification from './notification.model';
 import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
 import { ICreateNotificationRequest } from './notification.types';
+import { io } from '../../../server';
 
 class NotificationService {
   // Create notification
   async createNotification(data: ICreateNotificationRequest) {
     const notification = await Notification.create(data);
 
-    // TODO: Send push notification if isPush is true
-    // This would integrate with Firebase Cloud Messaging or similar service
+    // Send real-time notification via Socket.IO
+    try {
+      io.to(`user_${data.user}`).emit('notification', {
+        _id: notification._id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        data: notification.data,
+        isRead: notification.isRead,
+        createdAt: notification.createdAt,
+      });
+      console.log(`📬 Notification sent to user ${data.user}`);
+    } catch (error) {
+      console.error('Error sending real-time notification:', error);
+    }
 
     return notification;
   }

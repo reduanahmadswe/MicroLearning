@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import NotificationBell from './NotificationBell';
 
 // Public navigation items (when not logged in)
 const publicNavItems = [
@@ -252,79 +253,9 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  {/* Notifications */}
-                  <div className="hidden md:block relative" ref={notificationRef}>
-                    <button
-                      onClick={() => setNotificationsOpen(!notificationsOpen)}
-                      className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors relative group"
-                    >
-                      <Bell className="w-5 h-5 text-gray-700 group-hover:text-gray-900" />
-                      <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                      </span>
-                    </button>
-
-                    {/* Notifications Dropdown */}
-                    {notificationsOpen && (
-                      <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2">
-                        <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900">Notifications</h3>
-                            <span className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">2 New</span>
-                          </div>
-                        </div>
-                        <div className="max-h-[400px] overflow-y-auto">
-                          <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-l-4 border-blue-500 bg-blue-50/30 transition-colors">
-                            <div className="flex gap-3">
-                              <div className="flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                  <Users className="w-5 h-5 text-blue-600" />
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900">New student enrolled</p>
-                                <p className="text-xs text-gray-600 mt-1">John Doe enrolled in your React Fundamentals course</p>
-                                <p className="text-xs text-gray-400 mt-1.5">2 hours ago</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-l-4 border-yellow-500 bg-yellow-50/30 transition-colors">
-                            <div className="flex gap-3">
-                              <div className="flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                                  <Award className="w-5 h-5 text-yellow-600" />
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900">5-star course review</p>
-                                <p className="text-xs text-gray-600 mt-1">"Excellent course! Very well explained"</p>
-                                <p className="text-xs text-gray-400 mt-1.5">5 hours ago</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-l-4 border-transparent transition-colors">
-                            <div className="flex gap-3">
-                              <div className="flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                                  <Trophy className="w-5 h-5 text-green-600" />
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-700">Course milestone reached</p>
-                                <p className="text-xs text-gray-600 mt-1">Your course has 100+ students!</p>
-                                <p className="text-xs text-gray-400 mt-1.5">1 day ago</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-                          <button className="w-full text-sm text-blue-600 hover:text-blue-700 font-semibold text-center py-1">
-                            View all notifications →
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                  {/* Real-time Notifications */}
+                  <div className="hidden md:block">
+                    <NotificationBell />
                   </div>
 
                   {/* Profile Dropdown */}

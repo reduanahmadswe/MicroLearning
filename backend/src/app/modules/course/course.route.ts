@@ -1,10 +1,19 @@
 import { Router } from 'express';
 import courseController from './course.controller';
+import * as coursePaymentController from './course.payment.controller';
 import { validateRequest } from '../../../middleware/validateRequest';
 import { createCourseValidation, updateCourseValidation } from './course.validation';
 import { authGuard } from '../../../middleware/authGuard';
 
 const router = Router();
+
+// Payment routes (must come before /:id routes)
+router.post('/payment/initiate', authGuard(), coursePaymentController.initiateCoursePayment);
+router.post('/payment/success', coursePaymentController.paymentSuccess);
+router.post('/payment/fail', coursePaymentController.paymentFail);
+router.post('/payment/cancel', coursePaymentController.paymentCancel);
+router.post('/payment/ipn', coursePaymentController.paymentIPN);
+router.get('/payment/history', authGuard(), coursePaymentController.getUserPayments);
 
 // Public routes
 router.get('/', courseController.getCourses);

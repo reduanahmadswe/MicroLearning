@@ -120,6 +120,9 @@ export const coursesAPI = {
   getMyCourses: () => api.get('/courses/my-courses'),
   getEnrolledCourses: () => api.get('/courses/enrollments/me'),
   togglePublish: (id: string) => api.patch(`/courses/${id}/publish`),
+  // Payment APIs
+  initiatePayment: (courseId: string) => api.post('/courses/payment/initiate', { courseId }),
+  getPaymentHistory: () => api.get('/courses/payment/history'),
   // Instructor APIs
   getInstructorCourses: () => api.get('/courses/instructor/my-courses'),
   getInstructorAnalytics: () => api.get('/courses/instructor/analytics'),

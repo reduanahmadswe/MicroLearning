@@ -166,5 +166,65 @@ const enrollmentSchema = new Schema<IEnrollment>(
 // Compound unique index - user can only enroll once per course
 enrollmentSchema.index({ user: 1, course: 1 }, { unique: true });
 
+// Course Payment schema
+const coursePaymentSchema = new Schema<import('./course.types').ICoursePayment>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      required: true,
+      index: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    currency: {
+      type: String,
+      default: 'BDT',
+      uppercase: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'refunded'],
+      default: 'pending',
+      index: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['sslcommerz'],
+      default: 'sslcommerz',
+    },
+    transactionId: {
+      type: String,
+      index: true,
+    },
+    sslSessionId: {
+      type: String,
+      index: true,
+    },
+    bankTransactionId: String,
+    cardType: String,
+    cardBrand: String,
+    paymentCompletedAt: Date,
+    refundedAt: Date,
+    refundReason: String,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+coursePaymentSchema.index({ user: 1, course: 1 });
+
 export const Course = mongoose.model<ICourse>('Course', courseSchema);
 export const Enrollment = mongoose.model<IEnrollment>('Enrollment', enrollmentSchema);
+export const CoursePayment = mongoose.model('CoursePayment', coursePaymentSchema);
+

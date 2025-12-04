@@ -21,11 +21,11 @@ import {
   IGroupStats,
   ICreatePollRequest,
   IReportRequest,
-} from './forum.types';
+  } from './forum.types';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
-
-/**
+import Notification from '../notification/notification.model';
+import User from '../auth/auth.model';/**
  * ========================================
  * GROUP SERVICES
  * ========================================
@@ -103,7 +103,7 @@ export const getGroups = async (filters: IForumSearchQuery) => {
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
-    .populate('creator', 'name email profileImage')
+    .populate('creator', 'name email profilePicture')
     .select('-members'); // Don't send full member arrays
 
   const total = await Group.countDocuments(filter);
@@ -124,8 +124,8 @@ export const getGroups = async (filters: IForumSearchQuery) => {
  */
 export const getGroupDetails = async (groupId: string, userId?: string) => {
   const group = await Group.findById(groupId)
-    .populate('creator', 'name email profileImage')
-    .populate('moderators', 'name email profileImage');
+    .populate('creator', 'name email profilePicture')
+    .populate('moderators', 'name email profilePicture');
 
   if (!group) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Group not found');
@@ -331,7 +331,7 @@ export const getUserInvitations = async (userId: string) => {
     expiresAt: { $gt: new Date() },
   })
     .populate('group', 'name description category coverImage')
-    .populate('invitedBy', 'name email profileImage')
+    .populate('invitedBy', 'name email profilePicture')
     .sort({ createdAt: -1 });
 
   return invitations;
@@ -377,7 +377,7 @@ export const respondToInvitation = async (
  */
 export const getGroupMembers = async (groupId: string, page: number = 1, limit: number = 50) => {
   const members = await GroupMember.find({ group: groupId })
-    .populate('user', 'name email profileImage xp level')
+    .populate('user', 'name email profilePicture xp level')
     .sort({ role: 1, joinedAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
@@ -564,7 +564,7 @@ export const getPosts = async (filters: IPostSearchQuery) => {
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
-    .populate('author', 'name email profileImage level')
+    .populate('author', 'name email profilePicture level')
     .populate('group', 'name category');
 
   const total = await Post.countDocuments(filter);
@@ -585,7 +585,7 @@ export const getPosts = async (filters: IPostSearchQuery) => {
  */
 export const getPostDetails = async (postId: string, userId?: string) => {
   const post = await Post.findById(postId)
-    .populate('author', 'name email profileImage level xp')
+    .populate('author', 'name email profilePicture level xp')
     .populate('group', 'name category');
 
   if (!post) {
@@ -709,6 +709,28 @@ export const togglePostLike = async (postId: string, userId: string) => {
     await PostLike.create({ post: postId, user: userId });
     post.likeCount += 1;
     await post.save();
+
+    // Send real-time notification to post author
+    const postWithAuthor = await Post.findById(postId).populate('author', '_id name profilePicture');
+    const userWhoLiked = await User.findById(userId).select('name profilePicture');
+    
+    if (postWithAuthor && userWhoLiked && postWithAuthor.author._id.toString() !== userId) {
+      await Notification.create({
+        user: (postWithAuthor.author as any)._id,
+        type: 'like',
+        title: 'New Like on Your Post',
+        message: `${userWhoLiked.name} liked your post "${postWithAuthor.title}"`,
+        data: {
+          postId: postId,
+          userId: userId,
+          senderName: userWhoLiked.name,
+          senderImage: userWhoLiked.profilePicture,
+          link: `/forum/${postId}`,
+        },
+      });
+      console.log('✅ Like notification created for user:', (postWithAuthor.author as any)._id);
+    }
+
     return { liked: true, likeCount: post.likeCount };
   }
 };
@@ -801,6 +823,49 @@ export const createComment = async (userId: string, data: ICreateCommentRequest)
   post.commentCount += 1;
   await post.save();
 
+  // Populate author details for notification
+  await comment.populate('author', 'name profilePicture');
+  await post.populate('author', 'name');
+
+  // Send real-time notification
+  if (parentCommentId) {
+    // Reply to comment - notify parent comment author
+    const parentComment = await ForumComment.findById(parentCommentId).populate('author', '_id name');
+    if (parentComment && parentComment.author._id.toString() !== userId) {
+      await Notification.create({
+        user: parentComment.author._id,
+        type: 'reply',
+        title: 'New Reply to Your Comment',
+        message: `${(comment.author as any).name} replied: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+        data: {
+          postId: postId,
+          commentId: parentCommentId,
+          userId: userId,
+          senderName: (comment.author as any).name,
+          senderImage: (comment.author as any).profilePicture,
+          link: `/forum/${postId}`,
+        },
+      });
+    }
+  } else {
+    // New comment on post - notify post author
+    if ((post.author as any)._id.toString() !== userId) {
+      await Notification.create({
+        user: (post.author as any)._id,
+        type: 'comment',
+        title: 'New Comment on Your Post',
+        message: `${(comment.author as any).name} commented: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+        data: {
+          postId: postId,
+          userId: userId,
+          senderName: (comment.author as any).name,
+          senderImage: (comment.author as any).profilePicture,
+          link: `/forum/${postId}`,
+        },
+      });
+    }
+  }
+
   return comment;
 };
 
@@ -810,7 +875,7 @@ export const createComment = async (userId: string, data: ICreateCommentRequest)
 const fetchNestedReplies = async (commentId: any): Promise<any[]> => {
   const replies = await ForumComment.find({ parentComment: commentId })
     .sort({ createdAt: 1 })
-    .populate('author', 'name email profileImage level xp')
+    .populate('author', 'name email profilePicture level xp')
     .lean();
 
   // Recursively fetch replies for each reply
@@ -837,7 +902,7 @@ export const getComments = async (postId: string, page: number = 1, limit: numbe
     .sort({ isAcceptedAnswer: -1, createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit)
-    .populate('author', 'name email profileImage level xp');
+    .populate('author', 'name email profilePicture level xp');
 
   const total = await ForumComment.countDocuments({ post: postId, parentComment: { $exists: false } });
 
@@ -928,7 +993,7 @@ export const deleteComment = async (commentId: string, userId: string) => {
  * Like/Unlike Comment
  */
 export const toggleCommentLike = async (commentId: string, userId: string) => {
-  const comment = await ForumComment.findById(commentId);
+  const comment = await ForumComment.findById(commentId).populate('author', 'name profilePicture');
   if (!comment) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Comment not found');
   }
@@ -946,6 +1011,28 @@ export const toggleCommentLike = async (commentId: string, userId: string) => {
     await CommentLike.create({ comment: commentId, user: userId });
     comment.likeCount += 1;
     await comment.save();
+
+    // Create notification for comment author (if not self-like)
+    const userWhoLiked = await User.findById(userId).select('name profilePicture');
+    if (comment.author && userWhoLiked && (comment.author as any)._id.toString() !== userId) {
+      const commentSnippet = comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '');
+      
+      await Notification.create({
+        user: (comment.author as any)._id,
+        type: 'like',
+        title: 'New Like on Your Comment',
+        message: `${userWhoLiked.name} liked your comment: "${commentSnippet}"`,
+        data: { 
+          commentId, 
+          userId, 
+          senderName: userWhoLiked.name, 
+          senderImage: userWhoLiked.profilePicture, 
+          link: `/forum/${comment.post}` 
+        },
+      });
+      console.log('✅ Comment like notification created for user:', (comment.author as any)._id);
+    }
+
     return { liked: true, likeCount: comment.likeCount };
   }
 };
@@ -971,6 +1058,29 @@ export const acceptAnswer = async (commentId: string, userId: string) => {
   // Toggle accepted status - allow multiple answers to be accepted
   comment.isAcceptedAnswer = !comment.isAcceptedAnswer;
   await comment.save();
+
+  // Send real-time notification if answer was accepted (not unaccepted)
+  if (comment.isAcceptedAnswer) {
+    await comment.populate('author', '_id name profilePicture');
+    await post.populate('author', 'name profilePicture');
+    
+    if ((comment.author as any)._id.toString() !== userId) {
+      await Notification.create({
+        user: (comment.author as any)._id,
+        type: 'accept_answer',
+        title: '✅ Your Answer Was Accepted!',
+        message: `${(post.author as any).name} accepted your answer on "${post.title}"`,
+        data: {
+          postId: post._id.toString(),
+          commentId: comment._id.toString(),
+          userId: userId,
+          senderName: (post.author as any).name,
+          senderImage: (post.author as any).profilePicture,
+          link: `/forum/${post._id}`,
+        },
+      });
+    }
+  }
 
   return { 
     message: comment.isAcceptedAnswer ? 'Answer accepted successfully' : 'Answer unaccepted successfully', 
@@ -1172,7 +1282,7 @@ export const getForumStats = async (): Promise<IForumStats> => {
   const recentPosts = await Post.find()
     .sort({ createdAt: -1 })
     .limit(10)
-    .populate('author', 'name profileImage')
+    .populate('author', 'name profilePicture')
     .populate('group', 'name');
 
   // Get trending tags
@@ -1344,4 +1454,5 @@ export const markPostSolved = async (postId: string, userId: string) => {
 
   return post;
 };
+
 

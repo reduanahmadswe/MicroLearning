@@ -1,4 +1,4 @@
-import { Course, Enrollment } from './course.model';
+import { Course, Enrollment, CoursePayment } from './course.model';
 import Lesson from '../microLessons/lesson.model';
 import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
@@ -234,14 +234,23 @@ class CourseService {
       throw new ApiError(400, 'Already enrolled in this course');
     }
 
-    // Check if course is paid - require payment/order verification
+    // Check if course is premium - require payment verification
     if (course.isPremium && course.price && course.price > 0) {
-      // TODO: Add payment verification here
-      // For now, checking if user has premium or admin role
-      const user = await User.findById(userId);
-      if (!user?.isPremium && user?.role !== 'admin') {
-        throw new ApiError(403, 'Payment required for this course. Please complete the payment first.');
+      // Check if payment has been completed
+      const completedPayment = await CoursePayment.findOne({
+        user: userId,
+        course: courseId,
+        paymentStatus: 'completed',
+      });
+
+      if (!completedPayment) {
+        throw new ApiError(
+          403, 
+          'Payment required for this premium course. Please initiate payment first.'
+        );
       }
+
+      // Payment verified - proceed with enrollment
     }
 
     const enrollment = await Enrollment.create({
