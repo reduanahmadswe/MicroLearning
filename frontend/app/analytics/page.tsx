@@ -57,59 +57,47 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <BarChart3 className="w-8 h-8 text-purple-600" />
-                Learning Analytics
-              </h1>
-              <p className="text-gray-600 mt-1">Track your progress and insights</p>
-            </div>
-          </div>
-
-          {/* Time Range Selector */}
-          <div className="flex gap-2 mt-6">
-            <Button
-              variant={timeRange === '7d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeRange('7d')}
-            >
-              Last 7 Days
-            </Button>
-            <Button
-              variant={timeRange === '30d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeRange('30d')}
-            >
-              Last 30 Days
-            </Button>
-            <Button
-              variant={timeRange === '90d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeRange('90d')}
-            >
-              Last 90 Days
-            </Button>
-            <Button
-              variant={timeRange === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeRange('all')}
-            >
-              All Time
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-purple-600" />
+            Learning Analytics
+          </h1>
+          <p className="text-gray-600 mt-1">Track your progress and insights</p>
+        </div>
+
+        {/* Time Range Selector */}
+        <div className="flex gap-2 mb-8">
+          <Button
+            variant={timeRange === '7d' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeRange('7d')}
+          >
+            Last 7 Days
+          </Button>
+          <Button
+            variant={timeRange === '30d' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeRange('30d')}
+          >
+            Last 30 Days
+          </Button>
+          <Button
+            variant={timeRange === '90d' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeRange('90d')}
+          >
+            Last 90 Days
+          </Button>
+          <Button
+            variant={timeRange === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeRange('all')}
+          >
+            All Time
+          </Button>
+        </div>
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>

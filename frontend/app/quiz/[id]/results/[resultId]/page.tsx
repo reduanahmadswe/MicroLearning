@@ -30,12 +30,19 @@ export default function QuizResultsPage() {
   const [result, setResult] = useState<QuizResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [nextLesson, setNextLesson] = useState<any>(null);
 
   useEffect(() => {
     if (resultId) {
       loadResult();
     }
   }, [resultId]);
+
+  useEffect(() => {
+    if (result?.passed && result.quiz.lesson) {
+      loadNextLesson();
+    }
+  }, [result]);
 
   const loadResult = async () => {
     try {
@@ -47,6 +54,43 @@ export default function QuizResultsPage() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadNextLesson = async () => {
+    try {
+      if (!result?.quiz.lesson) return;
+
+      const token = localStorage.getItem('token');
+      
+      // Get current lesson details
+      const lessonResponse = await fetch(`http://localhost:5000/api/v1/lessons/${result.quiz.lesson}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!lessonResponse.ok) return;
+      
+      const lessonData = await lessonResponse.json();
+      const currentLesson = lessonData.data;
+      
+      if (!currentLesson.course) return;
+      
+      const courseId = typeof currentLesson.course === 'string' ? currentLesson.course : currentLesson.course._id;
+      
+      // Get next lesson
+      const nextResponse = await fetch(
+        `http://localhost:5000/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (nextResponse.ok) {
+        const nextData = await nextResponse.json();
+        if (nextData.data && nextData.data.length > 0) {
+          setNextLesson(nextData.data[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading next lesson:', error);
     }
   };
 
@@ -217,6 +261,85 @@ export default function QuizResultsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Pass - Next Lesson Unlocked Message */}
+        {result.passed && nextLesson && (
+          <Card className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <Trophy className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-1">🎉 Quiz Passed - Next Lesson Unlocked!</h3>
+                  <p className="text-white/90 text-sm mb-3">
+                    Congratulations! You scored {result.percentage}% and passed the quiz. You can now access:
+                  </p>
+                  <p className="font-semibold text-lg">{nextLesson.title}</p>
+                </div>
+                <Link href={`/lessons/${nextLesson._id}`}>
+                  <Button className="bg-white text-green-600 hover:bg-gray-100 font-semibold">
+                    Go to Next Lesson →
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pass - No Next Lesson (Course Completed) */}
+        {result.passed && !nextLesson && result.quiz.lesson && (
+          <Card className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <Trophy className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-1">🎉 Quiz Passed - Course Completed!</h3>
+                  <p className="text-white/90 text-sm">
+                    Congratulations! You scored {result.percentage}% and completed all lessons in this course!
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => router.push('/dashboard')}
+                  className="bg-white text-green-600 hover:bg-gray-100 font-semibold"
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Fail - Retry Message */}
+        {!result.passed && (
+          <Card className="mb-8 bg-gradient-to-r from-red-500 to-orange-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <XCircle className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-1">Quiz Not Passed - Try Again!</h3>
+                  <p className="text-white/90 text-sm mb-2">
+                    You scored {result.percentage}%, but need {result.quiz.passingScore}% to pass and unlock the next lesson.
+                  </p>
+                  <p className="text-white/90 text-sm font-semibold">
+                    💡 Review the lesson content and retake the quiz to continue.
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleRetake}
+                  className="bg-white text-red-600 hover:bg-gray-100 font-semibold"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Retake Quiz
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">

@@ -306,37 +306,75 @@ export default function LessonDetailPage() {
       const response = await lessonsAPI.completeLesson(lessonId);
       const xpEarned = response.data.data?.xpEarned || 50;
       
-      // Show success with option to continue
-      toast.success(`🎉 Lesson completed! +${xpEarned} XP earned`, {
-        duration: 4000,
-        action: {
-          label: 'Next Lesson',
-          onClick: () => {
-            if (lesson?.course) {
-              router.push(`/courses/${lesson.course}?refresh=true`);
-            }
-          }
-        }
-      });
+      toast.success(`🎉 Lesson completed! +${xpEarned} XP earned`);
       
       if (lesson) {
         setLesson({ ...lesson, isCompleted: true });
       }
       
-      // Redirect to course page after 3 seconds to see unlocked lessons
-      setTimeout(() => {
-        if (lesson?.course) {
-          router.push(`/courses/${lesson.course}?refresh=true`);
-        } else {
-          router.push('/dashboard');
-        }
-      }, 3000);
+      // Navigate based on quiz availability
+      if (quiz) {
+        // If quiz exists, go to quiz
+        toast.info('Redirecting to quiz...', { duration: 2000 });
+        setTimeout(() => {
+          router.push(`/quiz/${quiz._id}`);
+        }, 2000);
+      } else {
+        // If no quiz, find and go to next lesson
+        await goToNextLesson();
+      }
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || 'Failed to complete lesson';
       toast.error(errorMsg);
       console.error('Complete lesson error:', error);
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const goToNextLesson = async () => {
+    try {
+      if (!lesson?.course) {
+        router.push('/dashboard');
+        return;
+      }
+
+      const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course._id;
+      
+      // Get next lesson in the course
+      const response = await fetch(
+        `http://localhost:5000/api/v1/lessons?course=${courseId}&order=${(lesson.order || 0) + 1}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const nextLessons = await response.json();
+        const nextLesson = nextLessons.data?.[0];
+        
+        if (nextLesson) {
+          toast.info('Going to next lesson...', { duration: 1500 });
+          setTimeout(() => {
+            router.push(`/lessons/${nextLesson._id}`);
+          }, 1500);
+        } else {
+          // No more lessons, go back to course
+          toast.success('Course completed! 🎉', { duration: 2000 });
+          setTimeout(() => {
+            router.push(`/courses/${courseId}`);
+          }, 2000);
+        }
+      } else {
+        // Fallback to course page
+        router.push(`/courses/${courseId}`);
+      }
+    } catch (error) {
+      console.error('Error finding next lesson:', error);
+      if (lesson?.course) {
+        const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course._id;
+        router.push(`/courses/${courseId}`);
+      } else {
+        router.push('/dashboard');
+      }
     }
   };
 
@@ -779,20 +817,24 @@ export default function LessonDetailPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold mb-1">Mark as Complete</h3>
-                  <p className="text-white/90 text-sm">Earn 50 XP by completing this lesson</p>
+                  <h3 className="text-lg font-bold mb-1">Mark as Complete & Go to Next</h3>
+                  <p className="text-white/90 text-sm">
+                    {quiz 
+                      ? '✓ Earn 50 XP → Go to Quiz (Required to unlock next lesson)' 
+                      : '✓ Earn 50 XP → Go to Next Lesson'}
+                  </p>
                 </div>
                 <Button
                   onClick={handleComplete}
                   disabled={completing}
-                  className="bg-white text-blue-600 hover:bg-gray-100"
+                  className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
                 >
                   {completing ? (
                     'Completing...'
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Complete
+                      {quiz ? 'Complete & Take Quiz' : 'Complete & Next'}
                     </>
                   )}
                 </Button>

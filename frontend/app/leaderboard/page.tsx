@@ -93,64 +93,52 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Trophy className="w-8 h-8 text-yellow-600" />
-                Leaderboard
-              </h1>
-              <p className="text-gray-600 mt-1">Compete with learners worldwide</p>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-4 mt-6">
-            <button
-              onClick={() => setActiveTab('global')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'global'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Trophy className="w-4 h-4 inline mr-2" />
-              Global
-            </button>
-            <button
-              onClick={() => setActiveTab('friends')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'friends'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Users className="w-4 h-4 inline mr-2" />
-              Friends
-            </button>
-            <button
-              onClick={() => setActiveTab('topic')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'topic'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Target className="w-4 h-4 inline mr-2" />
-              By Topic
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Trophy className="w-8 h-8 text-yellow-600" />
+            Leaderboard
+          </h1>
+          <p className="text-gray-600 mt-1">Compete with learners worldwide</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('global')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'global'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Trophy className="w-4 h-4 inline mr-2" />
+            Global
+          </button>
+          <button
+            onClick={() => setActiveTab('friends')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'friends'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Users className="w-4 h-4 inline mr-2" />
+            Friends
+          </button>
+          <button
+            onClick={() => setActiveTab('topic')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'topic'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Target className="w-4 h-4 inline mr-2" />
+            By Topic
+          </button>
+        </div>
         {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-4 items-center">
           <div className="flex gap-2">

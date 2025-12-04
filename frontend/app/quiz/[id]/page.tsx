@@ -17,6 +17,8 @@ import { quizAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { Quiz, Question } from '@/types';
 
+const QUESTIONS_PER_PAGE = 5;
+
 export default function QuizPlayerPage() {
   const router = useRouter();
   const params = useParams();
@@ -24,15 +26,17 @@ export default function QuizPlayerPage() {
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
+  const [startTime, setStartTime] = useState<number>(Date.now());
 
   useEffect(() => {
     if (quizId) {
       loadQuiz();
+      setStartTime(Date.now()); // Track when quiz started
     }
   }, [quizId]);
 
@@ -75,15 +79,32 @@ export default function QuizPlayerPage() {
     setAnswers({ ...answers, [questionIndex]: answer });
   };
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+  const getTotalPages = () => {
+    if (!quiz) return 0;
+    return Math.ceil(quiz.questions.length / QUESTIONS_PER_PAGE);
+  };
+
+  const getCurrentPageQuestions = () => {
+    if (!quiz) return [];
+    const startIndex = currentPage * QUESTIONS_PER_PAGE;
+    const endIndex = startIndex + QUESTIONS_PER_PAGE;
+    return quiz.questions.slice(startIndex, endIndex).map((q, idx) => ({
+      question: q,
+      globalIndex: startIndex + idx,
+    }));
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handleNext = () => {
-    if (quiz && currentQuestionIndex < quiz.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleNextPage = () => {
+    if (currentPage < getTotalPages() - 1) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -100,16 +121,71 @@ export default function QuizPlayerPage() {
 
     setSubmitting(true);
     try {
-      const formattedAnswers = quiz.questions.map((q, index) => ({
-        questionId: q._id,
-        answer: answers[index] !== undefined ? answers[index] : null,
-      }));
+      // Calculate time taken in seconds
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
 
-      const response = await quizAPI.submitQuiz(quizId, { answers: formattedAnswers });
+      // Format answers according to backend validation schema
+      const formattedAnswers = quiz.questions.map((q, index) => {
+        let answer = answers[index];
+        
+        // Convert answer to string for validation
+        if (answer === undefined || answer === null) {
+          answer = '';
+        } else if (typeof answer === 'number') {
+          // For MCQ, convert option index to string
+          answer = answer.toString();
+        } else if (typeof answer === 'boolean') {
+          // For true/false, convert to string
+          answer = answer.toString();
+        } else if (Array.isArray(answer)) {
+          // Keep array as is (for multi-select)
+          answer = answer.map(a => String(a));
+        } else {
+          // Ensure it's a string
+          answer = String(answer);
+        }
+        
+        return {
+          questionIndex: index,
+          answer: answer,
+        };
+      });
+
+      // Use the correct endpoint
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/v1/quizzes/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          quizId: quizId,
+          answers: formattedAnswers,
+          timeTaken: timeTaken
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Submission error details:', errorData);
+        console.error('Sent data:', { quizId, answers: formattedAnswers, timeTaken });
+        throw new Error(errorData.message || 'Failed to submit quiz');
+      }
+
+      const result = await response.json();
+      console.log('Quiz submission successful:', result);
       toast.success('Quiz submitted successfully!');
-      router.push(`/quiz/${quizId}/results/${response.data.data._id}`);
+      
+      // Navigate to results page
+      if (result.data?._id) {
+        router.push(`/quiz/${quizId}/results/${result.data._id}`);
+      } else {
+        router.push(`/quiz`);
+      }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to submit quiz');
+      console.error('Submit error:', error);
+      toast.error(error?.message || 'Failed to submit quiz');
     } finally {
       setSubmitting(false);
       setShowConfirmSubmit(false);
@@ -148,8 +224,9 @@ export default function QuizPlayerPage() {
     );
   }
 
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+  const currentPageQuestions = getCurrentPageQuestions();
+  const totalPages = getTotalPages();
+  const progress = (Object.keys(answers).length / quiz.questions.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -167,7 +244,7 @@ export default function QuizPlayerPage() {
               <div>
                 <h1 className="text-lg font-bold text-gray-900">{quiz.title}</h1>
                 <p className="text-sm text-gray-600">
-                  Question {currentQuestionIndex + 1} of {quiz.questions.length}
+                  Page {currentPage + 1} of {totalPages} • {quiz.questions.length} Questions
                 </p>
               </div>
             </div>
@@ -205,110 +282,125 @@ export default function QuizPlayerPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-4 gap-6">
-          {/* Question Card */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-xl">
-                    {currentQuestion.question}
-                  </CardTitle>
-                  <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                    {currentQuestion.points} pts
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* MCQ Options */}
-                {currentQuestion.type === 'mcq' && currentQuestion.options && (
-                  <div className="space-y-3">
-                    {currentQuestion.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswerChange(currentQuestionIndex, index)}
-                        className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
-                          answers[currentQuestionIndex] === index
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            answers[currentQuestionIndex] === index
-                              ? 'border-blue-600 bg-blue-600'
-                              : 'border-gray-300'
-                          }`}>
-                            {answers[currentQuestionIndex] === index && (
-                              <div className="w-3 h-3 rounded-full bg-white" />
-                            )}
+          {/* Questions List */}
+          <div className="lg:col-span-3 space-y-6">
+            {currentPageQuestions.map(({ question, globalIndex }) => (
+              <Card key={globalIndex} id={`question-${globalIndex}`}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-semibold text-gray-500">
+                          Question {globalIndex + 1}
+                        </span>
+                        <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                          {question.points} pts
+                        </span>
+                      </div>
+                      <CardTitle className="text-lg">
+                        {question.question}
+                      </CardTitle>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* MCQ Options */}
+                  {question.type === 'mcq' && question.options && (
+                    <div className="space-y-3">
+                      {question.options.map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleAnswerChange(globalIndex, index)}
+                          className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
+                            answers[globalIndex] === index
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              answers[globalIndex] === index
+                                ? 'border-blue-600 bg-blue-600'
+                                : 'border-gray-300'
+                            }`}>
+                              {answers[globalIndex] === index && (
+                                <div className="w-3 h-3 rounded-full bg-white" />
+                              )}
+                            </div>
+                            <span className="font-medium text-gray-900">{option}</span>
                           </div>
-                          <span className="font-medium text-gray-900">{option}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-                {/* True/False */}
-                {currentQuestion.type === 'true-false' && (
-                  <div className="space-y-3">
-                    {['True', 'False'].map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswerChange(currentQuestionIndex, index === 0)}
-                        className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
-                          answers[currentQuestionIndex] === (index === 0)
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            answers[currentQuestionIndex] === (index === 0)
-                              ? 'border-blue-600 bg-blue-600'
-                              : 'border-gray-300'
-                          }`}>
-                            {answers[currentQuestionIndex] === (index === 0) && (
-                              <div className="w-3 h-3 rounded-full bg-white" />
-                            )}
+                  {/* True/False */}
+                  {question.type === 'true-false' && (
+                    <div className="space-y-3">
+                      {['True', 'False'].map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleAnswerChange(globalIndex, index === 0)}
+                          className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
+                            answers[globalIndex] === (index === 0)
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              answers[globalIndex] === (index === 0)
+                                ? 'border-blue-600 bg-blue-600'
+                                : 'border-gray-300'
+                            }`}>
+                              {answers[globalIndex] === (index === 0) && (
+                                <div className="w-3 h-3 rounded-full bg-white" />
+                              )}
+                            </div>
+                            <span className="font-medium text-gray-900">{option}</span>
                           </div>
-                          <span className="font-medium text-gray-900">{option}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Fill in the Blank */}
-                {currentQuestion.type === 'fill-blank' && (
-                  <div>
-                    <input
-                      type="text"
-                      value={answers[currentQuestionIndex] || ''}
-                      onChange={(e) => handleAnswerChange(currentQuestionIndex, e.target.value)}
-                      placeholder="Type your answer here..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {/* Fill in the Blank */}
+                  {question.type === 'fill-blank' && (
+                    <div>
+                      <input
+                        type="text"
+                        value={answers[globalIndex] || ''}
+                        onChange={(e) => handleAnswerChange(globalIndex, e.target.value)}
+                        placeholder="Type your answer here..."
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
 
-            {/* Navigation */}
-            <div className="flex justify-between mt-6">
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-6 p-4 bg-white rounded-lg border-2 border-gray-200">
               <Button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
+                onClick={handlePreviousPage}
+                disabled={currentPage === 0}
                 variant="outline"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
+                Previous Page
               </Button>
+              
+              <div className="text-sm text-gray-600">
+                Page {currentPage + 1} of {totalPages}
+              </div>
+              
               <Button
-                onClick={handleNext}
-                disabled={currentQuestionIndex === quiz.questions.length - 1}
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages - 1}
+                variant="outline"
               >
-                Next
+                Next Page
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -318,35 +410,49 @@ export default function QuizPlayerPage() {
           <div className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardHeader>
-                <CardTitle className="text-sm">Questions</CardTitle>
+                <CardTitle className="text-sm">All Questions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-5 gap-2">
-                  {quiz.questions.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentQuestionIndex(index)}
-                      className={`w-full aspect-square rounded-lg font-medium text-sm ${
-                        index === currentQuestionIndex
-                          ? 'bg-blue-600 text-white'
-                          : answers[index] !== undefined
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto">
+                  {quiz.questions.map((_, index) => {
+                    const pageIndex = Math.floor(index / QUESTIONS_PER_PAGE);
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setCurrentPage(pageIndex);
+                          setTimeout(() => {
+                            const element = document.getElementById(`question-${index}`);
+                            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 100);
+                        }}
+                        className={`w-full aspect-square rounded-lg font-medium text-sm ${
+                          pageIndex === currentPage && index >= currentPage * QUESTIONS_PER_PAGE && index < (currentPage + 1) * QUESTIONS_PER_PAGE
+                            ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                            : answers[index] !== undefined
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                        title={`Question ${index + 1}`}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
                   <div className="flex justify-between">
+                    <span className="text-gray-600">Total:</span>
+                    <span className="font-medium">{quiz.questions.length}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-600">Answered:</span>
-                    <span className="font-medium">{getAnsweredCount()}/{quiz.questions.length}</span>
+                    <span className="font-medium text-green-600">{getAnsweredCount()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Unanswered:</span>
-                    <span className="font-medium">{quiz.questions.length - getAnsweredCount()}</span>
+                    <span className="font-medium text-red-600">{quiz.questions.length - getAnsweredCount()}</span>
                   </div>
                 </div>
               </CardContent>

@@ -179,34 +179,6 @@ export default function AITutorPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-fuchsia-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Sparkles className="w-8 h-8 text-violet-600" />
-                AI Learning Tutor
-              </h1>
-              <p className="text-gray-600 mt-1">Your personal AI assistant for learning</p>
-            </div>
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset Chat
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-4 gap-6">

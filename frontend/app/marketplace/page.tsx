@@ -146,72 +146,62 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <ShoppingCart className="w-8 h-8 text-green-600" />
-                Marketplace
-              </h1>
-              <p className="text-gray-600 mt-1">Buy and sell learning resources</p>
-            </div>
-            <Button
-              onClick={() => router.push('/marketplace/create')}
-              size="lg"
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              List Item
-            </Button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={() => setActiveTab('browse')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'browse'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <ShoppingBag className="w-4 h-4 inline mr-2" />
-              Browse
-            </button>
-            <button
-              onClick={() => setActiveTab('myItems')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'myItems'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Package className="w-4 h-4 inline mr-2" />
-              My Items ({myItems.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('purchases')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'purchases'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <CreditCard className="w-4 h-4 inline mr-2" />
-              Purchases ({purchases.length})
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <ShoppingCart className="w-8 h-8 text-green-600" />
+              Marketplace
+            </h1>
+            <p className="text-gray-600 mt-1">Buy and sell learning resources</p>
+          </div>
+          <Button
+            onClick={() => router.push('/marketplace/create')}
+            size="lg"
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            List Item
+          </Button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('browse')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'browse'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4 inline mr-2" />
+            Browse
+          </button>
+          <button
+            onClick={() => setActiveTab('myItems')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'myItems'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Package className="w-4 h-4 inline mr-2" />
+            My Items ({myItems.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('purchases')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'purchases'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 inline mr-2" />
+            Purchases ({purchases.length})
+          </button>
+        </div>
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="space-y-6">

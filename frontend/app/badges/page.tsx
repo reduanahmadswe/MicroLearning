@@ -97,27 +97,15 @@ export default function BadgesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Award className="w-8 h-8 text-purple-600" />
-                Badges & Achievements
-              </h1>
-              <p className="text-gray-600 mt-1">Track your learning milestones</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Award className="w-8 h-8 text-purple-600" />
+            Badges & Achievements
+          </h1>
+          <p className="text-gray-600 mt-1">Track your learning milestones</p>
+        </div>
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Stats Sidebar */}
           <div className="space-y-6">

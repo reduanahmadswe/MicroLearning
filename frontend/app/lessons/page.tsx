@@ -129,31 +129,21 @@ export default function LessonsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Micro Lessons</h1>
-              <p className="text-gray-600 mt-1">Bite-sized learning for maximum impact</p>
-            </div>
-            <Button
-              onClick={() => setShowAIModal(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Generate with AI
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Micro Lessons</h1>
+            <p className="text-gray-600 mt-1">Bite-sized learning for maximum impact</p>
+          </div>
+          <Button
+            onClick={() => setShowAIModal(true)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate with AI
+          </Button>
+        </div>
         {/* Filters */}
         <div className="mb-8 space-y-4">
           <form onSubmit={handleSearch} className="flex gap-4">

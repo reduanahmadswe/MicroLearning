@@ -110,32 +110,22 @@ export default function RoadmapPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-indigo-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Map className="w-8 h-8 text-cyan-600" />
-                Learning Roadmaps
-              </h1>
-              <p className="text-gray-600 mt-1">Follow structured paths to achieve your goals</p>
-            </div>
-            {activeView === 'detail' && (
-              <Button variant="outline" onClick={() => setActiveView('list')}>
-                View All Roadmaps
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Map className="w-8 h-8 text-cyan-600" />
+              Learning Roadmaps
+            </h1>
+            <p className="text-gray-600 mt-1">Follow structured paths to achieve your goals</p>
+          </div>
+          {activeView === 'detail' && (
+            <Button variant="outline" onClick={() => setActiveView('list')}>
+              View All Roadmaps
+            </Button>
+          )}
+        </div>
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>

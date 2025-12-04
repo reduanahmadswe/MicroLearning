@@ -89,48 +89,36 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
-              <p className="text-gray-600 mt-1">Structured learning paths for mastery</p>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={() => setActiveTab('browse')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'browse'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Browse Courses
-            </button>
-            <button
-              onClick={() => setActiveTab('enrolled')}
-              className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-                activeTab === 'enrolled'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              My Courses
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
+          <p className="text-gray-600 mt-1">Structured learning paths for mastery</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('browse')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'browse'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Browse Courses
+          </button>
+          <button
+            onClick={() => setActiveTab('enrolled')}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              activeTab === 'enrolled'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            My Courses
+          </button>
+        </div>
         {activeTab === 'browse' ? (
           <>
             {/* Filters */}

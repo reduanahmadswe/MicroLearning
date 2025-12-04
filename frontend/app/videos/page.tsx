@@ -71,33 +71,23 @@ export default function VideosPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="mb-2">
-                  ← Back to Dashboard
-                </Button>
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Video className="w-8 h-8 text-blue-600" />
-                Video Lessons
-              </h1>
-              <p className="text-gray-600 mt-1">Learn through engaging video content</p>
-            </div>
-            <Button
-              onClick={() => router.push('/lessons')}
-              variant="outline"
-            >
-              View All Lessons
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Video className="w-8 h-8 text-blue-600" />
+              Video Lessons
+            </h1>
+            <p className="text-gray-600 mt-1">Learn through engaging video content</p>
+          </div>
+          <Button
+            onClick={() => router.push('/lessons')}
+            variant="outline"
+          >
+            View All Lessons
+          </Button>
+        </div>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
