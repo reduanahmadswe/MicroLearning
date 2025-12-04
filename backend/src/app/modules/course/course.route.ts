@@ -12,6 +12,7 @@ router.get('/', courseController.getCourses);
 // Instructor routes (must come before /:id routes)
 router.get('/instructor/my-courses', authGuard('instructor', 'admin'), courseController.getInstructorCourses);
 router.get('/instructor/analytics', authGuard('instructor', 'admin'), courseController.getInstructorAnalytics);
+router.get('/instructor/students', authGuard('instructor', 'admin'), courseController.getInstructorStudents);
 router.get('/instructor/:courseId/students', authGuard('instructor', 'admin'), courseController.getCourseStudents);
 
 // Enrollment routes (before /:id)

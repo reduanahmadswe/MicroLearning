@@ -176,6 +176,19 @@ class CourseController {
     });
   });
 
+  // Get all instructor students
+  getInstructorStudents = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await courseService.getInstructorStudents(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor students retrieved successfully',
+      data: result,
+    });
+  });
+
   // Get course students
   getCourseStudents = catchAsync(async (req: Request, res: Response) => {
     const { courseId } = req.params;

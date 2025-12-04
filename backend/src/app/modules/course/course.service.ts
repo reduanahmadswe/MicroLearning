@@ -392,10 +392,118 @@ class CourseService {
     return coursesWithStats;
   }
 
+  // Get all students enrolled in instructor's courses
+  async getInstructorStudents(userId: string) {
+    // Get all courses by this instructor
+    const courses = await Course.find({ author: userId }).lean();
+    const courseIds = courses.map((c) => c._id);
+
+    if (courseIds.length === 0) {
+      return [];
+    }
+
+    // Get all enrollments for instructor's courses
+    const enrollments = await Enrollment.find({ course: { $in: courseIds } })
+      .populate('user', 'name email profilePicture level xp streak createdAt')
+      .populate('course', 'title thumbnail')
+      .lean();
+
+    // Group enrollments by student
+    const studentMap = new Map();
+
+    enrollments.forEach((enrollment) => {
+      const student = enrollment.user as any;
+      const course = enrollment.course as any;
+      const studentId = student._id.toString();
+
+      if (!studentMap.has(studentId)) {
+        // Determine if student is active (accessed in last 7 days)
+        const lastAccess = enrollment.updatedAt || enrollment.startedAt;
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const isActive = new Date(lastAccess) >= sevenDaysAgo;
+
+        studentMap.set(studentId, {
+          _id: student._id,
+          name: student.name,
+          email: student.email,
+          profilePicture: student.profilePicture,
+          level: student.level || 1,
+          xp: student.xp || 0,
+          streak: student.streak || 0,
+          joinedDate: student.createdAt,
+          lastActive: lastAccess,
+          status: isActive ? 'active' : 'inactive',
+          totalProgress: 0,
+          enrolledCourses: [],
+        });
+      }
+
+      const studentData = studentMap.get(studentId);
+
+      // Add course enrollment data
+      studentData.enrolledCourses.push({
+        _id: course._id,
+        title: course.title,
+        thumbnail: course.thumbnailUrl,
+        progress: enrollment.progress || 0,
+        enrolledAt: enrollment.startedAt,
+        lastAccessed: enrollment.updatedAt || enrollment.startedAt,
+        completedLessons: enrollment.completedLessons?.length || 0,
+        totalLessons: course.lessons?.length || 0,
+        quizzesTaken: 0, // Will be populated from quiz module later
+        averageScore: 0, // Will be populated from quiz module later
+      });
+    });
+
+    // Calculate average progress for each student
+    const students = Array.from(studentMap.values()).map((student) => {
+      const totalProgress = student.enrolledCourses.reduce(
+        (sum: number, course: any) => sum + course.progress,
+        0
+      );
+      student.totalProgress = Math.round(
+        totalProgress / (student.enrolledCourses.length || 1)
+      );
+      return student;
+    });
+
+    // Sort by last active date (most recent first)
+    students.sort((a, b) => {
+      return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+    });
+
+    return students;
+  }
+
   // Get instructor analytics
   async getInstructorAnalytics(userId: string) {
     const courses = await Course.find({ author: userId }).lean();
     const courseIds = courses.map((c) => c._id);
+
+    if (courseIds.length === 0) {
+      return {
+        overview: {
+          totalCourses: 0,
+          totalStudents: 0,
+          totalEnrollments: 0,
+          totalRevenue: 0,
+          avgProgress: 0,
+          completionRate: 0,
+          activeStudents: 0,
+          recentEnrollments: 0,
+        },
+        courses: [],
+        enrollmentTrend: [],
+        topPerformingCourses: [],
+        studentEngagement: {
+          active: 0,
+          inactive: 0,
+          moderatelyActive: 0,
+        },
+        revenueByMonth: [],
+      };
+    }
 
     // Get all enrollments for instructor's courses
     const enrollments = await Enrollment.find({ course: { $in: courseIds } })
@@ -405,7 +513,7 @@ class CourseService {
 
     // Calculate statistics
     const totalCourses = courses.length;
-    const totalStudents = new Set(enrollments.map((e) => e.user._id.toString())).size;
+    const totalStudents = new Set(enrollments.map((e) => (e.user as any)._id.toString())).size;
     const totalEnrollments = enrollments.length;
     const completedEnrollments = enrollments.filter((e) => !!e.completedAt).length;
     const totalRevenue = courses.reduce((sum, c) => sum + (c.price || 0) * (c.enrolledCount || 0), 0);
@@ -423,22 +531,101 @@ class CourseService {
       (e) => new Date(e.startedAt) >= thirtyDaysAgo
     ).length;
 
-    return {
-      totalCourses,
-      totalStudents,
-      totalEnrollments,
-      completedEnrollments,
-      completionRate: totalEnrollments > 0 ? (completedEnrollments / totalEnrollments) * 100 : 0,
-      averageProgress: Math.round(avgProgress),
-      totalRevenue,
-      recentEnrollments,
-      courses: courses.map((c) => ({
-        id: c._id,
+    // Calculate active students (accessed in last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const activeStudents = enrollments.filter(
+      (e) => new Date(e.updatedAt) >= sevenDaysAgo
+    ).length;
+
+    // Calculate student engagement
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    const moderatelyActive = enrollments.filter(
+      (e) => new Date(e.updatedAt) >= fourteenDaysAgo && new Date(e.updatedAt) < sevenDaysAgo
+    ).length;
+    const inactive = totalEnrollments - activeStudents - moderatelyActive;
+
+    // Get course analytics
+    const courseAnalytics = courses.map((course) => {
+      const courseEnrollments = enrollments.filter(
+        (e) => (e.course as any)._id.toString() === course._id.toString()
+      );
+      const completedCount = courseEnrollments.filter((e) => !!e.completedAt).length;
+      const avgCourseProgress =
+        courseEnrollments.length > 0
+          ? courseEnrollments.reduce((sum, e) => sum + e.progress, 0) / courseEnrollments.length
+          : 0;
+      const activeCourseStudents = courseEnrollments.filter(
+        (e) => new Date(e.updatedAt) >= sevenDaysAgo
+      ).length;
+
+      return {
+        _id: course._id,
+        title: course.title,
+        enrolledCount: courseEnrollments.length,
+        completionRate: courseEnrollments.length > 0 ? Math.round((completedCount / courseEnrollments.length) * 100) : 0,
+        avgProgress: Math.round(avgCourseProgress),
+        avgRating: course.rating || 0,
+        totalRevenue: (course.price || 0) * courseEnrollments.length,
+        activeStudents: activeCourseStudents,
+        totalLessons: course.lessons?.length || 0,
+        totalQuizzes: 0, // Will be populated later
+      };
+    });
+
+    // Sort courses by enrollment for top performing
+    const topPerformingCourses = [...courseAnalytics]
+      .sort((a, b) => b.enrolledCount - a.enrolledCount)
+      .slice(0, 3)
+      .map((c) => ({
+        _id: c._id,
         title: c.title,
-        enrolledCount: c.enrolledCount || 0,
-        price: c.price || 0,
-        isPublished: c.isPublished,
-      })),
+        metric: c.enrolledCount,
+      }));
+
+    // Generate enrollment trend (last 6 months)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    const enrollmentTrend = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthIndex = (currentMonth - i + 12) % 12;
+      const monthEnrollments = enrollments.filter((e) => {
+        const enrollMonth = new Date(e.startedAt).getMonth();
+        return enrollMonth === monthIndex;
+      }).length;
+      enrollmentTrend.push({
+        month: months[monthIndex],
+        enrollments: monthEnrollments,
+      });
+    }
+
+    // Generate revenue by month
+    const revenueByMonth = enrollmentTrend.map((trend) => ({
+      month: trend.month,
+      revenue: trend.enrollments * 50, // Placeholder calculation
+    }));
+
+    return {
+      overview: {
+        totalCourses,
+        totalStudents,
+        totalEnrollments,
+        totalRevenue,
+        avgProgress: Math.round(avgProgress),
+        completionRate: totalEnrollments > 0 ? Math.round((completedEnrollments / totalEnrollments) * 100) : 0,
+        activeStudents,
+        recentEnrollments,
+      },
+      courses: courseAnalytics,
+      enrollmentTrend,
+      topPerformingCourses,
+      studentEngagement: {
+        active: activeStudents,
+        moderatelyActive,
+        inactive,
+      },
+      revenueByMonth,
     };
   }
 
