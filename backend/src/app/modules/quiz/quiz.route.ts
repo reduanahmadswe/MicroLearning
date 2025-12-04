@@ -46,4 +46,11 @@ router.post(
 router.get('/attempts/me', authGuard(), quizController.getUserAttempts);
 router.get('/attempt/:id', authGuard(), quizController.getAttemptDetails);
 
+// Instructor quiz management routes
+router.put('/:id', authGuard('instructor', 'admin'), quizController.updateQuiz);
+router.delete('/:id', authGuard('instructor', 'admin'), quizController.deleteQuiz);
+router.post('/:id/duplicate', authGuard('instructor', 'admin'), quizController.duplicateQuiz);
+router.patch('/:id/publish', authGuard('instructor', 'admin'), quizController.togglePublish);
+router.get('/:id/results', authGuard('instructor', 'admin'), quizController.getQuizResults);
+
 export default router;

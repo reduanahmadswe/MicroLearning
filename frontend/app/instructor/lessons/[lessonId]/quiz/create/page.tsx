@@ -144,7 +144,7 @@ export default function CreateQuizForLessonPage() {
         isPublished: true,
       };
 
-      await axios.post('http://localhost:5000/api/v1/quizzes', payload, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/quiz/create`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

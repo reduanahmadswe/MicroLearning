@@ -220,7 +220,7 @@ export default function LessonDetailPage() {
       
       // Check if quiz exists for previous lesson
       const quizResponse = await fetch(
-        `http://localhost:5000/api/v1/quizzes/lesson/${previousLesson._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${previousLesson._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -236,7 +236,7 @@ export default function LessonDetailPage() {
       
       // Check if student passed the quiz
       const attemptResponse = await fetch(
-        `http://localhost:5000/api/v1/quizzes/${previousQuiz._id}/attempts`,
+        `${process.env.NEXT_PUBLIC_API_URL}/quiz/${previousQuiz._id}/attempts`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -265,7 +265,7 @@ export default function LessonDetailPage() {
   const loadQuizForLesson = async (lessonId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/quizzes/lesson/${lessonId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${lessonId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

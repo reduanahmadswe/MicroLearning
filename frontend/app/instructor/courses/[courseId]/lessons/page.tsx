@@ -77,7 +77,7 @@ export default function CourseLessonsPage() {
           try {
             console.log(`🔍 Checking quiz for lesson ${lesson._id}:`, lesson.title);
             const quizRes = await axios.get(
-              `http://localhost:5000/api/v1/quizzes?lesson=${lesson._id}`,
+              `${process.env.NEXT_PUBLIC_API_URL}/quiz?lesson=${lesson._id}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             console.log(`📊 Quiz response for ${lesson.title}:`, quizRes.data);

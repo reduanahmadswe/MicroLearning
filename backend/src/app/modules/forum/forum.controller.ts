@@ -451,6 +451,59 @@ export const reportComment = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
+ * VOTING & Q&A CONTROLLERS
+ */
+export const votePost = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { voteType } = req.body; // 'upvote' or 'downvote'
+  const result = await ForumService.votePost(req.params.postId, userId, voteType);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Vote recorded successfully',
+    data: result,
+  });
+});
+
+export const voteComment = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { voteType } = req.body; // 'upvote' or 'downvote'
+  const result = await ForumService.voteComment(req.params.commentId, userId, voteType);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Vote recorded successfully',
+    data: result,
+  });
+});
+
+export const markBestAnswer = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const result = await ForumService.markBestAnswer(req.params.postId, req.params.commentId, userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Best answer marked successfully',
+    data: result,
+  });
+});
+
+export const markPostSolved = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const result = await ForumService.markPostSolved(req.params.postId, userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Post marked as solved',
+    data: result,
+  });
+});
+
+/**
  * STATISTICS CONTROLLERS
  */
 export const getForumStats = catchAsync(async (_req: Request, res: Response) => {

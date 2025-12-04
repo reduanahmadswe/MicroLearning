@@ -5,6 +5,7 @@ import {
   IForumComment,
   IPostLike,
   ICommentLike,
+  IPostView,
   IGroupMember,
   IGroupInvitation,
   IPoll,
@@ -167,6 +168,43 @@ const postSchema = new Schema<IPost>(
       type: Number,
       default: 0,
     },
+    // Q&A specific fields
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      index: true,
+    },
+    lesson: {
+      type: Schema.Types.ObjectId,
+      ref: 'Lesson',
+      index: true,
+    },
+    isHelpNeeded: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    isSolved: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    bestAnswer: {
+      type: Schema.Types.ObjectId,
+      ref: 'ForumComment',
+    },
+    upvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    downvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -180,6 +218,8 @@ postSchema.index({ author: 1, createdAt: -1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ contentType: 1, createdAt: -1 });
 postSchema.index({ likeCount: -1, commentCount: -1 });
+postSchema.index({ course: 1, lesson: 1 });
+postSchema.index({ isSolved: 1, isHelpNeeded: 1 });
 
 /**
  * Forum Comment Schema
@@ -216,6 +256,18 @@ const forumCommentSchema = new Schema<IForumComment>(
       type: Boolean,
       default: false,
     },
+    upvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    downvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -226,6 +278,7 @@ const forumCommentSchema = new Schema<IForumComment>(
 forumCommentSchema.index({ post: 1, createdAt: -1 });
 forumCommentSchema.index({ parentComment: 1 });
 forumCommentSchema.index({ author: 1 });
+forumCommentSchema.index({ isAcceptedAnswer: 1 });
 
 /**
  * Post Like Schema
@@ -278,6 +331,32 @@ const commentLikeSchema = new Schema<ICommentLike>(
 
 // Compound unique index
 commentLikeSchema.index({ comment: 1, user: 1 }, { unique: true });
+
+/**
+ * Post View Schema
+ */
+const postViewSchema = new Schema<IPostView>(
+  {
+    post: {
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
+      required: true,
+      index: true,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Compound unique index - each user can view a post only once
+postViewSchema.index({ post: 1, user: 1 }, { unique: true });
 
 /**
  * Group Member Schema
@@ -504,6 +583,7 @@ export const Post = model<IPost>('Post', postSchema);
 export const ForumComment = model<IForumComment>('ForumComment', forumCommentSchema);
 export const PostLike = model<IPostLike>('PostLike', postLikeSchema);
 export const CommentLike = model<ICommentLike>('CommentLike', commentLikeSchema);
+export const PostView = model<IPostView>('PostView', postViewSchema);
 export const GroupMember = model<IGroupMember>('GroupMember', groupMemberSchema);
 export const GroupInvitation = model<IGroupInvitation>('GroupInvitation', groupInvitationSchema);
 export const Poll = model<IPoll>('Poll', pollSchema);

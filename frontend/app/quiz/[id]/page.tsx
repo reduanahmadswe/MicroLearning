@@ -157,7 +157,7 @@ export default function QuizPlayerPage() {
 
       // Use the correct endpoint
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/v1/quizzes/submit', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import {
   ForumComment,
   PostLike,
   CommentLike,
+  PostView,
   GroupMember,
   GroupInvitation,
   Poll,
@@ -591,9 +592,27 @@ export const getPostDetails = async (postId: string, userId?: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  // Increment view count
-  post.viewCount += 1;
-  await post.save();
+  // Track unique view - only increment if this user hasn't viewed before
+  if (userId) {
+    try {
+      // Try to create a new view record (will fail if already exists due to unique index)
+      await PostView.create({ post: postId, user: userId });
+      // If successful, increment view count
+      post.viewCount += 1;
+      await post.save();
+    } catch (error: any) {
+      // If error code 11000, it means duplicate (user already viewed)
+      // Don't increment view count, just continue
+      if (error.code !== 11000) {
+        // If it's a different error, log it
+        console.error('Error tracking post view:', error);
+      }
+    }
+  } else {
+    // For non-logged in users, increment every time (can't track unique views)
+    post.viewCount += 1;
+    await post.save();
+  }
 
   // Check if user liked
   let isLiked = false;
@@ -786,6 +805,30 @@ export const createComment = async (userId: string, data: ICreateCommentRequest)
 };
 
 /**
+ * Helper function to recursively fetch nested replies
+ */
+const fetchNestedReplies = async (commentId: any): Promise<any[]> => {
+  const replies = await ForumComment.find({ parentComment: commentId })
+    .sort({ createdAt: 1 })
+    .populate('author', 'name email profileImage level xp')
+    .lean();
+
+  // Recursively fetch replies for each reply
+  const repliesWithNestedReplies = await Promise.all(
+    replies.map(async (reply) => {
+      const nestedReplies = await fetchNestedReplies(reply._id);
+      return {
+        ...reply,
+        replies: nestedReplies,
+        replyCount: nestedReplies.length,
+      };
+    })
+  );
+
+  return repliesWithNestedReplies;
+};
+
+/**
  * Get Comments for Post
  */
 export const getComments = async (postId: string, page: number = 1, limit: number = 50) => {
@@ -798,18 +841,16 @@ export const getComments = async (postId: string, page: number = 1, limit: numbe
 
   const total = await ForumComment.countDocuments({ post: postId, parentComment: { $exists: false } });
 
-  // Get replies for each comment
+  // Get all nested replies recursively for each comment
   const commentsWithReplies = await Promise.all(
     comments.map(async (comment) => {
-      const replies = await ForumComment.find({ parentComment: comment._id })
-        .sort({ createdAt: 1 })
-        .populate('author', 'name email profileImage level xp')
-        .limit(10);
+      const replies = await fetchNestedReplies(comment._id);
+      const totalReplyCount = await ForumComment.countDocuments({ parentComment: comment._id });
 
       return {
         ...comment.toObject(),
         replies,
-        replyCount: await ForumComment.countDocuments({ parentComment: comment._id }),
+        replyCount: totalReplyCount,
       };
     })
   );
@@ -910,7 +951,7 @@ export const toggleCommentLike = async (commentId: string, userId: string) => {
 };
 
 /**
- * Accept Answer (for question posts)
+ * Accept Answer (multiple answers can be accepted)
  */
 export const acceptAnswer = async (commentId: string, userId: string) => {
   const comment = await ForumComment.findById(commentId);
@@ -923,22 +964,18 @@ export const acceptAnswer = async (commentId: string, userId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  if (post.contentType !== 'question') {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Can only accept answers on question posts');
-  }
-
   if (post.author.toString() !== userId.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Only post author can accept answers');
   }
 
-  // Unaccept all other answers
-  await ForumComment.updateMany({ post: post._id }, { isAcceptedAnswer: false });
-
-  // Accept this answer
-  comment.isAcceptedAnswer = true;
+  // Toggle accepted status - allow multiple answers to be accepted
+  comment.isAcceptedAnswer = !comment.isAcceptedAnswer;
   await comment.save();
 
-  return { message: 'Answer accepted successfully' };
+  return { 
+    message: comment.isAcceptedAnswer ? 'Answer accepted successfully' : 'Answer unaccepted successfully', 
+    isAccepted: comment.isAcceptedAnswer 
+  };
 };
 
 /**
@@ -1157,5 +1194,154 @@ export const getForumStats = async (): Promise<IForumStats> => {
     recentPosts,
     trendingTags: tagAggregation,
   };
+};
+
+/**
+ * Vote on Post (Upvote/Downvote)
+ */
+export const votePost = async (postId: string, userId: string, voteType: 'upvote' | 'downvote') => {
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  const upvoteIndex = post.upvotes.indexOf(userId as any);
+  const downvoteIndex = post.downvotes.indexOf(userId as any);
+
+  if (voteType === 'upvote') {
+    if (upvoteIndex > -1) {
+      // Remove upvote
+      post.upvotes.splice(upvoteIndex, 1);
+    } else {
+      // Add upvote, remove downvote if exists
+      if (downvoteIndex > -1) {
+        post.downvotes.splice(downvoteIndex, 1);
+      }
+      post.upvotes.push(userId as any);
+    }
+  } else {
+    if (downvoteIndex > -1) {
+      // Remove downvote
+      post.downvotes.splice(downvoteIndex, 1);
+    } else {
+      // Add downvote, remove upvote if exists
+      if (upvoteIndex > -1) {
+        post.upvotes.splice(upvoteIndex, 1);
+      }
+      post.downvotes.push(userId as any);
+    }
+  }
+
+  await post.save();
+
+  return {
+    upvotes: post.upvotes.length,
+    downvotes: post.downvotes.length,
+    userVote: upvoteIndex > -1 || (voteType === 'upvote' && upvoteIndex === -1) ? 'upvote' : 
+              downvoteIndex > -1 || (voteType === 'downvote' && downvoteIndex === -1) ? 'downvote' : null,
+  };
+};
+
+/**
+ * Vote on Comment (Upvote/Downvote)
+ */
+export const voteComment = async (commentId: string, userId: string, voteType: 'upvote' | 'downvote') => {
+  const comment = await ForumComment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  const upvoteIndex = comment.upvotes.indexOf(userId as any);
+  const downvoteIndex = comment.downvotes.indexOf(userId as any);
+
+  if (voteType === 'upvote') {
+    if (upvoteIndex > -1) {
+      comment.upvotes.splice(upvoteIndex, 1);
+    } else {
+      if (downvoteIndex > -1) {
+        comment.downvotes.splice(downvoteIndex, 1);
+      }
+      comment.upvotes.push(userId as any);
+      
+      // Award XP for helpful answer
+      const User = require('../auth/auth.model').default;
+      await User.findByIdAndUpdate(comment.author, { $inc: { xp: 5 } });
+    }
+  } else {
+    if (downvoteIndex > -1) {
+      comment.downvotes.splice(downvoteIndex, 1);
+    } else {
+      if (upvoteIndex > -1) {
+        comment.upvotes.splice(upvoteIndex, 1);
+      }
+      comment.downvotes.push(userId as any);
+    }
+  }
+
+  comment.likeCount = comment.upvotes.length;
+  await comment.save();
+
+  return {
+    upvotes: comment.upvotes.length,
+    downvotes: comment.downvotes.length,
+  };
+};
+
+/**
+ * Mark Best Answer
+ */
+export const markBestAnswer = async (postId: string, commentId: string, userId: string) => {
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  // Only post author can mark best answer
+  if (post.author.toString() !== userId.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Only post author can mark best answer');
+  }
+
+  const comment = await ForumComment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  // Remove previous best answer
+  if (post.bestAnswer) {
+    await ForumComment.findByIdAndUpdate(post.bestAnswer, { isAcceptedAnswer: false });
+  }
+
+  // Set new best answer
+  post.bestAnswer = commentId as any;
+  post.isSolved = true;
+  await post.save();
+
+  comment.isAcceptedAnswer = true;
+  await comment.save();
+
+  // Award XP and badge to answer author
+  const User = require('../auth/auth.model').default;
+  await User.findByIdAndUpdate(comment.author, { $inc: { xp: 50 } });
+
+  return post;
+};
+
+/**
+ * Mark Post as Solved
+ */
+export const markPostSolved = async (postId: string, userId: string) => {
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  if (post.author.toString() !== userId.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Only post author can mark as solved');
+  }
+
+  post.isSolved = !post.isSolved;
+  await post.save();
+
+  return post;
 };
 

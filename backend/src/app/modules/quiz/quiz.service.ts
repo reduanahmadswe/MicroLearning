@@ -401,6 +401,154 @@ class QuizService {
     console.log('✅ Returning quizzes with stats:', quizzesWithStats.length);
     return quizzesWithStats;
   }
+
+  // Update quiz
+  async updateQuiz(quizId: string, userId: string, updateData: any) {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check ownership
+    if (quiz.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only update your own quizzes');
+      }
+    }
+
+    const updatedQuiz = await Quiz.findByIdAndUpdate(
+      quizId,
+      updateData,
+      { new: true, runValidators: true }
+    )
+      .populate('course', 'title thumbnail')
+      .populate('lesson', 'title');
+
+    return updatedQuiz;
+  }
+
+  // Delete quiz
+  async deleteQuiz(quizId: string, userId: string) {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check ownership
+    if (quiz.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only delete your own quizzes');
+      }
+    }
+
+    // Delete all attempts for this quiz
+    await QuizAttempt.deleteMany({ quiz: quizId });
+    
+    // Delete the quiz
+    await Quiz.findByIdAndDelete(quizId);
+  }
+
+  // Duplicate quiz
+  async duplicateQuiz(quizId: string, userId: string) {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check ownership
+    if (quiz.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only duplicate your own quizzes');
+      }
+    }
+
+    // Create duplicate with (Copy) suffix
+    const duplicateData = quiz.toObject();
+    delete duplicateData._id;
+    delete duplicateData.createdAt;
+    delete duplicateData.updatedAt;
+    duplicateData.title = `${duplicateData.title} (Copy)`;
+    duplicateData.isPublished = false;
+    duplicateData.attempts = 0;
+    duplicateData.averageScore = 0;
+
+    const duplicatedQuiz = await Quiz.create(duplicateData);
+    return duplicatedQuiz;
+  }
+
+  // Toggle publish status
+  async togglePublish(quizId: string, userId: string) {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check ownership
+    if (quiz.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only update your own quizzes');
+      }
+    }
+
+    quiz.isPublished = !quiz.isPublished;
+    await quiz.save();
+
+    return {
+      _id: quiz._id,
+      isPublished: quiz.isPublished,
+      published: quiz.isPublished,
+    };
+  }
+
+  // Get quiz results (all attempts)
+  async getQuizResults(quizId: string, userId: string) {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check ownership
+    if (quiz.author.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        throw new ApiError(403, 'You can only view results for your own quizzes');
+      }
+    }
+
+    const attempts = await QuizAttempt.find({ quiz: quizId })
+      .populate('user', 'name email')
+      .sort('-createdAt')
+      .lean();
+
+    const totalAttempts = attempts.length;
+    const averageScore = totalAttempts > 0
+      ? attempts.reduce((sum, attempt) => sum + attempt.score, 0) / totalAttempts
+      : 0;
+
+    const passedCount = attempts.filter(a => a.passed).length;
+    const passRate = totalAttempts > 0 ? (passedCount / totalAttempts) * 100 : 0;
+
+    return {
+      quiz: {
+        _id: quiz._id,
+        title: quiz.title,
+        totalQuestions: quiz.questions.length,
+        passingScore: quiz.passingScore,
+      },
+      stats: {
+        totalAttempts,
+        averageScore: Math.round(averageScore),
+        passRate: Math.round(passRate),
+        passedCount,
+        failedCount: totalAttempts - passedCount,
+      },
+      attempts,
+    };
+  }
 }
 
 export default new QuizService();

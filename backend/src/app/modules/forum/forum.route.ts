@@ -191,6 +191,14 @@ router.post(
 );
 
 /**
+ * VOTING & Q&A ROUTES
+ */
+router.post('/posts/:postId/vote', authGuard(), ForumController.votePost);
+router.post('/comments/:commentId/vote', authGuard(), ForumController.voteComment);
+router.post('/posts/:postId/best-answer/:commentId', authGuard(), ForumController.markBestAnswer);
+router.patch('/posts/:postId/solved', authGuard(), ForumController.markPostSolved);
+
+/**
  * STATISTICS ROUTES
  */
 // Public routes

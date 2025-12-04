@@ -50,6 +50,14 @@ export interface IPost extends Document {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  // Q&A specific fields
+  course?: Types.ObjectId;
+  lesson?: Types.ObjectId;
+  isHelpNeeded: boolean;
+  isSolved: boolean;
+  bestAnswer?: Types.ObjectId;
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,7 +82,9 @@ export interface IForumComment extends Document {
   content: string;
   parentComment?: Types.ObjectId; // For nested replies
   likeCount: number;
-  isAcceptedAnswer: boolean; // For question posts
+  isAcceptedAnswer: boolean; // For question posts (best answer)
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,6 +111,26 @@ export interface IPostLike extends Document {
 export interface ICommentLike extends Document {
   _id: Types.ObjectId;
   comment: Types.ObjectId;
+  user: Types.ObjectId;
+  createdAt: Date;
+}
+
+/**
+ * Post View Types
+ */
+export interface IPostView extends Document {
+  _id: Types.ObjectId;
+  post: Types.ObjectId;
+  user: Types.ObjectId;
+  createdAt: Date;
+}
+
+/**
+ * Post View Types
+ */
+export interface IPostView extends Document {
+  _id: Types.ObjectId;
+  post: Types.ObjectId;
   user: Types.ObjectId;
   createdAt: Date;
 }

@@ -165,7 +165,7 @@ export default function CourseDetailPage() {
         try {
           // Check if quiz exists for previous lesson
           const quizResponse = await fetch(
-            `http://localhost:5000/api/v1/quizzes/lesson/${previousLesson._id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${previousLesson._id}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );
           
@@ -176,7 +176,7 @@ export default function CourseDetailPage() {
             
             // Check if student passed this quiz
             const attemptResponse = await fetch(
-              `http://localhost:5000/api/v1/quizzes/${quiz._id}/attempts`,
+              `${process.env.NEXT_PUBLIC_API_URL}/quiz/${quiz._id}/attempts`,
               { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
             

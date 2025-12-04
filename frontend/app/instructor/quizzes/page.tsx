@@ -54,6 +54,15 @@ export default function InstructorQuizzesPage() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    passingScore: 80,
+    duration: 0,
+    questions: [] as any[],
+  });
   const [stats, setStats] = useState({
     totalQuizzes: 0,
     publishedQuizzes: 0,
@@ -144,6 +153,7 @@ export default function InstructorQuizzesPage() {
 
   const handleDuplicateQuiz = async (quizId: string) => {
     try {
+      setSelectedQuiz(null);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/${quizId}/duplicate`, {
         method: 'POST',
         headers: {
@@ -165,29 +175,93 @@ export default function InstructorQuizzesPage() {
   };
   const handleTogglePublish = async (quizId: string) => {
     try {
+      setSelectedQuiz(null);
       const quiz = quizzes.find(q => q._id === quizId);
       if (!quiz) return;
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/${quizId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/${quizId}/publish`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ published: !quiz.published })
+        }
       });
 
       if (!response.ok) {
         throw new Error('Failed to update quiz status');
       }
 
+      const data = await response.json();
       setQuizzes(quizzes.map(q => 
-        q._id === quizId ? { ...q, published: !q.published } : q
+        q._id === quizId ? { ...q, published: data.data.published } : q
       ));
-      toast.success('Quiz status updated');
+      toast.success(`Quiz ${data.data.published ? 'published' : 'unpublished'} successfully`);
     } catch (error) {
       console.error('Error updating quiz status:', error);
       toast.error('Failed to update quiz status');
+    }
+  };
+
+  const handleEditQuiz = (quiz: Quiz) => {
+    setEditingQuiz(quiz);
+    setEditForm({
+      title: quiz.title,
+      description: quiz.description,
+      passingScore: quiz.passingScore,
+      duration: quiz.duration,
+      questions: quiz.questions || [],
+    });
+    setShowEditModal(true);
+    setSelectedQuiz(null);
+  };
+
+  const handleQuestionChange = (index: number, field: string, value: any) => {
+    const updatedQuestions = [...editForm.questions];
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value,
+    };
+    setEditForm({ ...editForm, questions: updatedQuestions });
+  };
+
+  const handleOptionChange = (questionIndex: number, optionIndex: number, value: string) => {
+    const updatedQuestions = [...editForm.questions];
+    const options = [...(updatedQuestions[questionIndex].options || [])];
+    options[optionIndex] = value;
+    updatedQuestions[questionIndex] = {
+      ...updatedQuestions[questionIndex],
+      options,
+    };
+    setEditForm({ ...editForm, questions: updatedQuestions });
+  };
+
+  const handleUpdateQuiz = async () => {
+    if (!editingQuiz) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/${editingQuiz._id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editForm)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update quiz');
+      }
+
+      const data = await response.json();
+      setQuizzes(quizzes.map(q => 
+        q._id === editingQuiz._id ? { ...q, ...editForm } : q
+      ));
+      toast.success('Quiz updated successfully');
+      setShowEditModal(false);
+      setEditingQuiz(null);
+    } catch (error) {
+      console.error('Error updating quiz:', error);
+      toast.error('Failed to update quiz');
     }
   };
 
@@ -376,14 +450,17 @@ export default function InstructorQuizzesPage() {
                       {selectedQuiz === quiz._id && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-10">
                           <button
-                            onClick={() => router.push(`/instructor/quizzes/${quiz._id}/edit`)}
+                            onClick={() => handleEditQuiz(quiz)}
                             className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                           >
                             <Edit className="w-4 h-4" />
                             Edit Quiz
                           </button>
                           <button
-                            onClick={() => router.push(`/instructor/quizzes/${quiz._id}/results`)}
+                            onClick={() => {
+                              setSelectedQuiz(null);
+                              router.push(`/instructor/quizzes/${quiz._id}/results`);
+                            }}
                             className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                           >
                             <BarChart3 className="w-4 h-4" />
@@ -472,7 +549,7 @@ export default function InstructorQuizzesPage() {
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-4 border-t border-gray-200">
                     <button
-                      onClick={() => router.push(`/instructor/quizzes/${quiz._id}/edit`)}
+                      onClick={() => handleEditQuiz(quiz)}
                       className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors font-medium text-sm"
                     >
                       Edit
@@ -517,6 +594,238 @@ export default function InstructorQuizzesPage() {
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Quiz Modal */}
+      {showEditModal && editingQuiz && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Edit className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Edit Quiz</h3>
+                  <p className="text-sm text-gray-600">Update quiz details</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quiz Title *
+                </label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter quiz title"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  placeholder="Enter quiz description"
+                />
+              </div>
+
+              {/* Duration & Passing Score */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={editForm.duration}
+                    onChange={(e) => setEditForm({ ...editForm, duration: Number(e.target.value) })}
+                    min="0"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="0 for unlimited"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Passing Score (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={editForm.passingScore}
+                    onChange={(e) => setEditForm({ ...editForm, passingScore: Number(e.target.value) })}
+                    min="0"
+                    max="100"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="80"
+                  />
+                </div>
+              </div>
+
+              {/* Course Info (Read-only) */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                  <BookOpen className="w-4 h-4" />
+                  <span className="font-medium">Course:</span>
+                </div>
+                <p className="text-gray-900 font-medium">{editingQuiz.course?.title || 'N/A'}</p>
+              </div>
+
+              {/* Questions Section */}
+              <div className="pt-4 border-t border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Questions ({editForm.questions.length})
+                </label>
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                  {editForm.questions.map((question, qIndex) => (
+                    <div key={qIndex} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      {/* Question Number & Type */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-semibold text-green-600">Question {qIndex + 1}</span>
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                          {question.type === 'mcq' ? 'Multiple Choice' : 
+                           question.type === 'true-false' ? 'True/False' : 'Fill in Blank'}
+                        </span>
+                      </div>
+
+                      {/* Question Text */}
+                      <div className="mb-3">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Question</label>
+                        <input
+                          type="text"
+                          value={question.question}
+                          onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter question"
+                        />
+                      </div>
+
+                      {/* Options (for MCQ) */}
+                      {question.type === 'mcq' && question.options && (
+                        <div className="mb-3">
+                          <label className="block text-xs font-medium text-gray-600 mb-2">Options</label>
+                          <div className="space-y-2">
+                            {question.options.map((option: string, oIndex: number) => (
+                              <div key={oIndex} className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-gray-500 w-6">
+                                  {String.fromCharCode(65 + oIndex)}.
+                                </span>
+                                <input
+                                  type="text"
+                                  value={option}
+                                  onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                    question.correctAnswer === option
+                                      ? 'border-green-500 bg-green-50'
+                                      : 'border-gray-300'
+                                  }`}
+                                  placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
+                                />
+                                {question.correctAnswer === option && (
+                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Correct Answer (for True/False & Fill in Blank) */}
+                      {question.type !== 'mcq' && (
+                        <div className="mb-3">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Correct Answer</label>
+                          <input
+                            type="text"
+                            value={question.correctAnswer}
+                            onChange={(e) => handleQuestionChange(qIndex, 'correctAnswer', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            placeholder="Enter correct answer"
+                          />
+                        </div>
+                      )}
+
+                      {/* Explanation */}
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Explanation</label>
+                        <textarea
+                          value={question.explanation}
+                          onChange={(e) => handleQuestionChange(qIndex, 'explanation', e.target.value)}
+                          rows={2}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                          placeholder="Explain the correct answer"
+                        />
+                      </div>
+
+                      {/* Points */}
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-medium text-gray-600">Points:</label>
+                        <input
+                          type="number"
+                          value={question.points || 1}
+                          onChange={(e) => handleQuestionChange(qIndex, 'points', Number(e.target.value))}
+                          min="1"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quiz Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">{editForm.questions.length}</p>
+                  <p className="text-sm text-gray-600">Questions</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">{editingQuiz.totalAttempts}</p>
+                  <p className="text-sm text-gray-600">Attempts</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{editingQuiz.averageScore}%</p>
+                  <p className="text-sm text-gray-600">Avg Score</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingQuiz(null);
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateQuiz}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 transition-colors font-medium"
+              >
+                Save Changes
               </button>
             </div>
           </div>

@@ -58,7 +58,7 @@ export default function ManageLessonsPage() {
         lessonsData.map(async (lesson: Lesson) => {
           try {
             const quizRes = await axios.get(
-              `http://localhost:5000/api/v1/quizzes?lesson=${lesson._id}`,
+              `${process.env.NEXT_PUBLIC_API_URL}/quiz?lesson=${lesson._id}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             return {

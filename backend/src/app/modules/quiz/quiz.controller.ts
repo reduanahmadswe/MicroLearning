@@ -146,6 +146,76 @@ class QuizController {
       data: result,
     });
   });
+
+  // Update quiz
+  updateQuiz = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await quizService.updateQuiz(id, userId, req.body);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz updated successfully',
+      data: result,
+    });
+  });
+
+  // Delete quiz
+  deleteQuiz = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    await quizService.deleteQuiz(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz deleted successfully',
+      data: null,
+    });
+  });
+
+  // Duplicate quiz
+  duplicateQuiz = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await quizService.duplicateQuiz(id, userId);
+
+    sendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: 'Quiz duplicated successfully',
+      data: result,
+    });
+  });
+
+  // Toggle publish status
+  togglePublish = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await quizService.togglePublish(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz publish status updated successfully',
+      data: result,
+    });
+  });
+
+  // Get quiz results (attempts)
+  getQuizResults = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId as string;
+    const result = await quizService.getQuizResults(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz results retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new QuizController();
