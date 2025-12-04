@@ -3,6 +3,7 @@ import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
 import SSLCommerzPayment from 'sslcommerz-lts';
+import { paymentProcessingQueue } from '../../../config/queue';
 
 /**
  * Initiate Course Payment with SSLCommerz
@@ -145,10 +146,12 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
 };
 
 /**
- * Handle Payment Success
+ * Handle Payment Success - Queue-based with retry mechanism
  */
 export const handlePaymentSuccess = async (paymentData: any) => {
-  const { tran_id, val_id, amount, card_type, card_brand, bank_tran_id } = paymentData;
+  const { tran_id, val_id, card_type, card_brand, bank_tran_id } = paymentData;
+
+  console.log(`🔔 Payment success callback received for transaction: ${tran_id}`);
 
   // Find payment record
   const payment = await CoursePayment.findById(tran_id);
@@ -156,52 +159,112 @@ export const handlePaymentSuccess = async (paymentData: any) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Payment record not found');
   }
 
-  // Validate payment with SSLCommerz
-  const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
-  const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
-  const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
-  
-  const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+  // Check if already processed
+  if (payment.paymentStatus === 'completed') {
+    console.log(`✓ Payment ${tran_id} already processed`);
+    const enrollment = await Enrollment.findOne({
+      user: payment.user,
+      course: payment.course,
+    });
+    return {
+      success: true,
+      enrollment,
+      payment,
+      message: 'Payment already processed',
+    };
+  }
 
   try {
-    const validation = await sslcz.validate({ val_id });
+    // Add to queue for background processing
+    // This ensures payment is processed even if connection drops
+    const job = await paymentProcessingQueue.add(
+      'validate-payment',
+      {
+        paymentId: payment._id.toString(),
+        transactionId: val_id,
+        validationData: {
+          card_type,
+          card_brand,
+          bank_tran_id,
+        },
+      },
+      {
+        attempts: 5,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+        removeOnComplete: false,
+        removeOnFail: false,
+      }
+    );
 
-    if (validation.status === 'VALID' || validation.status === 'VALIDATED') {
-      // Update payment status
-      payment.paymentStatus = 'completed';
-      payment.transactionId = val_id;
-      payment.bankTransactionId = bank_tran_id;
-      payment.cardType = card_type;
-      payment.cardBrand = card_brand;
-      payment.paymentCompletedAt = new Date();
-      await payment.save();
+    console.log(`📤 Payment validation queued with job ID: ${job.id}`);
 
-      // Create enrollment
-      const enrollment = await Enrollment.create({
-        user: payment.user,
-        course: payment.course,
-      });
+    // Try immediate validation (best effort)
+    // If this fails, queue will retry automatically
+    try {
+      const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
+      const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
+      const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
+      
+      const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+      const validation = await sslcz.validate({ val_id });
 
-      // Increment course enrolled count
-      await Course.findByIdAndUpdate(payment.course, {
-        $inc: { enrolledCount: 1 },
-      });
+      if (validation.status === 'VALID' || validation.status === 'VALIDATED') {
+        // Update payment status immediately
+        payment.paymentStatus = 'completed';
+        payment.transactionId = val_id;
+        payment.bankTransactionId = bank_tran_id;
+        payment.cardType = card_type;
+        payment.cardBrand = card_brand;
+        payment.paymentCompletedAt = new Date();
+        await payment.save();
 
-      console.log('✅ Payment successful! Course enrolled:', enrollment._id);
+        // Try to create enrollment immediately
+        try {
+          const existingEnrollment = await Enrollment.findOne({
+            user: payment.user,
+            course: payment.course,
+          });
 
-      return {
-        success: true,
-        enrollment,
-        payment,
-      };
-    } else {
-      throw new Error('Payment validation failed');
+          if (!existingEnrollment) {
+            const enrollment = await Enrollment.create({
+              user: payment.user,
+              course: payment.course,
+            });
+
+            await Course.findByIdAndUpdate(payment.course, {
+              $inc: { enrolledCount: 1 },
+            });
+
+            console.log(`✅ Payment and enrollment completed immediately`);
+            return { success: true, enrollment, payment };
+          } else {
+            console.log(`✅ Payment completed, user already enrolled`);
+            return { success: true, enrollment: existingEnrollment, payment };
+          }
+        } catch (enrollError) {
+          console.warn('⚠️ Immediate enrollment failed, will be handled by queue:', enrollError);
+          // Queue will handle enrollment
+          return { success: true, payment, enrollmentPending: true };
+        }
+      }
+    } catch (immediateError) {
+      console.warn('⚠️ Immediate validation failed, queue will retry:', immediateError);
+      // Queue will handle it
     }
+
+    // Return success - queue will process in background
+    return {
+      success: true,
+      payment,
+      message: 'Payment queued for processing',
+      jobId: job.id,
+    };
   } catch (error: any) {
-    console.error('Payment validation error:', error);
-    payment.paymentStatus = 'failed';
-    await payment.save();
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Payment verification failed');
+    console.error('❌ Error queuing payment:', error);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to process payment');
   }
 };
 

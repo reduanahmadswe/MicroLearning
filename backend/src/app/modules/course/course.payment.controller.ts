@@ -30,7 +30,8 @@ export const paymentSuccess = catchAsync(async (req: Request, res: Response) => 
 
   // Redirect to frontend success page
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  res.redirect(`${frontendUrl}/courses/payment/success?courseId=${result.enrollment.course}`);
+  const courseId = result.enrollment?.course || result.payment?.course;
+  res.redirect(`${frontendUrl}/courses/payment/success?courseId=${courseId}`);
 });
 
 /**

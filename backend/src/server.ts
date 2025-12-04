@@ -7,6 +7,10 @@ import connectDatabase from './config/database';
 // Load environment variables
 dotenv.config();
 
+// Import queue configuration BEFORE workers
+import './config/queue';
+import './workers/payment.worker'; // Start payment queue workers
+
 const PORT = process.env.PORT || 5000;
 
 // Create HTTP server

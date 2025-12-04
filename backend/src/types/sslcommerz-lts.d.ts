@@ -52,6 +52,7 @@ declare module 'sslcommerz-lts' {
     storeLogo?: string;
     desc?: string[];
     is_direct_pay_enable?: string;
+    failedreason?: string;
   }
 
   export interface ValidationResponse {
