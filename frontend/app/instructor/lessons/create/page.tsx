@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { ArrowLeft, Save, Plus, Trash2, Video, FileQuestion } from 'lucide-react
 
 export default function InstructorCreateLessonPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('courseId');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -68,18 +70,130 @@ export default function InstructorCreateLessonPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate courseId
+    if (!courseId) {
+      toast.error('Course ID is required. Please select a course first.');
+      router.push('/instructor');
+      return;
+    }
+
+    // Validate quiz questions
+    const hasValidQuestions = formData.quizQuestions.every(q => 
+      q.question.trim() && 
+      q.options.every(opt => opt.trim())
+    );
+
+    if (!hasValidQuestions) {
+      toast.error('Please fill in all quiz questions and options');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Step 1: Create the lesson
       const lessonData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
+        content: formData.content,
+        topic: formData.topic,
+        difficulty: formData.difficulty,
+        estimatedTime: formData.estimatedTime,
+        course: courseId,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        // Optional fields
+        ...(formData.videoUrl && {
+          media: [{
+            type: 'video' as const,
+            url: formData.videoUrl,
+          }]
+        }),
       };
 
-      await lessonsAPI.createLesson(lessonData);
+      const lessonResponse = await lessonsAPI.createLesson(lessonData);
+      console.log('✅ Lesson Response:', lessonResponse);
+      
+      // Extract lesson ID from response (handle different response structures)
+      const createdLesson = lessonResponse.data?.data || lessonResponse.data;
+      const lessonId = createdLesson?._id || createdLesson?.id;
+      
+      if (!lessonId) {
+        console.error('Failed to get lesson ID from response:', lessonResponse);
+        toast.error('Lesson created but failed to get lesson ID');
+        return;
+      }
+      
       toast.success('Lesson created successfully!');
+
+      // Step 2: Create the quiz for this lesson
+      const quizData = {
+        title: `${formData.title} - Quiz`,
+        description: `Quiz for ${formData.title}. Test your understanding of this lesson.`,
+        lesson: lessonId,
+        course: courseId,
+        topic: formData.topic,
+        questions: formData.quizQuestions.map((q, index) => ({
+          type: 'mcq' as const,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.options[q.correctAnswer], // Send the actual text, not index
+          explanation: q.explanation || `This is the correct answer for question ${index + 1}.`,
+          points: 10,
+        })),
+        timeLimit: formData.estimatedTime * 5, // 5 minutes per estimated reading time
+        passingScore: formData.passingScore,
+        difficulty: formData.difficulty,
+        isPremium: false,
+        isPublished: true, // Publish the quiz immediately
+      };
+
+      const token = localStorage.getItem('token');
+      console.log('📝 Creating quiz with data:', quizData);
+      
+      const quizResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(quizData),
+      });
+
+      console.log('📊 Quiz Response Status:', quizResponse.status);
+      console.log('📊 Quiz Response OK:', quizResponse.ok);
+
+      if (quizResponse.ok) {
+        const quizResult = await quizResponse.json();
+        console.log('✅ Quiz created:', quizResult);
+        toast.success('Quiz created successfully!');
+      } else {
+        let errorMessage = 'Unknown error';
+        try {
+          const errorText = await quizResponse.text();
+          console.error('❌ Raw error response:', errorText);
+          
+          if (errorText) {
+            try {
+              const errorData = JSON.parse(errorText);
+              console.error('❌ Parsed error data:', errorData);
+              errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
+            } catch (e) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (e) {
+          console.error('❌ Failed to read error response:', e);
+        }
+        
+        console.error('❌ Response status:', quizResponse.status);
+        console.error('❌ Quiz data sent:', quizData);
+        toast.warning(`Lesson created but quiz failed: ${errorMessage}. You can create it later.`);
+      }
+
       router.push('/instructor');
     } catch (error: any) {
+      console.error('Lesson creation error:', error);
       toast.error(error.response?.data?.message || 'Failed to create lesson');
     } finally {
       setLoading(false);
@@ -176,8 +290,8 @@ export default function InstructorCreateLessonPage() {
                   </label>
                   <Input
                     type="number"
-                    value={formData.estimatedTime}
-                    onChange={(e) => setFormData({ ...formData, estimatedTime: parseInt(e.target.value) })}
+                    value={formData.estimatedTime || ''}
+                    onChange={(e) => setFormData({ ...formData, estimatedTime: parseInt(e.target.value) || 0 })}
                     min={1}
                     max={60}
                   />

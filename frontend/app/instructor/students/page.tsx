@@ -106,16 +106,16 @@ export default function InstructorStudentsPage() {
         [],
         ['Student Name', 'Email', 'Level', 'XP', 'Streak', 'Status', 'Total Progress', 'Courses Enrolled', 'Joined Date', 'Last Active'],
         ...students.map((student) => [
-          student.name,
-          student.email,
+          student.name || 'N/A',
+          student.email || 'N/A',
           student.level || 0,
           student.xp || 0,
           typeof student.streak === 'number' ? student.streak : 0,
-          student.status,
-          `${student.totalProgress}%`,
-          student.enrolledCourses.length,
-          new Date(student.joinedDate).toLocaleDateString(),
-          formatDate(student.lastActive),
+          student.status || 'inactive',
+          `${student.totalProgress || 0}%`,
+          Array.isArray(student.enrolledCourses) ? student.enrolledCourses.length : 0,
+          student.joinedDate ? new Date(student.joinedDate).toLocaleDateString() : 'N/A',
+          student.lastActive ? formatDate(student.lastActive) : 'N/A',
         ]),
       ];
 
@@ -127,18 +127,21 @@ export default function InstructorStudentsPage() {
       ];
 
       students.forEach((student) => {
-        student.enrolledCourses.forEach((course) => {
+        // Check if enrolledCourses exists and is an array
+        const courses = Array.isArray(student.enrolledCourses) ? student.enrolledCourses : [];
+        
+        courses.forEach((course) => {
           enrollmentData.push([
-            student.name,
-            course.title,
-            `${course.progress}%`,
-            new Date(course.enrolledAt).toLocaleDateString(),
-            formatDate(course.lastAccessed),
-            course.completedLessons,
-            course.totalLessons,
-            course.quizzesTaken,
-            `${course.averageScore}%`,
-          ]);
+            student.name || 'N/A',
+            course.title || 'Untitled Course',
+            `${course.progress || 0}%`,
+            course.enrolledAt ? new Date(course.enrolledAt).toLocaleDateString() : 'N/A',
+            course.lastAccessed ? formatDate(course.lastAccessed) : 'N/A',
+            String(course.completedLessons || 0),
+            String(course.totalLessons || 0),
+            String(course.quizzesTaken || 0),
+            `${course.averageScore || 0}%`,
+          ] as any);
         });
       });
 
@@ -150,8 +153,8 @@ export default function InstructorStudentsPage() {
         ['Total Students', students.length],
         ['Active Students', students.filter(s => s.status === 'active').length],
         ['Inactive Students', students.filter(s => s.status === 'inactive').length],
-        ['Average Progress', `${Math.round(students.reduce((acc, s) => acc + s.totalProgress, 0) / students.length) || 0}%`],
-        ['Total Enrollments', students.reduce((acc, s) => acc + s.enrolledCourses.length, 0)],
+        ['Average Progress', `${Math.round(students.reduce((acc, s) => acc + (s.totalProgress || 0), 0) / students.length) || 0}%`],
+        ['Total Enrollments', students.reduce((acc, s) => acc + (Array.isArray(s.enrolledCourses) ? s.enrolledCourses.length : 0), 0)],
       ];
 
       // Create workbook and add sheets
@@ -180,8 +183,8 @@ export default function InstructorStudentsPage() {
   const stats = {
     totalStudents: students.length,
     activeStudents: students.filter(s => s.status === 'active').length,
-    avgProgress: Math.round(students.reduce((acc, s) => acc + s.totalProgress, 0) / students.length) || 0,
-    totalEnrollments: students.reduce((acc, s) => acc + s.enrolledCourses.length, 0),
+    avgProgress: Math.round(students.reduce((acc, s) => acc + (s.totalProgress || 0), 0) / students.length) || 0,
+    totalEnrollments: students.reduce((acc, s) => acc + (Array.isArray(s.enrolledCourses) ? s.enrolledCourses.length : 0), 0),
   };
 
   // Filter and sort students
@@ -446,7 +449,7 @@ export default function InstructorStudentsPage() {
                         <BookOpen className="w-4 h-4 text-green-600" />
                         <p className="text-sm font-medium text-gray-600">Courses</p>
                       </div>
-                      <p className="text-lg font-bold text-green-600">{student.enrolledCourses.length}</p>
+                      <p className="text-lg font-bold text-green-600">{Array.isArray(student.enrolledCourses) ? student.enrolledCourses.length : 0}</p>
                     </div>
                   </div>
 
@@ -454,25 +457,25 @@ export default function InstructorStudentsPage() {
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <BookOpen className="w-4 h-4" />
-                      Enrolled Courses ({student.enrolledCourses.length})
+                      Enrolled Courses ({Array.isArray(student.enrolledCourses) ? student.enrolledCourses.length : 0})
                     </h4>
                     <div className="space-y-3">
-                      {student.enrolledCourses.map((course) => (
+                      {(Array.isArray(student.enrolledCourses) ? student.enrolledCourses : []).map((course) => (
                         <div
                           key={course._id}
                           className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-green-300 transition-colors"
                         >
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex-1">
-                              <h5 className="font-semibold text-gray-900">{course.title}</h5>
+                              <h5 className="font-semibold text-gray-900">{course.title || 'Untitled Course'}</h5>
                               <div className="flex items-center gap-4 mt-1 text-xs text-gray-600">
-                                <span>Enrolled {formatDate(course.enrolledAt)}</span>
+                                <span>Enrolled {course.enrolledAt ? formatDate(course.enrolledAt) : 'N/A'}</span>
                                 <span>•</span>
-                                <span>Last accessed {formatDate(course.lastAccessed)}</span>
+                                <span>Last accessed {course.lastAccessed ? formatDate(course.lastAccessed) : 'N/A'}</span>
                               </div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-sm font-bold ${getProgressColor(course.progress)}`}>
-                              {course.progress}%
+                            <div className={`px-3 py-1 rounded-full text-sm font-bold ${getProgressColor(course.progress || 0)}`}>
+                              {course.progress || 0}%
                             </div>
                           </div>
 
@@ -480,8 +483,8 @@ export default function InstructorStudentsPage() {
                           <div className="mb-3">
                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                               <div
-                                className={`h-full ${getProgressBarColor(course.progress)} transition-all duration-500`}
-                                style={{ width: `${course.progress}%` }}
+                                className={`h-full ${getProgressBarColor(course.progress || 0)} transition-all duration-500`}
+                                style={{ width: `${course.progress || 0}%` }}
                               ></div>
                             </div>
                           </div>
@@ -490,15 +493,15 @@ export default function InstructorStudentsPage() {
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div className="flex items-center gap-2 text-gray-700">
                               <CheckCircle className="w-4 h-4 text-green-600" />
-                              <span>{course.completedLessons}/{course.totalLessons} Lessons</span>
+                              <span>{course.completedLessons || 0}/{course.totalLessons || 0} Lessons</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-700">
                               <Target className="w-4 h-4 text-blue-600" />
-                              <span>{course.quizzesTaken} Quizzes</span>
+                              <span>{course.quizzesTaken || 0} Quizzes</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-700">
                               <Award className="w-4 h-4 text-yellow-600" />
-                              <span>Avg: {course.averageScore}%</span>
+                              <span>Avg: {course.averageScore || 0}%</span>
                             </div>
                           </div>
                         </div>
@@ -563,17 +566,17 @@ export default function InstructorStudentsPage() {
                 {/* Detailed Course List */}
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Course Details</h3>
                 <div className="space-y-4">
-                  {selectedStudent.enrolledCourses.map((course) => (
+                  {(Array.isArray(selectedStudent.enrolledCourses) ? selectedStudent.enrolledCourses : []).map((course) => (
                     <div key={course._id} className="border border-gray-200 rounded-xl p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="text-lg font-bold text-gray-900">{course.title}</h4>
+                          <h4 className="text-lg font-bold text-gray-900">{course.title || 'Untitled Course'}</h4>
                           <p className="text-sm text-gray-600 mt-1">
-                            Enrolled on {new Date(course.enrolledAt).toLocaleDateString('en-GB')}
+                            Enrolled on {course.enrolledAt ? new Date(course.enrolledAt).toLocaleDateString('en-GB') : 'N/A'}
                           </p>
                         </div>
-                        <div className={`px-4 py-2 rounded-full text-lg font-bold ${getProgressColor(course.progress)}`}>
-                          {course.progress}%
+                        <div className={`px-4 py-2 rounded-full text-lg font-bold ${getProgressColor(course.progress || 0)}`}>
+                          {course.progress || 0}%
                         </div>
                       </div>
 
@@ -581,27 +584,27 @@ export default function InstructorStudentsPage() {
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600 mb-1">Lessons</p>
                           <p className="text-lg font-bold text-gray-900">
-                            {course.completedLessons}/{course.totalLessons}
+                            {course.completedLessons || 0}/{course.totalLessons || 0}
                           </p>
                         </div>
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600 mb-1">Quizzes</p>
-                          <p className="text-lg font-bold text-gray-900">{course.quizzesTaken}</p>
+                          <p className="text-lg font-bold text-gray-900">{course.quizzesTaken || 0}</p>
                         </div>
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600 mb-1">Avg Score</p>
-                          <p className="text-lg font-bold text-gray-900">{course.averageScore}%</p>
+                          <p className="text-lg font-bold text-gray-900">{course.averageScore || 0}%</p>
                         </div>
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600 mb-1">Last Access</p>
-                          <p className="text-sm font-semibold text-gray-900">{formatDate(course.lastAccessed)}</p>
+                          <p className="text-sm font-semibold text-gray-900">{course.lastAccessed ? formatDate(course.lastAccessed) : 'N/A'}</p>
                         </div>
                       </div>
 
                       <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${getProgressBarColor(course.progress)} transition-all`}
-                          style={{ width: `${course.progress}%` }}
+                          className={`h-full ${getProgressBarColor(course.progress || 0)} transition-all`}
+                          style={{ width: `${course.progress || 0}%` }}
                         ></div>
                       </div>
                     </div>

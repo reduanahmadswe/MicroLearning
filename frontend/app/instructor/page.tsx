@@ -13,13 +13,17 @@ import {
   Plus,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  X,
+  CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { lessonsAPI, coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 
 export default function InstructorDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalLessons: 0,
     totalCourses: 0,
@@ -29,6 +33,8 @@ export default function InstructorDashboard() {
   const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
@@ -140,17 +146,18 @@ export default function InstructorDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Link href="/instructor/lessons/create">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-                <div className="bg-blue-50 p-4 rounded-full mb-3">
-                  <Plus className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="font-semibold text-lg mb-1">Create Lesson</h3>
-                <p className="text-sm text-gray-600">Create a new micro-lesson</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <Card 
+            onClick={() => setShowCourseModal(true)}
+            className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500"
+          >
+            <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
+              <div className="bg-blue-50 p-4 rounded-full mb-3">
+                <Plus className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-lg mb-1">Create Lesson</h3>
+              <p className="text-sm text-gray-600">Create a new micro-lesson</p>
+            </CardContent>
+          </Card>
 
           <Link href="/instructor/courses/create">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500">
@@ -288,6 +295,167 @@ export default function InstructorDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Course Selection Modal */}
+        {showCourseModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">Create New Lesson</h2>
+                    <p className="text-blue-100 text-sm">Select a course to add this lesson to</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowCourseModal(false);
+                      setSelectedCourse(null);
+                    }}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
+                {courses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Courses Available</h3>
+                    <p className="text-gray-600 mb-6">You need to create a course first before adding lessons</p>
+                    <Button
+                      onClick={() => {
+                        setShowCourseModal(false);
+                        router.push('/instructor/courses/create');
+                      }}
+                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:shadow-lg"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Your First Course
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600">
+                        Choose which course this lesson will belong to. You can also create a standalone lesson.
+                      </p>
+                    </div>
+
+                    {/* Course List */}
+                    <div className="space-y-3 mb-6">
+                      {courses.map((course: any) => (
+                        <div
+                          key={course._id}
+                          onClick={() => setSelectedCourse(course)}
+                          className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            selectedCourse?._id === course._id
+                              ? 'border-blue-500 bg-blue-50 shadow-md'
+                              : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                {course.title}
+                                {selectedCourse?._id === course._id && (
+                                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                                )}
+                              </h4>
+                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                {course.description}
+                              </p>
+                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <BookOpen className="w-3 h-3" />
+                                  {course.lessons?.length || 0} lessons
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {course.enrolledCount || 0} students
+                                </span>
+                                <span className="capitalize px-2 py-0.5 bg-gray-100 rounded-full">
+                                  {course.difficulty}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Standalone Option */}
+                    <div
+                      onClick={() => setSelectedCourse({ _id: 'standalone', title: 'Standalone Lesson' })}
+                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                        selectedCourse?._id === 'standalone'
+                          ? 'border-purple-500 bg-purple-50 shadow-md'
+                          : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <BookOpen className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                            Create Standalone Lesson
+                            {selectedCourse?._id === 'standalone' && (
+                              <CheckCircle className="w-5 h-5 text-purple-600" />
+                            )}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Create a lesson without attaching it to any course
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              {courses.length > 0 && (
+                <div className="border-t border-gray-200 p-6 bg-gray-50">
+                  <div className="flex items-center justify-between gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCourseModal(false);
+                        setSelectedCourse(null);
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (!selectedCourse) {
+                          toast.error('Please select a course or choose standalone option');
+                          return;
+                        }
+                        setShowCourseModal(false);
+                        if (selectedCourse._id === 'standalone') {
+                          router.push('/instructor/lessons/create');
+                        } else {
+                          router.push(`/instructor/lessons/create?courseId=${selectedCourse._id}`);
+                        }
+                      }}
+                      disabled={!selectedCourse}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg disabled:opacity-50"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Continue to Create Lesson
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

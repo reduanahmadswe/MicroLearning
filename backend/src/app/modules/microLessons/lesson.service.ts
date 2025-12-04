@@ -311,7 +311,27 @@ class LessonService {
       throw new ApiError(403, 'You are not authorized to delete this lesson');
     }
 
+    const deletedLessonOrder = lesson.order;
+    const courseId = lesson.course;
+
+    // Delete the lesson
     await lesson.deleteOne();
+
+    // Update order of remaining lessons in the same course
+    // All lessons with order > deletedLessonOrder should have their order decreased by 1
+    if (courseId && deletedLessonOrder) {
+      await Lesson.updateMany(
+        { 
+          course: courseId,
+          order: { $gt: deletedLessonOrder }
+        },
+        { 
+          $inc: { order: -1 }
+        }
+      );
+      
+      console.log(`✅ Updated lesson orders after deleting lesson at position ${deletedLessonOrder}`);
+    }
 
     return { message: 'Lesson deleted successfully' };
   }

@@ -75,15 +75,27 @@ export default function CourseLessonsPage() {
       const lessonsWithQuizStatus = await Promise.all(
         lessonsList.map(async (lesson: Lesson) => {
           try {
+            console.log(`🔍 Checking quiz for lesson ${lesson._id}:`, lesson.title);
             const quizRes = await axios.get(
               `http://localhost:5000/api/v1/quizzes?lesson=${lesson._id}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
+            console.log(`📊 Quiz response for ${lesson.title}:`, quizRes.data);
+            
+            // Check both data and data.data for quizzes array
+            const quizzes = Array.isArray(quizRes.data.data) 
+              ? quizRes.data.data 
+              : (Array.isArray(quizRes.data) ? quizRes.data : []);
+            
+            const hasQuiz = quizzes.length > 0;
+            console.log(`✅ Lesson "${lesson.title}" has quiz:`, hasQuiz, '| Quiz count:', quizzes.length);
+            
             return {
               ...lesson,
-              hasQuiz: quizRes.data.data?.length > 0,
+              hasQuiz: hasQuiz,
             };
           } catch (error) {
+            console.error(`❌ Error checking quiz for lesson ${lesson.title}:`, error);
             return { ...lesson, hasQuiz: false };
           }
         })

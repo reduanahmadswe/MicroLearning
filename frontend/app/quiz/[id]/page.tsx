@@ -128,11 +128,15 @@ export default function QuizPlayerPage() {
       const formattedAnswers = quiz.questions.map((q, index) => {
         let answer = answers[index];
         
-        // Convert answer to string for validation
+        // Convert answer based on question type
         if (answer === undefined || answer === null) {
           answer = '';
+        } else if (q.type === 'mcq' && typeof answer === 'number') {
+          // For MCQ, convert option index to actual option text
+          answer = q.options[answer] || answer.toString();
+          console.log(`Q${index + 1}: Selected option index ${answers[index]} → "${answer}"`);
         } else if (typeof answer === 'number') {
-          // For MCQ, convert option index to string
+          // For other types, convert to string
           answer = answer.toString();
         } else if (typeof answer === 'boolean') {
           // For true/false, convert to string
@@ -175,12 +179,27 @@ export default function QuizPlayerPage() {
 
       const result = await response.json();
       console.log('Quiz submission successful:', result);
-      toast.success('Quiz submitted successfully!');
+      console.log('📊 Full result structure:', JSON.stringify(result, null, 2));
+      
+      // Extract data from response
+      const attemptData = result.data?.attempt;
+      const resultId = attemptData?._id;
+      const score = result.data?.results?.score || attemptData?.score || 0;
+      const passed = result.data?.results?.passed || attemptData?.passed || false;
+      
+      console.log('📊 Attempt ID:', resultId);
+      console.log('🎯 Score:', score, '%');
+      console.log('✅ Passed:', passed);
+      
+      toast.success(`Quiz submitted! Score: ${score}%`);
       
       // Navigate to results page
-      if (result.data?._id) {
-        router.push(`/quiz/${quizId}/results/${result.data._id}`);
+      if (resultId) {
+        console.log('🔄 Redirecting to results page:', `/quiz/${quizId}/results/${resultId}`);
+        router.push(`/quiz/${quizId}/results/${resultId}`);
       } else {
+        console.error('❌ No result ID found in response:', result);
+        toast.error('Failed to get quiz results');
         router.push(`/quiz`);
       }
     } catch (error: any) {
