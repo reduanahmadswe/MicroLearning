@@ -2,27 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { getDashboardPath } from '@/lib/navigation';
-import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Redirect to role-based dashboard
-      router.push(getDashboardPath(user.role));
-    } else {
-      // Redirect to login
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, user, router]);
+    // Redirect to public home page
+    router.push('/home');
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
     </div>
   );
 }

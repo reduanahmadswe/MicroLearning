@@ -18,9 +18,9 @@ export default function ClearAuthPage() {
       sessionStorage.clear();
     }
 
-    // Redirect to login after 1 second
+    // Redirect to home after 1 second
     setTimeout(() => {
-      router.replace('/auth/login');
+      router.replace('/home');
     }, 1000);
   }, []);
 

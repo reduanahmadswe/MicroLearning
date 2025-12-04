@@ -103,7 +103,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     logout();
-    router.push('/auth/login');
+    router.push('/home');
     toast.success('Logged out successfully');
   };
 

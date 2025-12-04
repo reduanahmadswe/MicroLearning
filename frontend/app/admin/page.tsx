@@ -43,7 +43,7 @@ export default function AdminPage() {
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
-    router.push('/auth/login');
+    router.push('/home');
   };
 
   useEffect(() => {

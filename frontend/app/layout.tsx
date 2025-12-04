@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import AuthMiddleware from "@/components/auth/AuthMiddleware";
-import Navbar from "@/components/Navbar";
+import ConditionalNavbar from "@/components/ConditionalNavbar";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <AuthMiddleware>
-            <Navbar />
+            <ConditionalNavbar />
             {children}
             <Toaster position="top-right" richColors />
           </AuthMiddleware>

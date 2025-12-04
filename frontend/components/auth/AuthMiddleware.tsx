@@ -12,7 +12,7 @@ export default function AuthMiddleware({ children }: { children: React.ReactNode
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-email", "/auth/clear", "/"];
+  const publicRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-email", "/auth/clear", "/", "/home", "/about", "/features", "/contact"];
 
   // Routes that should redirect to dashboard if already authenticated
   const authRoutes = ["/auth/login", "/auth/register"];

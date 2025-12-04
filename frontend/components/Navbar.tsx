@@ -36,6 +36,14 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
+// Public navigation items (when not logged in)
+const publicNavItems = [
+  { name: 'Features', path: '/features', icon: Zap },
+  { name: 'Courses', path: '/courses', icon: GraduationCap },
+  { name: 'About', path: '/about', icon: BookOpen },
+  { name: 'Contact', path: '/contact', icon: MessageSquare },
+];
+
 // Role-based navigation items - Main navbar (important items only)
 const roleBasedNavItems = {
   learner: [
@@ -98,11 +106,14 @@ export default function Navbar() {
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  // Get navigation items based on user role
+  // Get navigation items based on user role or show public nav
   const navItems = useMemo(() => {
+    if (!user) {
+      return publicNavItems;
+    }
     const role = user?.role?.toLowerCase() || 'learner';
     return roleBasedNavItems[role as keyof typeof roleBasedNavItems] || roleBasedNavItems.learner;
-  }, [user?.role]);
+  }, [user]);
 
   // Get additional items for profile dropdown
   const additionalItems = useMemo(() => {
@@ -128,7 +139,8 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
-    router.push('/auth/login');
+    // Force redirect to home page
+    window.location.href = '/home';
   };
 
   const isActive = (path: string) => {
@@ -201,7 +213,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
+            <Link href={user ? "/dashboard" : "/home"} className="flex items-center gap-2 flex-shrink-0">
               <div className={`w-10 h-10 bg-gradient-to-br ${getRoleColor()} rounded-lg flex items-center justify-center shadow-md`}>
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
@@ -209,7 +221,7 @@ export default function Navbar() {
                 <span className={`text-xl font-bold bg-gradient-to-r ${getRoleColor()} bg-clip-text text-transparent`}>
                   MicroLearning
                 </span>
-                <p className="text-[10px] text-gray-500 -mt-1">{getRoleLabel()} Portal</p>
+                {user && <p className="text-[10px] text-gray-500 -mt-1">{getRoleLabel()} Portal</p>}
               </div>
             </Link>
 
@@ -445,11 +457,18 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <Link href="/auth/login">
-                  <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity">
-                    Login
-                  </button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href="/auth/login">
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                      Login
+                    </button>
+                  </Link>
+                  <Link href="/auth/signup">
+                    <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
+                      Sign Up Free
+                    </button>
+                  </Link>
+                </div>
               )}
 
               {/* Mobile Menu Button */}
@@ -492,7 +511,7 @@ export default function Navbar() {
               );
             })}
 
-            {user && (
+            {user ? (
               <>
                 <div className="border-t border-gray-200 my-4"></div>
                 
@@ -556,6 +575,25 @@ export default function Navbar() {
                     <LogOut className="w-5 h-5" />
                     <span>Logout</span>
                   </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="border-t border-gray-200 my-4"></div>
+                {/* Mobile Auth Buttons */}
+                <div className="px-4 space-y-2">
+                  <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <User className="w-5 h-5" />
+                      <span>Login</span>
+                    </button>
+                  </Link>
+                  <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
+                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 hover:opacity-90 transition-opacity shadow-md">
+                      <GraduationCap className="w-5 h-5" />
+                      <span>Sign Up Free</span>
+                    </button>
+                  </Link>
                 </div>
               </>
             )}
