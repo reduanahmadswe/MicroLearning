@@ -367,6 +367,40 @@ class QuizService {
       await enrollment.save();
     }
   }
+
+  // Get instructor's quizzes
+  async getInstructorQuizzes(instructorId: string) {
+    console.log('🔍 Fetching quizzes for instructor:', instructorId);
+    
+    const quizzes = await Quiz.find({ author: instructorId })
+      .populate('course', 'title thumbnail')
+      .populate('lesson', 'title')
+      .sort('-createdAt')
+      .lean();
+
+    console.log('📚 Found quizzes:', quizzes.length);
+
+    // Get stats for each quiz
+    const quizzesWithStats = await Promise.all(
+      quizzes.map(async (quiz) => {
+        const attempts = await QuizAttempt.find({ quiz: quiz._id });
+        const totalAttempts = attempts.length;
+        const averageScore = totalAttempts > 0
+          ? attempts.reduce((sum, attempt) => sum + attempt.score, 0) / totalAttempts
+          : 0;
+
+        return {
+          ...quiz,
+          totalAttempts,
+          averageScore: Math.round(averageScore),
+          published: quiz.isPublished, // Map isPublished to published for frontend
+        };
+      })
+    );
+
+    console.log('✅ Returning quizzes with stats:', quizzesWithStats.length);
+    return quizzesWithStats;
+  }
 }
 
 export default new QuizService();

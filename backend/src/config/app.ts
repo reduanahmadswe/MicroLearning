@@ -55,7 +55,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/lessons', lessonRoutes);
 app.use('/api/v1/progress', progressRoutes);
-app.use('/api/v1/quizzes', quizRoutes);
+app.use('/api/v1/quiz', quizRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/bookmarks', bookmarkRoutes);
 app.use('/api/v1/badges', badgeRoutes);

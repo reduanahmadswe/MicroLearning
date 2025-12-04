@@ -128,6 +128,24 @@ class QuizController {
       data: result,
     });
   });
+
+  // Get instructor's quizzes
+  getInstructorQuizzes = catchAsync(async (req: Request, res: Response) => {
+    console.log('📥 GET /api/quiz/instructor request received');
+    console.log('👤 User from token:', req.user);
+    
+    const userId = req.user?.userId as string;
+    console.log('🔑 Instructor userId:', userId);
+    
+    const result = await quizService.getInstructorQuizzes(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Instructor quizzes retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new QuizController();

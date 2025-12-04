@@ -12,6 +12,11 @@ const router = Router();
 
 // Public routes
 router.get('/', quizController.getQuizzes);
+
+// Instructor routes (must be before /:id route)
+router.get('/instructor', authGuard('instructor', 'admin'), quizController.getInstructorQuizzes);
+
+// Continue public routes
 router.get('/lesson/:lessonId', quizController.getQuizByLesson);
 router.get('/:id', quizController.getQuizById);
 router.get('/:id/attempts', authGuard(), quizController.getQuizAttempts);
