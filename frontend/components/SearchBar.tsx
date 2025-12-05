@@ -83,10 +83,10 @@ export default function SearchBar() {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
+    <div ref={searchRef} className="relative w-full">
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <input
           type="text"
           value={query}
@@ -95,7 +95,7 @@ export default function SearchBar() {
             if (results.length > 0) setIsOpen(true);
           }}
           placeholder="Search users..."
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-12 pr-12 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white text-gray-900 placeholder-gray-400 shadow-md transition-all duration-200 font-medium"
         />
         {query && (
           <button
@@ -104,25 +104,25 @@ export default function SearchBar() {
               setResults([]);
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
 
       {/* Search Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+        <div className="absolute top-full mt-2 w-full bg-white/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-2xl max-h-96 overflow-y-auto z-50">
           {loading ? (
-            <div className="p-4 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="p-6 text-center text-gray-500">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600 mx-auto"></div>
             </div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              <User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p>No users found</p>
-              <p className="text-sm">Try a different search term</p>
+            <div className="p-8 text-center text-gray-500">
+              <User className="w-14 h-14 text-gray-300 mx-auto mb-3" />
+              <p className="font-semibold text-gray-700">No users found</p>
+              <p className="text-sm mt-1">Try a different search term</p>
             </div>
           ) : (
             <div className="py-2">
@@ -130,32 +130,32 @@ export default function SearchBar() {
                 <button
                   key={user._id}
                   onClick={() => handleSelectUser(user._id)}
-                  className="w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 text-left"
+                  className="w-full px-4 py-3 hover:bg-gradient-to-r hover:from-green-50 hover:to-teal-50 transition-all duration-200 flex items-center gap-3 text-left group"
                 >
-                  <Avatar className="w-10 h-10">
+                  <Avatar className="w-11 h-11 ring-2 ring-transparent group-hover:ring-green-200 transition-all">
                     <AvatarImage src={user.profilePicture} />
-                    <AvatarFallback className="bg-blue-600 text-white">
+                    <AvatarFallback className="bg-gradient-to-br from-green-600 to-teal-600 text-white font-bold">
                       {getInitials(user.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">
+                    <p className="font-bold text-gray-900 truncate group-hover:text-green-600 transition-colors">
                       {user.name}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
                       {user.email}
                     </p>
                     {user.bio && (
-                      <p className="text-xs text-gray-400 truncate">
+                      <p className="text-xs text-gray-400 truncate mt-0.5">
                         {user.bio}
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <div className="flex items-center gap-1 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
+                  <div className="flex flex-col items-end gap-1.5">
+                    <div className="flex items-center gap-1 text-xs bg-gradient-to-r from-green-100 to-teal-100 text-green-700 px-2.5 py-1 rounded-full font-bold shadow-sm">
                       <span>Lv {user.level}</span>
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 font-medium">
                       {user.xp.toLocaleString()} XP
                     </div>
                   </div>

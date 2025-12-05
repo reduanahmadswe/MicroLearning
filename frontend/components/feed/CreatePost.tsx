@@ -91,11 +91,11 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border-0 p-5 sm:p-6">
       {/* Header */}
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 sm:gap-4">
         {/* User Avatar */}
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md">
           {user?.profilePicture ? (
             <img
               src={user.profilePicture}
@@ -113,7 +113,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white resize-none text-gray-900 placeholder-gray-400 transition-all duration-200"
             rows={3}
           />
         </div>
@@ -121,14 +121,14 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
       {/* Image URLs */}
       {images.length > 0 && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-4 space-y-2">
           {images.map((img, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-              <img src={img} alt={`Preview ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
-              <span className="flex-1 text-sm text-gray-600 truncate">{img}</span>
+            <div key={idx} className="flex items-center gap-3 bg-gradient-to-r from-green-50 to-teal-50 p-3 rounded-xl border border-green-100">
+              <img src={img} alt={`Preview ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg shadow-md" />
+              <span className="flex-1 text-sm text-gray-700 truncate font-medium">{img}</span>
               <button
                 onClick={() => handleRemoveImage(idx)}
-                className="p-1 hover:bg-gray-200 rounded"
+                className="p-2 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4 text-red-500" />
               </button>
@@ -139,10 +139,10 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
       {/* Video URL */}
       {videoUrl && (
-        <div className="mt-3 bg-gray-50 p-2 rounded-lg flex items-center gap-2">
-          <Video className="w-5 h-5 text-blue-600" />
-          <span className="flex-1 text-sm text-gray-600 truncate">{videoUrl}</span>
-          <button onClick={() => setVideoUrl('')} className="p-1 hover:bg-gray-200 rounded">
+        <div className="mt-4 bg-gradient-to-r from-green-50 to-teal-50 p-3 rounded-xl flex items-center gap-3 border border-green-100">
+          <Video className="w-5 h-5 text-teal-600" />
+          <span className="flex-1 text-sm text-gray-700 truncate font-medium">{videoUrl}</span>
+          <button onClick={() => setVideoUrl('')} className="p-2 hover:bg-red-50 rounded-lg transition-colors">
             <X className="w-4 h-4 text-red-500" />
           </button>
         </div>
@@ -150,18 +150,18 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
       {/* Image URL Input */}
       {showImageInput && (
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <input
             type="url"
             value={imageUrlInput}
             onChange={(e) => setImageUrlInput(e.target.value)}
             placeholder="Paste image URL..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white text-gray-900 placeholder-gray-400 transition-all duration-200"
             onKeyPress={(e) => e.key === 'Enter' && handleAddImage()}
           />
           <button
             onClick={handleAddImage}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-5 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 font-semibold shadow-md transition-all duration-200 hover:scale-105"
           >
             Add
           </button>
@@ -170,7 +170,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
               setShowImageInput(false);
               setImageUrlInput('');
             }}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
           >
             Cancel
           </button>
@@ -179,17 +179,17 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
       {/* Video URL Input */}
       {showVideoInput && (
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <input
             type="url"
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             placeholder="Paste YouTube/Vimeo URL..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white text-gray-900 placeholder-gray-400 transition-all duration-200"
           />
           <button
             onClick={() => setShowVideoInput(false)}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="px-5 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 font-semibold shadow-md transition-all duration-200 hover:scale-105"
           >
             Done
           </button>
@@ -197,33 +197,33 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
       )}
 
       {/* Actions */}
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Add Image Button */}
           <button
             onClick={() => setShowImageInput(!showImageInput)}
-            className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-green-200"
             disabled={showVideoInput}
           >
             <Image className="w-5 h-5 text-green-600" />
-            <span className="text-sm">Photo</span>
+            <span className="text-sm font-medium">Photo</span>
           </button>
 
           {/* Add Video Button */}
           <button
             onClick={() => setShowVideoInput(!showVideoInput)}
-            className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
             disabled={showImageInput}
           >
             <Video className="w-5 h-5 text-red-600" />
-            <span className="text-sm">Video</span>
+            <span className="text-sm font-medium">Video</span>
           </button>
 
           {/* Visibility Selector */}
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as any)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-medium text-gray-700 cursor-pointer transition-all duration-200"
           >
             <option value="public">🌍 Public</option>
             <option value="friends">👥 Friends</option>
@@ -235,7 +235,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || (!content.trim() && images.length === 0 && !videoUrl)}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="px-8 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-green-600 disabled:hover:to-teal-600 font-semibold shadow-md transition-all duration-200 hover:scale-105 disabled:hover:scale-100"
         >
           {isSubmitting ? 'Posting...' : 'Post'}
         </button>

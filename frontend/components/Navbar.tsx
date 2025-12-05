@@ -186,15 +186,15 @@ export default function Navbar() {
   const getRoleColor = () => {
     const role = user?.role?.toLowerCase();
     if (role === 'admin') return 'from-red-600 to-orange-600';
-    if (role === 'instructor') return 'from-green-600 to-teal-600';
-    return 'from-blue-600 to-purple-600';
+    // Use green-teal theme for both instructor and learner
+    return 'from-green-600 to-teal-600';
   };
 
   const getRoleBgColor = () => {
     const role = user?.role?.toLowerCase();
     if (role === 'admin') return 'bg-red-50 text-red-600';
-    if (role === 'instructor') return 'bg-green-50 text-green-600';
-    return 'bg-blue-50 text-blue-600';
+    // Use green theme for both instructor and learner
+    return 'bg-green-50 text-green-600';
   };
 
   const getRoleLabel = () => {
@@ -384,8 +384,8 @@ export default function Navbar() {
                                     onClick={() => setProfileDropdownOpen(false)}
                                     className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 transition-colors group"
                                   >
-                                    <Icon className={`w-4 h-4 ${isActive(item.path) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                                    <span className={`text-sm ${isActive(item.path) ? 'font-semibold text-blue-600' : 'text-gray-600 group-hover:text-gray-900'}`}>
+                                    <Icon className={`w-4 h-4 ${isActive(item.path) ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                                    <span className={`text-sm ${isActive(item.path) ? 'font-semibold text-green-600' : 'text-gray-600 group-hover:text-gray-900'}`}>
                                       {item.name}
                                     </span>
                                   </Link>
@@ -477,7 +477,7 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
                     active
-                      ? 'bg-blue-50 text-blue-600'
+                      ? 'bg-green-50 text-green-600'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
