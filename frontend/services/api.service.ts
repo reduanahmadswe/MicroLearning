@@ -130,6 +130,13 @@ export const coursesAPI = {
   getCourseStudents: (courseId: string) => api.get(`/courses/instructor/${courseId}/students`),
 };
 
+// Enrollments APIs
+export const enrollmentsAPI = {
+  getMyEnrollments: () => api.get('/courses/enrollments/me'),
+  getEnrollment: (courseId: string) => api.get(`/courses/${courseId}/enrollment`),
+  enrollInCourse: (courseId: string) => api.post(`/courses/${courseId}/enroll`),
+};
+
 // Leaderboard APIs
 export const leaderboardAPI = {
   getGlobalLeaderboard: (params?: any) => api.get('/leaderboard/global', { params }),

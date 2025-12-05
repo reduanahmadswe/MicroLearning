@@ -21,6 +21,16 @@ import {
   Sparkles,
   Award,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import ReactionButtons from '@/components/feed/ReactionButtons';
 import CommentSection from '@/components/feed/CommentSection';
 
@@ -83,6 +93,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const isOwner = user?._id === post.user._id;
 
@@ -107,14 +118,19 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
     return null;
   };
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+  const handleDeleteClick = () => {
+    setShowMenu(false);
+    setShowDeleteDialog(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
       await postAPI.deletePost(post._id);
       onDelete(post._id);
+      setShowDeleteDialog(false);
     } catch (error) {
       toast.error('Failed to delete post');
+      setShowDeleteDialog(false);
     }
   };
 
@@ -228,7 +244,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
             {showMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                 <button
-                  onClick={handleDelete}
+                  onClick={handleDeleteClick}
                   className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-lg"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -405,6 +421,27 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
           <CommentSection postId={post._id} />
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

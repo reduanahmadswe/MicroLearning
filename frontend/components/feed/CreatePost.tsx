@@ -74,7 +74,6 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
       setVisibility('public');
       setShowImageInput(false);
       setShowVideoInput(false);
-      toast.success('Post created successfully!');
     } catch (error: any) {
       console.error('Failed to create post:', error);
       console.error('Error response data:', error?.response?.data);
