@@ -25,7 +25,8 @@ import { Badge } from '@/types';
 
 export default function BadgesPage() {
   const [badges, setBadges] = useState<Badge[]>([]);
-  const [userBadges, setUserBadges] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'earned' | 'locked'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -33,27 +34,22 @@ export default function BadgesPage() {
   const categories = ['Learning', 'Social', 'Achievements', 'Milestones', 'Special'];
 
   useEffect(() => {
-    loadBadges();
-    loadUserBadges();
+    loadData();
   }, []);
 
-  const loadBadges = async () => {
-    try {
-      const response = await badgesAPI.getBadges();
-      setBadges(response.data.data || []);
-    } catch (error: any) {
-      toast.error('Failed to load badges');
-      console.error(error);
-    }
-  };
-
-  const loadUserBadges = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const response = await badgesAPI.getUserBadges();
-      setUserBadges(response.data.data || []);
+      const [badgesRes, achievementsRes, statsRes] = await Promise.all([
+        badgesAPI.getBadges(),
+        badgesAPI.getUserAchievements(),
+        badgesAPI.getStats(),
+      ]);
+      setBadges(badgesRes.data.data || []);
+      setAchievements(achievementsRes.data.data || []);
+      setStats(statsRes.data.data || null);
     } catch (error: any) {
-      toast.error('Failed to load your badges');
+      toast.error('Failed to load badges');
       console.error(error);
     } finally {
       setLoading(false);
@@ -79,21 +75,25 @@ export default function BadgesPage() {
     return <Icon className="w-full h-full" />;
   };
 
-  const earnedBadgeIds = userBadges.map((ub) => ub.badge?._id || ub.badgeId);
+  const getAchievement = (badgeId: string) => {
+    return achievements.find((a) => a.badge?._id === badgeId);
+  };
 
   const filteredBadges = badges.filter((badge) => {
     if (selectedCategory !== 'all' && badge.category !== selectedCategory) return false;
     
-    const isEarned = earnedBadgeIds.includes(badge._id);
+    const achievement = getAchievement(badge._id);
+    const isEarned = achievement?.isCompleted;
+    
     if (activeTab === 'earned' && !isEarned) return false;
     if (activeTab === 'locked' && isEarned) return false;
     
     return true;
   });
 
-  const earnedCount = badges.filter((b) => earnedBadgeIds.includes(b._id)).length;
-  const totalCount = badges.length;
-  const completionPercentage = totalCount > 0 ? (earnedCount / totalCount) * 100 : 0;
+  const earnedCount = stats?.earnedBadges || 0;
+  const totalCount = stats?.totalBadges || badges.length;
+  const completionPercentage = stats?.completionPercentage || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -141,28 +141,36 @@ export default function BadgesPage() {
                 <CardTitle className="text-lg">Recent Achievements</CardTitle>
               </CardHeader>
               <CardContent>
-                {userBadges.slice(0, 5).map((userBadge) => {
-                  const badge = userBadge.badge;
-                  if (!badge) return null;
-                  
-                  return (
-                    <div key={userBadge._id} className="flex items-center gap-3 mb-3 last:mb-0">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${badge.color || 'bg-gradient-to-br from-purple-500 to-pink-500'} text-white`}
-                      >
-                        {getBadgeIcon(badge.icon || 'award')}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {badge.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(userBadge.earnedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                {achievements.filter((a) => a.isCompleted).slice(0, 5).length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No badges earned yet
+                  </p>
+                ) : (
+                  achievements
+                    .filter((a) => a.isCompleted)
+                    .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
+                    .slice(0, 5)
+                    .map((achievement) => {
+                      const badge = achievement.badge;
+                      if (!badge) return null;
+                      
+                      return (
+                        <div key={achievement._id} className="flex items-center gap-3 mb-3 last:mb-0">
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xl">
+                            {badge.icon || '🏆'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {badge.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(achievement.earnedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
               </CardContent>
             </Card>
 
@@ -193,10 +201,10 @@ export default function BadgesPage() {
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">Rarity</span>
+                    <span className="text-sm font-medium text-gray-700">Legendary</span>
                   </div>
                   <span className="text-lg font-bold text-blue-600">
-                    {userBadges.filter((b) => b.badge?.rarity === 'legendary').length}
+                    {achievements.filter((a) => a.isCompleted && a.badge?.rarity === 'legendary').length}
                   </span>
                 </div>
               </CardContent>
@@ -271,10 +279,11 @@ export default function BadgesPage() {
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBadges.map((badge) => {
-                  const isEarned = earnedBadgeIds.includes(badge._id);
-                  const userBadge = userBadges.find(
-                    (ub) => (ub.badge?._id || ub.badgeId) === badge._id
-                  );
+                  const achievement = getAchievement(badge._id);
+                  const isEarned = achievement?.isCompleted;
+                  const progress = achievement?.progress || 0;
+                  const threshold = badge.criteria?.threshold || 100;
+                  const progressPercentage = Math.min((progress / threshold) * 100, 100);
 
                   return (
                     <Card
@@ -306,11 +315,11 @@ export default function BadgesPage() {
                         {/* Badge Icon */}
                         <div className="relative inline-block mb-4">
                           <div
-                            className={`w-24 h-24 rounded-full flex items-center justify-center ${
-                              badge.color || 'bg-gradient-to-br from-purple-500 to-pink-500'
-                            } text-white p-5 ${isEarned ? '' : 'grayscale'}`}
+                            className={`w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white text-4xl ${
+                              isEarned ? '' : 'grayscale'
+                            }`}
                           >
-                            {getBadgeIcon(badge.icon || 'award')}
+                            {badge.icon || '🏆'}
                           </div>
                           {!isEarned && (
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -330,36 +339,46 @@ export default function BadgesPage() {
                         {/* Requirements */}
                         <div className="mb-4">
                           <div className="text-xs font-medium text-gray-500 mb-2">
-                            Requirements:
+                            {badge.criteria?.type === 'streak' && 'Streak Required'}
+                            {badge.criteria?.type === 'lessons_completed' && 'Lessons Required'}
+                            {badge.criteria?.type === 'quiz_perfect' && 'Perfect Quizzes'}
+                            {badge.criteria?.type === 'xp_milestone' && 'XP Required'}
+                            {badge.criteria?.type === 'flashcard_mastered' && 'Flashcards to Master'}
                           </div>
-                          <div className="space-y-1">
-                            {badge.criteria?.xpRequired && (
-                              <div className="text-sm text-gray-700">
-                                <Zap className="w-3 h-3 inline mr-1 text-yellow-500" />
-                                {badge.criteria.xpRequired} XP
-                              </div>
-                            )}
-                            {badge.criteria?.lessonsCompleted && (
-                              <div className="text-sm text-gray-700">
-                                <BookOpen className="w-3 h-3 inline mr-1 text-blue-500" />
-                                {badge.criteria.lessonsCompleted} Lessons
-                              </div>
-                            )}
-                            {badge.criteria?.streakDays && (
-                              <div className="text-sm text-gray-700">
-                                <Flame className="w-3 h-3 inline mr-1 text-orange-500" />
-                                {badge.criteria.streakDays} Day Streak
-                              </div>
-                            )}
+                          <div className="text-sm font-bold text-gray-900">
+                            {progress} / {threshold}
                           </div>
+                          {!isEarned && progress > 0 && (
+                            <div className="mt-2">
+                              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
+                                  style={{ width: `${progressPercentage}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {progressPercentage.toFixed(0)}% complete
+                              </p>
+                            </div>
+                          )}
                         </div>
 
+                        {/* XP Reward */}
+                        {badge.xpReward > 0 && (
+                          <div className="mb-4 p-2 bg-yellow-50 rounded-lg">
+                            <p className="text-xs text-yellow-700 font-medium">
+                              <Zap className="w-3 h-3 inline mr-1" />
+                              +{badge.xpReward} XP Reward
+                            </p>
+                          </div>
+                        )}
+
                         {/* Earned Status */}
-                        {isEarned && userBadge && (
+                        {isEarned && achievement && (
                           <div className="pt-4 border-t border-gray-200">
                             <p className="text-xs text-green-600 font-medium flex items-center justify-center gap-1">
                               <CheckCircle className="w-4 h-4" />
-                              Earned on {new Date(userBadge.earnedAt).toLocaleDateString()}
+                              Earned on {new Date(achievement.earnedAt).toLocaleDateString()}
                             </p>
                           </div>
                         )}
@@ -368,7 +387,7 @@ export default function BadgesPage() {
                           <div className="pt-4 border-t border-gray-200">
                             <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
                               <Lock className="w-4 h-4" />
-                              Keep learning to unlock
+                              {progress > 0 ? `${threshold - progress} more to go!` : 'Keep learning to unlock'}
                             </p>
                           </div>
                         )}

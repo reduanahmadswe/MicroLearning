@@ -29,7 +29,7 @@ interface Friend {
     _id: string;
     name: string;
     email: string;
-    avatar?: string;
+    profilePicture?: string;
     level?: number;
     xp?: number;
   };
@@ -43,7 +43,7 @@ interface FriendRequest {
     _id: string;
     name: string;
     email: string;
-    avatar?: string;
+    profilePicture?: string;
     level?: number;
   };
   status: string;
@@ -298,12 +298,12 @@ export default function FriendsPage() {
                     <Card key={friendship._id} className="hover:shadow-lg transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {friend?.avatar ? (
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+                            {friend?.profilePicture ? (
                               <img
-                                src={friend.avatar}
+                                src={friend.profilePicture}
                                 alt={friend.name}
-                                className="w-full h-full rounded-full object-cover"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               friend?.name?.charAt(0).toUpperCase()
@@ -379,12 +379,12 @@ export default function FriendsPage() {
                     <Card key={request._id} className="hover:shadow-lg transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {user?.avatar ? (
+                          <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+                            {user?.profilePicture ? (
                               <img
-                                src={user.avatar}
+                                src={user.profilePicture}
                                 alt={user.name}
-                                className="w-full h-full rounded-full object-cover"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               user?.name?.charAt(0).toUpperCase()
@@ -457,12 +457,12 @@ export default function FriendsPage() {
                     <Card key={user._id || user.email || index} className="hover:shadow-lg transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {user?.avatar || user?.profilePicture ? (
+                          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+                            {user?.profilePicture ? (
                               <img
-                                src={user.avatar || user.profilePicture}
+                                src={user.profilePicture}
                                 alt={user.name}
-                                className="w-full h-full rounded-full object-cover"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               user?.name?.charAt(0).toUpperCase()

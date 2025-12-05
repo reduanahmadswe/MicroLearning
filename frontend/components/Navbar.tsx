@@ -104,12 +104,37 @@ const additionalMenuItems = {
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  // Fetch and update user profile picture on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user && !user.profilePicture) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.data.profilePicture) {
+              updateUser({ profilePicture: data.data.profilePicture });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch profile:', error);
+        }
+      }
+    };
+    fetchUserProfile();
+  }, [user?._id]);
 
   // Get navigation items based on user role or show public nav
   const navItems = useMemo(() => {
@@ -268,8 +293,16 @@ export default function Navbar() {
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200"
                     >
-                      <div className={`w-9 h-9 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white`}>
-                        {user.name?.charAt(0).toUpperCase()}
+                      <div className={`w-9 h-9 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white overflow-hidden`}>
+                        {user.profilePicture ? (
+                          <img
+                            src={user.profilePicture}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          user.name?.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div className="text-sm text-left max-w-[120px]">
                         <p className="font-semibold text-gray-900 truncate">{user.name}</p>
@@ -286,8 +319,16 @@ export default function Navbar() {
                         {/* Profile Header */}
                         <div className={`px-5 py-4 bg-gradient-to-br ${getRoleColor()} text-white`}>
                           <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white font-bold text-lg ring-2 ring-white/50">
-                              {user.name?.charAt(0).toUpperCase()}
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white font-bold text-lg ring-2 ring-white/50 overflow-hidden">
+                              {user.profilePicture ? (
+                                <img
+                                  src={user.profilePicture}
+                                  alt={user.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                user.name?.charAt(0).toUpperCase()
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-bold text-white truncate">{user.name}</p>
@@ -453,8 +494,16 @@ export default function Navbar() {
                 {/* Mobile Profile Section */}
                 <div className="px-4 py-3 bg-gray-50 rounded-lg mx-4">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold`}>
-                      {user.name?.charAt(0).toUpperCase()}
+                    <div className={`w-12 h-12 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold overflow-hidden`}>
+                      {user.profilePicture ? (
+                        <img
+                          src={user.profilePicture}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user.name?.charAt(0).toUpperCase()
+                      )}
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">{user.name}</p>

@@ -19,6 +19,21 @@ class LeaderboardController {
     });
   });
 
+  // Get friends leaderboard
+  getFriendsLeaderboard = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const limit = parseInt(req.query.limit as string) || 50;
+    
+    const result = await leaderboardService.getFriendsLeaderboard(userId, limit);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Friends leaderboard retrieved successfully',
+      data: result,
+    });
+  });
+
   // Get topic leaderboard
   getTopicLeaderboard = catchAsync(async (req: Request, res: Response) => {
     const { topic } = req.params;
@@ -76,6 +91,19 @@ class LeaderboardController {
       success: true,
       message: 'Leaderboard reset successfully',
       data: null,
+    });
+  });
+
+  // Get user's rank and position
+  getMyRank = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+    const result = await leaderboardService.getMyRank(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'User rank retrieved successfully',
+      data: result,
     });
   });
 

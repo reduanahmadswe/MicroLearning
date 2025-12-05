@@ -1,5 +1,6 @@
 import User from '../auth/auth.model';
 import UserProgress from '../progressTracking/progress.model';
+import Progress from '../progressTracking/progress.model';
 import Lesson from '../microLessons/lesson.model';
 import Notification from '../notification/notification.model';
 import { ILeaderboardEntry } from './leaderboard.types';
@@ -39,6 +40,69 @@ class LeaderboardService {
     );
 
     const leaderboard: ILeaderboardEntry[] = leaderboardData.filter((entry) => entry !== null) as ILeaderboardEntry[];
+
+    return leaderboard;
+  }
+
+  // Get friends leaderboard
+  async getFriendsLeaderboard(userId: string, limit: number = 50) {
+    // Import Friend model dynamically to avoid circular dependency
+    const { Friend } = await import('../friend/friend.model');
+
+    // Get user's friends
+    const friendships = await Friend.find({
+      $or: [
+        { user: userId, status: 'accepted' },
+        { friend: userId, status: 'accepted' },
+      ],
+    });
+
+    // Extract friend IDs
+    const friendIds = friendships.map((f) =>
+      f.user.toString() === userId ? f.friend : f.user
+    );
+
+    // Add current user to the list
+    friendIds.push(userId as any);
+
+    if (friendIds.length === 0) {
+      return [];
+    }
+
+    // Get friends sorted by XP
+    const users = await User.find({
+      _id: { $in: friendIds },
+      isActive: true,
+    })
+      .select('name profilePicture xp level streak.current')
+      .sort({ xp: -1 })
+      .limit(limit)
+      .lean();
+
+    // Get lessons completed count for each user
+    const leaderboardData = await Promise.all(
+      users.map(async (user, index) => {
+        const lessonsCompleted = await UserProgress.countDocuments({
+          user: user._id,
+          status: 'completed',
+        });
+
+        return {
+          userId: user._id.toString(),
+          name: user.name,
+          profilePicture: user.profilePicture,
+          xp: user.xp,
+          level: user.level,
+          streak: user.streak?.current || 0,
+          lessonsCompleted,
+          rank: index + 1,
+        };
+      })
+    );
+
+    const leaderboard: ILeaderboardEntry[] = leaderboardData.filter(
+      (entry) => entry !== null
+    ) as ILeaderboardEntry[];
 
     return leaderboard;
   }
@@ -226,6 +290,43 @@ class LeaderboardService {
     });
 
     return user;
+  }
+
+  // Get user's rank and position
+  async getMyRank(userId: string) {
+    // Get all users sorted by XP
+    const allUsers = await User.find({ isActive: true })
+      .sort({ xp: -1, level: -1 })
+      .select('_id xp level');
+
+    // Find user's position
+    const userIndex = allUsers.findIndex(u => u._id.toString() === userId);
+    
+    if (userIndex === -1) {
+      throw new ApiError(404, 'User not found in leaderboard');
+    }
+
+    const user = await User.findById(userId).select('name email xp level profilePicture');
+    
+    // Get lessons completed count
+    const lessonsCompleted = await Progress.countDocuments({ 
+      user: userId, 
+      status: 'completed' 
+    });
+
+    return {
+      rank: userIndex + 1,
+      user: {
+        _id: user?._id,
+        name: user?.name,
+        email: user?.email,
+        xp: user?.xp,
+        level: user?.level,
+        profilePicture: user?.profilePicture,
+        lessonsCompleted,
+      },
+      totalUsers: allUsers.length,
+    };
   }
 
   // Admin: Get leaderboard statistics

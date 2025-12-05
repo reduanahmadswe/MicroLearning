@@ -36,6 +36,7 @@ export default function LoginPage() {
         email: data.user.email,
         name: data.user.name,
         role: data.user.role,
+        profilePicture: data.user.profilePicture,
         xp: data.user.xp || 0,
         level: data.user.level || 1,
         streak: data.user.streak || 0,

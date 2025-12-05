@@ -9,6 +9,7 @@ router.get('/global', leaderboardController.getGlobalLeaderboard);
 router.get('/topic/:topic', leaderboardController.getTopicLeaderboard);
 
 // Protected routes
+router.get('/friends', authGuard(), leaderboardController.getFriendsLeaderboard);
 router.get('/rank/me', authGuard(), leaderboardController.getUserRank);
 router.get('/position/me', authGuard(), leaderboardController.getUserPosition);
 

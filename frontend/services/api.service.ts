@@ -142,7 +142,7 @@ export const leaderboardAPI = {
   getGlobalLeaderboard: (params?: any) => api.get('/leaderboard/global', { params }),
   getFriendsLeaderboard: (timeRange?: string) => api.get('/leaderboard/friends', { params: { timeRange } }),
   getTopicLeaderboard: (topic: string, timeRange?: string) => api.get(`/leaderboard/topic/${topic}`, { params: { timeRange } }),
-  getMyRank: () => api.get('/leaderboard/my-rank'),
+  getMyRank: () => api.get('/leaderboard/rank/me'),
 };
 
 // Badges APIs
@@ -151,6 +151,9 @@ export const badgesAPI = {
   getAllBadges: () => api.get('/badges'),
   getUserBadges: () => api.get('/badges/earned/me'),
   getMyBadges: () => api.get('/badges/earned/me'),
+  getUserAchievements: () => api.get('/badges/achievements/me'),
+  getStats: () => api.get('/badges/stats/me'),
+  checkAndAward: () => api.post('/badges/check'),
   getBadgeById: (id: string) => api.get(`/badges/${id}`),
 };
 

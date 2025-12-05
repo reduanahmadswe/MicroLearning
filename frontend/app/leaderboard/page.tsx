@@ -21,14 +21,13 @@ import { toast } from 'sonner';
 
 interface LeaderboardEntry {
   rank: number;
-  user: {
-    _id: string;
-    name: string;
-    avatar?: string;
-  };
+  userId: string;
+  name: string;
+  profilePicture?: string;
   xp: number;
   level: number;
   streak: number;
+  lessonsCompleted?: number;
 }
 
 export default function LeaderboardPage() {
@@ -40,10 +39,13 @@ export default function LeaderboardPage() {
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'allTime'>('weekly');
   const [userRank, setUserRank] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const topics = ['Programming', 'Mathematics', 'Science', 'Business', 'Language', 'Design'];
 
   useEffect(() => {
+    setCurrentPage(1);
     loadLeaderboard();
   }, [activeTab, timeRange, selectedTopic]);
 
@@ -52,16 +54,25 @@ export default function LeaderboardPage() {
       setLoading(true);
       
       if (activeTab === 'global') {
-        const response = await leaderboardAPI.getGlobalLeaderboard(timeRange);
-        setGlobalLeaderboard(response.data.data?.leaderboard || []);
-        setUserRank(response.data.data?.userRank);
+        const [leaderboardRes, rankRes] = await Promise.all([
+          leaderboardAPI.getGlobalLeaderboard({ 
+            timeframe: timeRange,
+            limit: 50 
+          }),
+          leaderboardAPI.getMyRank().catch(() => null)
+        ]);
+        
+        setGlobalLeaderboard(leaderboardRes.data.data || []);
+        if (rankRes?.data.data) {
+          setUserRank(rankRes.data.data);
+        }
       } else if (activeTab === 'friends') {
         const response = await leaderboardAPI.getFriendsLeaderboard(timeRange);
-        setFriendsLeaderboard(response.data.data?.leaderboard || []);
+        setFriendsLeaderboard(response.data.data || []);
         setUserRank(response.data.data?.userRank);
       } else if (activeTab === 'topic') {
         const response = await leaderboardAPI.getTopicLeaderboard(selectedTopic, timeRange);
-        setTopicLeaderboard(response.data.data?.leaderboard || []);
+        setTopicLeaderboard(response.data.data || []);
         setUserRank(response.data.data?.userRank);
       }
     } catch (error: any) {
@@ -86,10 +97,21 @@ export default function LeaderboardPage() {
     return 'bg-white border-2 border-gray-200';
   };
 
-  const currentLeaderboard = 
+  const allLeaderboard = 
     activeTab === 'global' ? globalLeaderboard :
     activeTab === 'friends' ? friendsLeaderboard :
     topicLeaderboard;
+
+  // Pagination
+  const totalPages = Math.ceil(allLeaderboard.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLeaderboard = allLeaderboard.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-purple-50">
@@ -195,7 +217,7 @@ export default function LeaderboardPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span>Rankings</span>
                   <span className="text-sm font-normal text-gray-600">
-                    {currentLeaderboard.length} participants
+                    {allLeaderboard.length} participants
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -213,43 +235,49 @@ export default function LeaderboardPage() {
                 ) : (
                   <div className="space-y-3">
                     {currentLeaderboard.map((entry: any, index: number) => {
-                      const rank = entry.rank || index + 1;
-                      const isTopThree = rank <= 3;
+                      const actualRank = entry.rank || (startIndex + index + 1);
+                      const isTopThree = actualRank <= 3;
                       
                       return (
                         <div
-                          key={entry.user?._id || index}
+                          key={entry.userId || index}
                           className={`flex items-center gap-4 p-4 rounded-xl transition-all ${
-                            getRankBadge(rank)
+                            getRankBadge(actualRank)
                           } ${isTopThree ? 'shadow-lg' : 'hover:shadow-md'}`}
                         >
                           {/* Rank */}
                           <div className="flex items-center justify-center w-12">
-                            {getRankIcon(rank)}
+                            {getRankIcon(actualRank)}
                           </div>
 
                           {/* Avatar */}
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-                            isTopThree 
-                              ? 'bg-gradient-to-br from-purple-600 to-blue-600' 
-                              : 'bg-gradient-to-br from-gray-400 to-gray-600'
-                          }`}>
-                            {entry.user?.avatar ? (
+                          <Link 
+                            href={`/profile/${entry.userId}`}
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold hover:ring-4 hover:ring-purple-300 transition-all cursor-pointer ${
+                              isTopThree 
+                                ? 'bg-gradient-to-br from-purple-600 to-blue-600' 
+                                : 'bg-gradient-to-br from-gray-400 to-gray-600'
+                            }`}
+                          >
+                            {entry.profilePicture ? (
                               <img
-                                src={entry.user.avatar}
-                                alt={entry.user?.name}
+                                src={entry.profilePicture}
+                                alt={entry.name}
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              entry.user?.name?.charAt(0).toUpperCase() || '?'
+                              entry.name?.charAt(0).toUpperCase() || '?'
                             )}
-                          </div>
+                          </Link>
 
                           {/* User Info */}
                           <div className="flex-1">
-                            <h3 className={`font-semibold ${isTopThree ? 'text-white' : 'text-gray-900'}`}>
-                              {entry.user?.name || 'Anonymous'}
-                            </h3>
+                            <Link 
+                              href={`/profile/${entry.userId}`}
+                              className={`font-semibold hover:underline cursor-pointer ${isTopThree ? 'text-white' : 'text-gray-900'}`}
+                            >
+                              {entry.name || 'Anonymous'}
+                            </Link>
                             <div className={`flex items-center gap-3 text-sm ${isTopThree ? 'text-white/90' : 'text-gray-600'}`}>
                               <span className="flex items-center gap-1">
                                 <Zap className="w-3 h-3" />
@@ -275,6 +303,55 @@ export default function LeaderboardPage() {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {!loading && allLeaderboard.length > 0 && totalPages > 1 && (
+                  <div className="mt-8 flex flex-col items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-4"
+                      >
+                        Previous
+                      </Button>
+                      
+                      <div className="flex gap-2">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={`w-10 ${
+                              currentPage === page 
+                                ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
+                                : 'hover:bg-gray-100'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-4"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages} • Showing {startIndex + 1}-{Math.min(endIndex, allLeaderboard.length)} of {allLeaderboard.length} users
+                    </p>
                   </div>
                 )}
               </CardContent>

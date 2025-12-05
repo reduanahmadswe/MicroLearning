@@ -293,11 +293,17 @@ class CourseService {
     const enrollments = await Enrollment.find({ user: userId })
       .populate({
         path: 'course',
-        select: 'title description thumbnailUrl difficulty estimatedDuration',
-        populate: {
-          path: 'author',
-          select: 'name profilePicture',
-        },
+        select: 'title description thumbnailUrl difficulty estimatedDuration lessons',
+        populate: [
+          {
+            path: 'author',
+            select: 'name profilePicture',
+          },
+          {
+            path: 'lessons.lesson',
+            select: 'title description summary difficulty estimatedTime thumbnailUrl media tags views likes',
+          },
+        ],
       })
       .sort({ createdAt: -1 })
       .lean();
