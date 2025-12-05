@@ -33,6 +33,7 @@ import ASRRoutes from '../app/modules/asr/asr.route';
 import RoadmapRoutes from '../app/modules/roadmap/roadmap.route';
 import CareerMentorRoutes from '../app/modules/careerMentor/careerMentor.route';
 import AITutorRoutes from '../app/modules/aiTutor/aiTutor.route';
+import PostRoutes from '../app/modules/post/post.route';
 
 const app: Application = express();
 
@@ -83,6 +84,7 @@ app.use('/api/v1/asr', ASRRoutes);
 app.use('/api/v1/roadmap', RoadmapRoutes);
 app.use('/api/v1/career-mentor', CareerMentorRoutes);
 app.use('/api/v1/ai-tutor', AITutorRoutes);
+app.use('/api/v1/posts', PostRoutes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {

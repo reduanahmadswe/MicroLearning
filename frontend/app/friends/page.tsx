@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Pagination } from '@/components/ui/pagination';
 import { friendsAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 
@@ -56,25 +57,52 @@ export default function FriendsPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 12;
 
   useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when tab changes
     if (activeTab === 'friends') {
       loadFriends();
     } else if (activeTab === 'requests') {
       loadRequests();
     } else if (activeTab === 'suggestions') {
-      loadSuggestions();
+      loadSuggestions(1);
     }
   }, [activeTab]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (activeTab === 'suggestions') {
+      loadSuggestions(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const loadFriends = async () => {
     try {
       setLoading(true);
       const response = await friendsAPI.getFriends();
-      setFriends(response.data.data || []);
+      const responseData = response.data.data;
+      console.log('👥 Friends response:', responseData);
+      
+      // Backend now returns { friends: [], pagination: {} }
+      const friendsData = responseData?.friends || responseData;
+      setFriends(Array.isArray(friendsData) ? friendsData : []);
+      
+      // Update pagination if available
+      if (responseData?.pagination) {
+        setTotalPages(responseData.pagination.totalPages || 1);
+        setTotalItems(responseData.pagination.total || 0);
+      }
     } catch (error: any) {
       toast.error('Failed to load friends');
-      console.error(error);
+      console.error('❌ Load friends error:', error);
+      setFriends([]);
     } finally {
       setLoading(false);
     }
@@ -84,23 +112,41 @@ export default function FriendsPage() {
     try {
       setLoading(true);
       const response = await friendsAPI.getFriendRequests();
-      setRequests(response.data.data || []);
+      const requestsData = response.data.data;
+      console.log('📬 Friend requests:', requestsData);
+      setRequests(Array.isArray(requestsData) ? requestsData : []);
     } catch (error: any) {
       toast.error('Failed to load requests');
-      console.error(error);
+      console.error('❌ Load requests error:', error);
+      setRequests([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadSuggestions = async () => {
+  const loadSuggestions = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await friendsAPI.getSuggestions();
-      setSuggestions(response.data.data || []);
+      const response = await friendsAPI.getSuggestions(page, itemsPerPage);
+      const suggestionsData = response.data.data;
+      const meta = response.data.meta;
+      
+      console.log('📊 Suggestions data:', suggestionsData);
+      console.log('📊 Pagination meta:', meta);
+      
+      // Extract user from nested structure
+      const users = Array.isArray(suggestionsData) 
+        ? suggestionsData.map((item: any) => item.user || item)
+        : [];
+      
+      setSuggestions(users);
+      setCurrentPage(meta?.page || 1);
+      setTotalPages(meta?.totalPages || 1);
+      setTotalItems(meta?.total || 0);
     } catch (error: any) {
       toast.error('Failed to load suggestions');
       console.error(error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
@@ -110,7 +156,7 @@ export default function FriendsPage() {
     try {
       await friendsAPI.sendFriendRequest(userId);
       toast.success('Friend request sent!');
-      loadSuggestions();
+      loadSuggestions(currentPage);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to send request');
     }
@@ -247,19 +293,20 @@ export default function FriendsPage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredFriends.map((friendship) => {
                   const friend = friendship.friend;
+                  if (!friend) return null;
                   return (
                     <Card key={friendship._id} className="hover:shadow-lg transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {friend.avatar ? (
+                            {friend?.avatar ? (
                               <img
                                 src={friend.avatar}
                                 alt={friend.name}
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              friend.name?.charAt(0).toUpperCase()
+                              friend?.name?.charAt(0).toUpperCase()
                             )}
                           </div>
                           <div className="flex-1">
@@ -327,19 +374,20 @@ export default function FriendsPage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {requests.map((request) => {
                   const user = request.from;
+                  if (!user) return null;
                   return (
                     <Card key={request._id} className="hover:shadow-lg transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {user.avatar ? (
+                            {user?.avatar ? (
                               <img
                                 src={user.avatar}
                                 alt={user.name}
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              user.name?.charAt(0).toUpperCase()
+                              user?.name?.charAt(0).toUpperCase()
                             )}
                           </div>
                           <div className="flex-1">
@@ -403,19 +451,21 @@ export default function FriendsPage() {
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {suggestions.map((user) => (
-                  <Card key={user._id} className="hover:shadow-lg transition-all">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {user.avatar ? (
-                            <img
-                              src={user.avatar}
-                              alt={user.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            user.name?.charAt(0).toUpperCase()
+                {suggestions.map((user, index) => {
+                  if (!user) return null;
+                  return (
+                    <Card key={user._id || user.email || index} className="hover:shadow-lg transition-all">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            {user?.avatar || user?.profilePicture ? (
+                              <img
+                                src={user.avatar || user.profilePicture}
+                                alt={user.name}
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              user?.name?.charAt(0).toUpperCase()
                           )}
                         </div>
                         <div className="flex-1">
@@ -471,7 +521,23 @@ export default function FriendsPage() {
                       </Button>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {activeTab === 'suggestions' && !loading && suggestions.length > 0 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  showFirstLast={true}
+                  showPageNumbers={true}
+                />
               </div>
             )}
           </>

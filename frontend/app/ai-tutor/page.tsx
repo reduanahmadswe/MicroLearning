@@ -63,7 +63,9 @@ export default function AITutorPage() {
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     scrollToBottom();
@@ -73,13 +75,61 @@ export default function AITutorPage() {
     loadSessions();
   }, []);
 
+  useEffect(() => {
+    // Initialize speech recognition
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setInput(prev => prev + (prev ? ' ' : '') + transcript);
+          setIsRecording(false);
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          toast.error('Voice recognition failed. Please try again.');
+          setIsRecording(false);
+        };
+
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
   const loadSessions = async () => {
     try {
       setLoadingSessions(true);
       const response = await aiTutorAPI.getSessions(1, 50);
-      setSessions(response.data.data || []);
-    } catch (error) {
+      
+      // Check if response has data
+      if (response?.data?.data) {
+        setSessions(response.data.data);
+      } else {
+        setSessions([]);
+      }
+    } catch (error: any) {
       console.error('Failed to load sessions:', error);
+      // Don't show error toast on initial load if user is not logged in
+      if (error?.response?.status !== 401) {
+        // Silently fail - user might not be logged in yet
+      }
+      setSessions([]);
     } finally {
       setLoadingSessions(false);
     }
@@ -244,11 +294,33 @@ export default function AITutorPage() {
     }
   };
 
+  const toggleVoiceRecording = () => {
+    if (!recognitionRef.current) {
+      toast.error('Voice recognition is not supported in your browser');
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsRecording(true);
+        toast.info('Listening... Speak now');
+      } catch (error) {
+        console.error('Failed to start recording:', error);
+        toast.error('Failed to start voice recording');
+        setIsRecording(false);
+      }
+    }
+  };
+
   const getSessionTitle = (session: ChatSession) => {
     if (session.title) return session.title;
     if (session.topic) return session.topic;
     
-    const firstUserMessage = session.messages.find(m => m.role === 'user');
+    const firstUserMessage = session.messages?.find(m => m.role === 'user');
     if (firstUserMessage) {
       return firstUserMessage.content.substring(0, 50) + (firstUserMessage.content.length > 50 ? '...' : '');
     }
@@ -332,7 +404,7 @@ export default function AITutorPage() {
                               {formatSessionDate(session.updatedAt)}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                              {session.messages.length} messages
+                              {session.messages?.length || 0} messages
                             </p>
                           </div>
                           <button
@@ -358,9 +430,9 @@ export default function AITutorPage() {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col">
-            <Card className="flex-1 flex flex-col">
-              <CardHeader className="border-b bg-gradient-to-r from-violet-50 to-fuchsia-50">
+          <div className="flex-1 flex flex-col h-full">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="border-b bg-gradient-to-r from-violet-50 to-fuchsia-50 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-violet-600" />
@@ -379,7 +451,7 @@ export default function AITutorPage() {
               </CardHeader>
 
               {/* Messages */}
-              <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
+              <CardContent className="flex-1 overflow-y-auto p-6 space-y-4" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -448,8 +520,18 @@ export default function AITutorPage() {
               </CardContent>
 
               {/* Input Area */}
-              <div className="border-t p-4 bg-white">
+              <div className="border-t p-4 bg-white flex-shrink-0">
                 <div className="flex gap-2">
+                  <Button
+                    onClick={toggleVoiceRecording}
+                    variant={isRecording ? "destructive" : "outline"}
+                    size="icon"
+                    disabled={loading}
+                    className={isRecording ? "animate-pulse" : ""}
+                    title={isRecording ? "Stop recording" : "Start voice input"}
+                  >
+                    <Mic className="w-5 h-5" />
+                  </Button>
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}

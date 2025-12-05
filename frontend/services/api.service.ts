@@ -25,7 +25,8 @@ export const profileAPI = {
   updatePreferences: (data: any) => api.put('/profile/me/preferences', data),
   getMyBadges: () => api.get('/profile/me/badges'),
   getMyStatistics: () => api.get('/profile/me/statistics'),
-  searchUsers: (query: string) => api.get(`/profile/search?q=${query}`),
+  searchUsers: (query: string, limit?: number) => 
+    api.get('/profile/search', { params: { query, limit } }),
 };
 
 // Lessons APIs
@@ -148,14 +149,14 @@ export const badgesAPI = {
 
 // Friends APIs
 export const friendsAPI = {
-  sendFriendRequest: (userId: string) => api.post('/friends/request', { userId }),
-  acceptFriendRequest: (requestId: string) => api.post(`/friends/accept/${requestId}`),
-  rejectFriendRequest: (requestId: string) => api.post(`/friends/reject/${requestId}`),
+  sendFriendRequest: (userId: string) => api.post('/friends/send', { friendId: userId }),
+  acceptFriendRequest: (requestId: string) => api.post('/friends/respond', { requestId, action: 'accept' }),
+  rejectFriendRequest: (requestId: string) => api.post('/friends/respond', { requestId, action: 'reject' }),
   getFriendRequests: () => api.get('/friends/requests'),
   getFriends: () => api.get('/friends'),
   removeFriend: (friendId: string) => api.delete(`/friends/${friendId}`),
   getFriendSuggestions: () => api.get('/friends/suggestions'),
-  getSuggestions: () => api.get('/friends/suggestions'),
+  getSuggestions: (page = 1, limit = 10) => api.get(`/friends/recommendations?page=${page}&limit=${limit}`),
 };
 
 // Challenges APIs
@@ -298,14 +299,54 @@ export const aiTutorAPI = {
     courseId?: string;
     conversationHistory?: Array<{ role: string; content: string }>;
   }) => api.post('/ai-tutor/chat', data),
-  getSessions: (params?: { page?: number; limit?: number }) => 
-    api.get('/ai-tutor/sessions', { params }),
+  getSessions: (page: number = 1, limit: number = 20) => 
+    api.get('/ai-tutor/sessions', { params: { page, limit } }),
   getSession: (sessionId: string) => api.get(`/ai-tutor/sessions/${sessionId}`),
   deleteSession: (sessionId: string) => api.delete(`/ai-tutor/sessions/${sessionId}`),
   updateSessionTitle: (sessionId: string, title: string) => 
     api.patch(`/ai-tutor/sessions/${sessionId}/title`, { title }),
   clearSession: (sessionId: string) => api.patch(`/ai-tutor/sessions/${sessionId}/clear`),
 };
+
+// Post APIs
+export const postAPI = {
+  createPost: (data: any) => api.post('/posts', data),
+  getFeed: (params?: { page?: number; limit?: number }) => 
+    api.get('/posts/feed', { params }),
+  getUserPosts: (userId: string, params?: { page?: number; limit?: number }) => 
+    api.get(`/posts/user/${userId}`, { params }),
+  getPost: (postId: string) => api.get(`/posts/${postId}`),
+  updatePost: (postId: string, data: any) => api.put(`/posts/${postId}`, data),
+  deletePost: (postId: string) => api.delete(`/posts/${postId}`),
+  addReaction: (postId: string, type: string) => 
+    api.post(`/posts/${postId}/react`, { type }),
+  removeReaction: (postId: string) => api.delete(`/posts/${postId}/react`),
+  reactToPost: (postId: string, type: string) => 
+    api.post(`/posts/${postId}/react`, { type }),
+  addComment: (postId: string, content: string) => 
+    api.post(`/posts/${postId}/comment`, { content }),
+  deleteComment: (postId: string, commentId: string) => 
+    api.delete(`/posts/${postId}/comment/${commentId}`),
+  sharePost: (postId: string, content?: string) => 
+    api.post(`/posts/${postId}/share`, { content }),
+  
+  // Nested Comments
+  getComments: (postId: string, params?: { page?: number; limit?: number }) =>
+    api.get(`/posts/${postId}/comments`, { params }),
+  getCommentReplies: (commentId: string, params?: { page?: number; limit?: number }) =>
+    api.get(`/posts/comments/${commentId}/replies`, { params }),
+  addNestedComment: (postId: string, content: string, parentCommentId?: string) =>
+    api.post(`/posts/${postId}/comments`, { content, parentCommentId }),
+  updateComment: (commentId: string, content: string) =>
+    api.put(`/posts/comments/${commentId}`, { content }),
+  deleteNestedComment: (commentId: string) =>
+    api.delete(`/posts/comments/${commentId}`),
+  likeComment: (commentId: string) =>
+    api.post(`/posts/comments/${commentId}/like`),
+};
+
+// Feed API (alias for postAPI)
+export const feedAPI = postAPI;
 
 // Roadmap APIs
 export const roadmapAPI = {

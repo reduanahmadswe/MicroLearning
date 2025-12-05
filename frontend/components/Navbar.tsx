@@ -32,6 +32,7 @@ import {
   HelpCircle,
   ChevronDown,
   Zap,
+  Newspaper,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
@@ -49,6 +50,7 @@ const publicNavItems = [
 const roleBasedNavItems = {
   learner: [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
+    { name: 'Feed', path: '/feed', icon: Newspaper },
     { name: 'Courses', path: '/courses', icon: GraduationCap },
     { name: 'Lessons', path: '/lessons', icon: BookOpen },
     { name: 'Quiz', path: '/quiz', icon: CreditCard },
@@ -57,6 +59,7 @@ const roleBasedNavItems = {
   ],
   instructor: [
     { name: 'Dashboard', path: '/instructor', icon: Home },
+    { name: 'Feed', path: '/feed', icon: Newspaper },
     { name: 'My Courses', path: '/instructor/courses', icon: GraduationCap },
     { name: 'Lessons', path: '/instructor/lessons', icon: BookOpen },
     { name: 'Students', path: '/instructor/students', icon: Users },
@@ -64,6 +67,7 @@ const roleBasedNavItems = {
   ],
   admin: [
     { name: 'Dashboard', path: '/admin', icon: Shield },
+    { name: 'Feed', path: '/feed', icon: Newspaper },
     { name: 'Content', path: '/admin/content', icon: BookOpen },
     { name: 'Users', path: '/admin/users', icon: Users },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },

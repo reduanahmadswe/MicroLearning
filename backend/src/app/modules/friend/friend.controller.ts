@@ -157,15 +157,17 @@ const getFriendStats = catchAsync(async (req: Request, res: Response) => {
 // Get friend recommendations
 const getFriendRecommendations = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
+  const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
 
-  const result = await FriendService.getFriendRecommendations(userId, limit);
+  const result = await FriendService.getFriendRecommendations(userId, page, limit);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Friend recommendations retrieved successfully',
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

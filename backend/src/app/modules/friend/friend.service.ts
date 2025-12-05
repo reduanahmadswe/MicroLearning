@@ -78,10 +78,16 @@ const getFriendRequests = async (userId: string) => {
     status: 'pending',
     requestedBy: { $ne: userId }, // Requests where user is NOT the requester
   })
-    .populate('friend', 'name email profilePicture level xp')
+    .populate('requestedBy', 'name email profilePicture level xp')
     .sort({ createdAt: -1 });
 
-  return requests;
+  // Transform to match frontend expectations (from field)
+  return requests.map((req: any) => ({
+    _id: req._id,
+    from: req.requestedBy,
+    status: req.status,
+    createdAt: req.createdAt,
+  }));
 };
 
 // Get sent friend requests
@@ -171,27 +177,62 @@ const rejectFriendRequest = async (userId: string, requestId: string) => {
 const getFriends = async (userId: string, page = 1, limit = 20) => {
   const skip = (page - 1) * limit;
 
+  // Find friendships where user is either 'user' or 'friend'
   const friends = await Friend.find({
-    user: userId,
-    status: 'accepted',
+    $or: [
+      { user: userId, status: 'accepted' },
+      { friend: userId, status: 'accepted' },
+    ],
   })
     .populate('friend', 'name email profilePicture level xp streak')
+    .populate('user', 'name email profilePicture level xp streak')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  const total = await Friend.countDocuments({
-    user: userId,
-    status: 'accepted',
+  // Use a Set to track unique friend IDs and avoid duplicates
+  const seenFriendIds = new Set<string>();
+  const friendsList: any[] = [];
+
+  friends.forEach((f: any) => {
+    const friendData = f.user._id.toString() === userId ? f.friend : f.user;
+    const friendId = friendData._id.toString();
+    
+    // Only add if we haven't seen this friend yet
+    if (!seenFriendIds.has(friendId)) {
+      seenFriendIds.add(friendId);
+      friendsList.push({
+        _id: f._id,
+        friend: friendData,
+        status: f.status,
+        createdAt: f.createdAt,
+      });
+    }
+  });
+
+  // Count unique friendships
+  const allFriendships = await Friend.find({
+    $or: [
+      { user: userId, status: 'accepted' },
+      { friend: userId, status: 'accepted' },
+    ],
+  }).populate('friend user');
+
+  const uniqueFriendIds = new Set();
+  allFriendships.forEach((f: any) => {
+    const friendId = f.user._id.toString() === userId 
+      ? f.friend._id.toString() 
+      : f.user._id.toString();
+    uniqueFriendIds.add(friendId);
   });
 
   return {
-    friends: friends.map((f) => f.friend),
+    friends: friendsList,
     pagination: {
-      total,
+      total: uniqueFriendIds.size,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(uniqueFriendIds.size / limit),
     },
   };
 };
@@ -306,11 +347,13 @@ const getFriendStats = async (userId: string): Promise<IFriendStats> => {
 };
 
 // Get friend recommendations
-const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFriendRecommendation[]> => {
+const getFriendRecommendations = async (userId: string, page = 1, limit = 10) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+
+  const skip = (page - 1) * limit;
 
   // Get user's friends
   const userFriends = await Friend.find({
@@ -336,30 +379,31 @@ const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFr
 
   const pendingUserIds = pendingRequests.map((p) => (p.user.toString() === userId ? p.friend : p.user));
 
-  // Find users with similar interests
+  // Find users that are not friends, not blocked, and no pending requests
   const recommendations = await User.aggregate([
     {
       $match: {
         _id: {
           $nin: [...friendIds, ...blockedIds, ...pendingUserIds, new Types.ObjectId(userId)],
         },
-        'preferences.interests': {
-          $in: user.preferences?.interests || [],
-        },
+        isActive: true,
       },
     },
     {
       $addFields: {
         similarInterests: {
           $size: {
-            $setIntersection: ['$preferences.interests', user.preferences?.interests || []],
+            $ifNull: [
+              {
+                $setIntersection: [
+                  { $ifNull: ['$preferences.interests', []] },
+                  user.preferences?.interests || [],
+                ],
+              },
+              [],
+            ],
           },
         },
-      },
-    },
-    {
-      $match: {
-        similarInterests: { $gt: 0 },
       },
     },
     {
@@ -385,10 +429,13 @@ const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFr
     },
     {
       $sort: {
-        mutualFriendsCount: -1,
         similarInterests: -1,
+        mutualFriendsCount: -1,
         xp: -1,
       },
+    },
+    {
+      $skip: skip,
     },
     {
       $limit: limit,
@@ -408,7 +455,25 @@ const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFr
     },
   ]);
 
-  return recommendations.map((rec: any) => ({
+  // Get total count for pagination
+  const totalCountPipeline = [
+    {
+      $match: {
+        _id: {
+          $nin: [...friendIds, ...blockedIds, ...pendingUserIds, new Types.ObjectId(userId)],
+        },
+        isActive: true,
+      },
+    },
+    {
+      $count: 'total',
+    },
+  ];
+
+  const totalResult = await User.aggregate(totalCountPipeline);
+  const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+  const data = recommendations.map((rec: any) => ({
     user: {
       _id: rec._id.toString(),
       name: rec.name,
@@ -424,6 +489,16 @@ const getFriendRecommendations = async (userId: string, limit = 10): Promise<IFr
         ? `${rec.mutualFriendsCount} mutual friend${rec.mutualFriendsCount > 1 ? 's' : ''}`
         : `${rec.similarInterests} similar interest${rec.similarInterests > 1 ? 's' : ''}`,
   }));
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const FriendService = {

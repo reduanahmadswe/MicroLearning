@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { initSocket, getSocket } from '@/lib/socket';
+import { notificationAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -38,17 +39,12 @@ export default function NotificationBell() {
     
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications?limit=20`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.data || []);
-        setUnreadCount(data.meta?.unreadCount || 0);
-      }
+      const response = await notificationAPI.getNotifications({ limit: 20 });
+      setNotifications(response.data.data || []);
+      setUnreadCount(response.data.meta?.unreadCount || 0);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      // Silently fail - notifications are not critical
     } finally {
       setLoading(false);
     }
@@ -59,16 +55,11 @@ export default function NotificationBell() {
     if (!token) return;
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUnreadCount(data.data?.unreadCount || 0);
-      }
+      const response = await notificationAPI.getUnreadCount();
+      setUnreadCount(response.data.data?.unreadCount || 0);
     } catch (error) {
       console.error('Failed to fetch unread count:', error);
+      // Silently fail
     }
   };
 
@@ -94,7 +85,7 @@ export default function NotificationBell() {
           duration: 5000,
           action: notification.data?.link ? {
             label: 'View',
-            onClick: () => router.push(notification.data.link),
+            onClick: () => router.push(notification.data!.link!),
           } : undefined,
         });
       });
@@ -107,17 +98,11 @@ export default function NotificationBell() {
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
+      await notificationAPI.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Failed to mark as read:', error);
     }
@@ -125,16 +110,10 @@ export default function NotificationBell() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/mark-all-read`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-        setUnreadCount(0);
-        toast.success('All notifications marked as read');
-      }
+      await notificationAPI.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast.success('All notifications marked as read');
     } catch (error) {
       console.error('Failed to mark all as read:', error);
     }
@@ -148,7 +127,7 @@ export default function NotificationBell() {
     
     // Navigate to link
     if (notification.data?.link) {
-      router.push(notification.data.link);
+      router.push(notification.data!.link);
       setShowDropdown(false);
     }
   };
@@ -157,15 +136,9 @@ export default function NotificationBell() {
     e.stopPropagation();
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
-        toast.success('Notification deleted');
-      }
+      await notificationAPI.deleteNotification(notificationId);
+      setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+      toast.success('Notification deleted');
     } catch (error) {
       console.error('Failed to delete notification:', error);
     }

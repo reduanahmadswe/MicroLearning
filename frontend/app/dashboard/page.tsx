@@ -26,6 +26,7 @@ import {
   Zap,
   Map,
   Video,
+  Newspaper,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,19 +63,19 @@ export default function DashboardPage() {
       console.log('Loading dashboard data...');
       const [progressRes, badgesRes, leaderboardRes, lessonsRes] = await Promise.all([
         progressAPI.getProgress().catch((err) => { 
-          console.error('Progress API error:', err.response?.status, err.response?.data); 
+          console.error('Progress API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: null } };
         }),
         badgesAPI.getUserBadges().catch((err) => { 
-          console.error('Badges API error:', err.response?.status, err.response?.data); 
+          console.error('Badges API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: [] } };
         }),
         leaderboardAPI.getGlobalLeaderboard({ limit: 5 }).catch((err) => { 
-          console.error('Leaderboard API error:', err.response?.status, err.response?.data); 
+          console.error('Leaderboard API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: [] } };
         }),
         lessonsAPI.getLessons({ limit: 5, sort: 'createdAt', order: 'desc' }).catch((err) => { 
-          console.error('Lessons API error:', err.response?.status, err.response?.data); 
+          console.error('Lessons API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: [] } };
         }),
       ]);
@@ -95,7 +96,7 @@ export default function DashboardPage() {
       setLeaderboard(leaderboardRes.data.data || []);
       setRecentLessons(lessonsRes.data.data || []);
     } catch (error: any) {
-      console.error('Dashboard loading error:', error);
+      console.error('Dashboard loading error:', error?.message || error);
     } finally {
       setLoading(false);
     }
@@ -108,6 +109,7 @@ export default function DashboardPage() {
   };
 
   const navigationItems = [
+    { icon: Newspaper, label: 'Feed', href: '/feed', color: 'text-blue-600', bg: 'bg-blue-50' },
     { icon: BookOpen, label: 'Lessons', href: '/lessons', color: 'text-purple-600', bg: 'bg-purple-50' },
     { icon: Brain, label: 'Quiz', href: '/quiz', color: 'text-pink-600', bg: 'bg-pink-50' },
     { icon: Sparkles, label: 'Flashcards', href: '/flashcards', color: 'text-indigo-600', bg: 'bg-indigo-50' },
