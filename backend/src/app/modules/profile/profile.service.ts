@@ -112,7 +112,6 @@ class ProfileService {
 
     const userObj = user.toObject();
     return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
-    return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
   }
 
   // Get user badges
