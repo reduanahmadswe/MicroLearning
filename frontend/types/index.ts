@@ -89,21 +89,6 @@ export interface QuizResult {
   completedAt: string;
 }
 
-// Flashcard Types
-export interface Flashcard {
-  _id: string;
-  front: string;
-  back: string;
-  topic: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  lesson?: string;
-  nextReviewDate: string;
-  repetitions: number;
-  easinessFactor: number;
-  interval: number;
-  createdAt: string;
-}
-
 // Course Types
 export interface Course {
   _id: string;

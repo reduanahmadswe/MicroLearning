@@ -118,7 +118,6 @@ export default function DashboardPage() {
     { icon: Newspaper, label: 'Feed', href: '/feed', color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { icon: BookOpen, label: 'Lessons', href: '/lessons', color: 'text-teal-600', bg: 'bg-teal-50' },
     { icon: Brain, label: 'Quiz', href: '/quiz', color: 'text-cyan-600', bg: 'bg-cyan-50' },
-    { icon: Sparkles, label: 'Flashcards', href: '/flashcards', color: 'text-green-600', bg: 'bg-green-50' },
     { icon: GraduationCap, label: 'Courses', href: '/courses', color: 'text-teal-700', bg: 'bg-teal-50' },
     { icon: ShoppingBag, label: 'Purchased', href: '/purchased-courses', color: 'text-emerald-700', bg: 'bg-emerald-50' },
     { icon: Star, label: 'Bookmarks', href: '/bookmarks', color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -236,7 +235,6 @@ export default function DashboardPage() {
                       'lessons': '📚',
                       'quiz': '🧠',
                       'perfect_score': '💯',
-                      'flashcards': '🎴',
                     };
                     
                     const icon = challengeIcons[challenge.type] || '🎯';

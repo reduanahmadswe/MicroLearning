@@ -45,10 +45,20 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             <h4 className="text-base font-semibold mt-3 mb-2 text-gray-900" {...props} />
           ),
           
-          // Paragraphs
-          p: ({ node, ...props }) => (
-            <p className="mb-4 text-sm leading-relaxed text-gray-800" {...props} />
-          ),
+          // Paragraphs - prevent nesting block elements
+          p: ({ node, children, ...props }) => {
+            // Check if children contains block-level elements (code blocks)
+            const hasBlockElement = node?.children?.some((child: any) => 
+              child.type === 'element' && child.tagName === 'code' && !child.properties?.inline
+            );
+            
+            // If paragraph contains block elements, render as div to avoid nesting issues
+            if (hasBlockElement) {
+              return <div className="mb-4 text-sm leading-relaxed text-gray-800" {...props}>{children}</div>;
+            }
+            
+            return <p className="mb-4 text-sm leading-relaxed text-gray-800" {...props}>{children}</p>;
+          },
           
           // Lists
           ul: ({ node, ...props }) => (

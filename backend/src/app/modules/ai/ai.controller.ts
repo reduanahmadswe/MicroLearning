@@ -102,11 +102,36 @@ export const generateFlashcards = catchAsync(async (req: Request, res: Response)
   const userId = new Types.ObjectId(req.user!.userId);
   const result = await AIService.generateFlashcards(userId, req.body);
 
+  // Import Flashcard model
+  const Flashcard = (await import('../flashcard/flashcard.model')).default;
+
+  // Save generated flashcards to database
+  const savedFlashcards = await Promise.all(
+    result.cards.map((card) =>
+      Flashcard.create({
+        front: card.front,
+        back: card.back,
+        hint: card.example || '',
+        topic: req.body.topic,
+        user: userId,
+        easeFactor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        nextReviewDate: new Date(),
+        isPublic: false,
+      })
+    )
+  );
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: 'AI flashcards generated successfully',
-    data: result,
+    message: `${savedFlashcards.length} AI flashcards generated and saved successfully`,
+    data: {
+      ...result,
+      savedCount: savedFlashcards.length,
+      flashcards: savedFlashcards,
+    },
   });
 });
 

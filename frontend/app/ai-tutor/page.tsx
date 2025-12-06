@@ -20,6 +20,9 @@ import {
   Trash2,
   Clock,
   ChevronRight,
+  History,
+  X,
+  AlertTriangle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,6 +67,8 @@ export default function AITutorPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; sessionId: string | null }>({ show: false, sessionId: null });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -267,16 +272,17 @@ export default function AITutorPage() {
 
   const deleteSession = async (sessionIdToDelete: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    
-    if (!confirm('Are you sure you want to delete this conversation?')) {
-      return;
-    }
+    setDeleteConfirmation({ show: true, sessionId: sessionIdToDelete });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.sessionId) return;
 
     try {
-      await aiTutorAPI.deleteSession(sessionIdToDelete);
-      setSessions(prev => prev.filter(s => s._id !== sessionIdToDelete));
+      await aiTutorAPI.deleteSession(deleteConfirmation.sessionId);
+      setSessions(prev => prev.filter(s => s._id !== deleteConfirmation.sessionId));
       
-      if (sessionIdToDelete === sessionId) {
+      if (deleteConfirmation.sessionId === sessionId) {
         handleReset();
       }
       
@@ -284,7 +290,13 @@ export default function AITutorPage() {
     } catch (error) {
       toast.error('Failed to delete conversation');
       console.error(error);
+    } finally {
+      setDeleteConfirmation({ show: false, sessionId: null });
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmation({ show: false, sessionId: null });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -349,213 +361,455 @@ export default function AITutorPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-fuchsia-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-6" style={{ height: 'calc(100vh - 8rem)' }}>
-          {/* Left Sidebar - Chat History */}
-          <div className="w-80 flex-shrink-0 h-full">
-            <Card className="h-full flex flex-col">
-              <CardHeader className="border-b bg-gradient-to-r from-violet-50 to-fuchsia-50 flex-shrink-0">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Clock className="w-5 h-5 text-violet-600" />
-                    Chat History
-                  </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                    className="gap-1 h-8 px-2"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-              </CardHeader>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 sm:w-96 h-64 sm:h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-64 sm:w-96 h-64 sm:h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
 
-              <CardContent className="flex-1 overflow-y-auto p-3" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
-                {loadingSessions ? (
-                  <div className="flex items-center justify-center h-32">
-                    <Loader2 className="w-6 h-6 animate-spin text-violet-600" />
-                  </div>
-                ) : sessions.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No conversations yet</p>
-                    <p className="text-xs mt-1">Start chatting to save history</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {sessions.map((session) => (
-                      <div
-                        key={session._id}
-                        onClick={() => loadSession(session)}
-                        className={`group relative p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
-                          sessionId === session._id
-                            ? 'bg-violet-50 border-violet-300'
-                            : 'bg-white border-gray-200 hover:border-violet-200'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">
-                              {getSessionTitle(session)}
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {formatSessionDate(session.updatedAt)}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {session.messages?.length || 0} messages
-                            </p>
-                          </div>
-                          <button
-                            onClick={(e) => deleteSession(session._id, e)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
-                            title="Delete conversation"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </button>
-                        </div>
-                        
-                        {sessionId === session._id && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <ChevronRight className="w-4 h-4 text-violet-600" />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <div className="relative z-10 h-screen flex flex-col">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-teal-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">AI Tutor</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMobileHistory(true)}
+                className="gap-1 h-8 px-2 border-green-200 hover:bg-green-50"
+              >
+                <History className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="gap-1 h-8 px-2 border-green-200 hover:bg-green-50"
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
+        </div>
 
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col h-full">
-            <Card className="h-full flex flex-col">
-              <CardHeader className="border-b bg-gradient-to-r from-violet-50 to-fuchsia-50 flex-shrink-0">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-violet-600" />
-                    AI Learning Tutor
-                  </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                    className="gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    New Chat
-                  </Button>
-                </div>
-              </CardHeader>
-
-              {/* Messages */}
-              <CardContent className="flex-1 overflow-y-auto p-6 space-y-4" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                    }`}
-                  >
-                    {/* Avatar */}
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        message.role === 'user'
-                          ? 'bg-gradient-to-br from-blue-600 to-purple-600'
-                          : 'bg-gradient-to-br from-violet-600 to-fuchsia-600'
-                      } text-white`}
-                    >
-                      {message.role === 'user' ? (
-                        <User className="w-5 h-5" />
-                      ) : (
-                        <Bot className="w-5 h-5" />
-                      )}
-                    </div>
-
-                    {/* Message Content */}
-                    <div
-                      className={`flex-1 max-w-3xl ${
-                        message.role === 'user' ? 'text-right' : 'text-left'
-                      }`}
-                    >
-                      <div
-                        className={`inline-block rounded-2xl px-4 py-3 ${
-                          message.role === 'user'
-                            ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white'
-                            : 'bg-gray-50 text-gray-800'
-                        }`}
+        <div className="flex-1 overflow-hidden">
+          <div className="max-w-7xl mx-auto h-full">
+            <div className="flex gap-0 lg:gap-6 h-full px-0 lg:px-4 lg:py-6">
+              {/* Left Sidebar - Chat History (Desktop Only) */}
+              <div className="hidden lg:block w-80 flex-shrink-0 h-full">
+                <Card className="h-full flex flex-col border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+                  <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-green-50 to-teal-50 flex-shrink-0 p-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                        <Clock className="w-5 h-5 text-green-600" />
+                        Chat History
+                      </CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReset}
+                        className="gap-1 h-8 px-2 border-green-200 hover:bg-green-50"
                       >
-                        {message.role === 'assistant' ? (
-                          <div>
-                            <MarkdownRenderer content={message.content} />
-                            {message.isStreaming && (
-                              <span className="inline-block w-1.5 h-4 bg-violet-600 ml-1 animate-pulse"></span>
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="flex-1 overflow-y-auto p-3" style={{ maxHeight: 'calc(100vh - 10rem)' }}>
+                    {loadingSessions ? (
+                      <div className="flex items-center justify-center h-32">
+                        <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+                      </div>
+                    ) : sessions.length === 0 ? (
+                      <div className="text-center py-8 text-gray-400">
+                        <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No conversations yet</p>
+                        <p className="text-xs mt-1">Start chatting to save</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {sessions.map((session) => (
+                          <div
+                            key={session._id}
+                            onClick={() => loadSession(session)}
+                            className={`group relative p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
+                              sessionId === session._id
+                                ? 'bg-green-50 border-green-300 shadow-sm'
+                                : 'bg-white border-gray-200 hover:border-green-200'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-medium text-gray-900 truncate">
+                                  {getSessionTitle(session)}
+                                </h4>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {formatSessionDate(session.updatedAt)}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {session.messages?.length || 0} messages
+                                </p>
+                              </div>
+                              <button
+                                onClick={(e) => deleteSession(session._id, e)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                                title="Delete conversation"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </button>
+                            </div>
+                            
+                            {sessionId === session._id && (
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <ChevronRight className="w-4 h-4 text-green-600" />
+                              </div>
                             )}
                           </div>
-                        ) : (
-                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                        )}
+                        ))}
                       </div>
-                      <p className="text-xs text-gray-400 mt-1 px-2">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                {loading && !messages.some(m => m.isStreaming) && (
-                  <div className="flex gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white">
-                      <Bot className="w-5 h-5" />
-                    </div>
-                    <div className="bg-gray-50 rounded-2xl px-4 py-3">
-                      <Loader2 className="w-5 h-5 animate-spin text-violet-600" />
-                    </div>
-                  </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </CardContent>
-
-              {/* Input Area */}
-              <div className="border-t p-4 bg-white flex-shrink-0">
-                <div className="flex gap-2">
-                  <Button
-                    onClick={toggleVoiceRecording}
-                    variant={isRecording ? "destructive" : "outline"}
-                    size="icon"
-                    disabled={loading}
-                    className={isRecording ? "animate-pulse" : ""}
-                    title={isRecording ? "Stop recording" : "Start voice input"}
-                  >
-                    <Mic className="w-5 h-5" />
-                  </Button>
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything about your studies..."
-                    className="flex-1"
-                    disabled={loading}
-                  />
-                  <Button
-                    onClick={() => handleSendMessage()}
-                    disabled={loading || !input.trim()}
-                    className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Send className="w-5 h-5" />
                     )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Main Chat Area */}
+              <div className="flex-1 flex flex-col h-full">
+                <Card className="h-full flex flex-col border-0 lg:border shadow-none lg:shadow-xl bg-white lg:bg-white/90 lg:backdrop-blur-sm rounded-none lg:rounded-2xl">
+                  {/* Desktop Header */}
+                  <CardHeader className="hidden lg:block border-b border-gray-100 bg-gradient-to-br from-green-50 to-teal-50 flex-shrink-0 p-4 lg:p-6 rounded-t-2xl">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 lg:gap-3">
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <Sparkles className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg lg:text-xl font-extrabold text-gray-900">AI Learning Tutor</h2>
+                          <p className="text-xs text-gray-600 font-normal">Your personal study assistant</p>
+                        </div>
+                      </CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReset}
+                        className="gap-2 border-green-200 hover:bg-green-50"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">New Chat</span>
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  {/* Messages */}
+                  <CardContent 
+                    className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4" 
+                    style={{ 
+                      maxHeight: 'calc(100vh - 180px)',
+                      minHeight: 'calc(100vh - 180px)'
+                    }}
+                  >
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex gap-2 sm:gap-3 ${
+                          message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                        } animate-fadeIn`}
+                      >
+                        {/* Avatar */}
+                        <div
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full sm:rounded-xl flex items-center justify-center flex-shrink-0 shadow-md ${
+                            message.role === 'user'
+                              ? 'bg-gradient-to-br from-green-600 to-teal-600'
+                              : 'bg-gradient-to-br from-emerald-600 to-cyan-600'
+                          } text-white`}
+                        >
+                          {message.role === 'user' ? (
+                            <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                          ) : (
+                            <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
+                          )}
+                        </div>
+
+                        {/* Message Content */}
+                        <div
+                          className={`flex-1 min-w-0 ${message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[75%] sm:max-w-[80%] lg:max-w-2xl rounded-2xl px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base shadow-sm overflow-hidden ${
+                              message.role === 'user'
+                                ? 'bg-gradient-to-br from-green-600 to-teal-600 text-white'
+                                : 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 border border-gray-200'
+                            }`}
+                          >
+                            {message.role === 'assistant' ? (
+                              <div className="prose prose-sm max-w-none overflow-hidden break-words overflow-x-auto">
+                                <MarkdownRenderer content={message.content} />
+                                {message.isStreaming && (
+                                  <span className="inline-block w-1.5 h-4 bg-green-600 ml-1 animate-pulse"></span>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</p>
+                            )}
+                          </div>
+                          <p className={`text-xs text-gray-400 mt-1 px-1 ${
+                            message.role === 'user' ? 'text-right' : 'text-left'
+                          }`}>
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {loading && !messages.some(m => m.isStreaming) && (
+                      <div className="flex gap-3 animate-fadeIn">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full sm:rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-emerald-600 to-cyan-600 text-white shadow-md">
+                          <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl px-4 py-3 border border-gray-200 shadow-sm">
+                          <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Quick Prompts - Show only on first message */}
+                    {messages.length === 1 && !loading && (
+                      <div className="mt-6 sm:mt-8 space-y-3">
+                        <p className="text-sm font-semibold text-gray-700 text-center">Quick Start Prompts:</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                          {quickPrompts.map((prompt, index) => {
+                            const Icon = prompt.icon;
+                            return (
+                              <button
+                                key={index}
+                                onClick={() => handleSendMessage(prompt.text)}
+                                className="flex items-center gap-2 sm:gap-3 p-3 rounded-xl border-2 border-gray-200 hover:border-green-300 bg-white hover:bg-green-50 transition-all text-left group"
+                              >
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-100 to-teal-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                                </div>
+                                <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-green-700">
+                                  {prompt.text}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </CardContent>
+
+                  {/* Input Area */}
+                  <div className="border-t border-gray-200 p-3 sm:p-4 bg-white lg:bg-gradient-to-br lg:from-green-50/50 lg:to-teal-50/50 flex-shrink-0 rounded-b-none lg:rounded-b-2xl">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={toggleVoiceRecording}
+                        variant={isRecording ? "destructive" : "outline"}
+                        size="icon"
+                        disabled={loading}
+                        className={`flex-shrink-0 border-green-200 ${isRecording ? "animate-pulse bg-red-500 hover:bg-red-600" : "hover:bg-green-50"}`}
+                        title={isRecording ? "Stop recording" : "Start voice input"}
+                      >
+                        <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Ask me anything..."
+                        className="flex-1 border-gray-200 focus:border-green-300 focus:ring-green-500 text-sm sm:text-base"
+                        disabled={loading}
+                      />
+                      <Button
+                        onClick={() => handleSendMessage()}
+                        disabled={loading || !input.trim()}
+                        className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md flex-shrink-0"
+                        size="icon"
+                      >
+                        {loading ? (
+                          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center hidden sm:block">
+                      Press Enter to send • Shift+Enter for new line
+                    </p>
+                  </div>
+                  
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Chat History Drawer */}
+        {showMobileHistory && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-40 animate-fadeIn"
+              onClick={() => setShowMobileHistory(false)}
+            />
+            
+            {/* Drawer */}
+            <div className="lg:hidden fixed inset-y-0 right-0 w-80 max-w-[85vw] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-out">
+              <div className="h-full flex flex-col">
+                {/* Drawer Header */}
+                <div className="bg-gradient-to-br from-green-50 to-teal-50 border-b border-gray-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-green-600" />
+                      <h2 className="text-lg font-bold text-gray-900">Chat History</h2>
+                    </div>
+                    <button
+                      onClick={() => setShowMobileHistory(false)}
+                      className="p-1 hover:bg-white/50 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Drawer Content */}
+                <div className="flex-1 overflow-y-auto p-3">
+                  {loadingSessions ? (
+                    <div className="flex items-center justify-center h-32">
+                      <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+                    </div>
+                  ) : sessions.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No conversations yet</p>
+                      <p className="text-xs mt-1">Start chatting to save</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {sessions.map((session) => (
+                        <div
+                          key={session._id}
+                          onClick={() => {
+                            loadSession(session);
+                            setShowMobileHistory(false);
+                          }}
+                          className={`group relative p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
+                            sessionId === session._id
+                              ? 'bg-green-50 border-green-300 shadow-sm'
+                              : 'bg-white border-gray-200 hover:border-green-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-gray-900 truncate">
+                                {getSessionTitle(session)}
+                              </h4>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatSessionDate(session.updatedAt)}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {session.messages?.length || 0} messages
+                              </p>
+                            </div>
+                            <button
+                              onClick={(e) => deleteSession(session._id, e)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                              title="Delete conversation"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </button>
+                          </div>
+                          
+                          {sessionId === session._id && (
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                              <ChevronRight className="w-4 h-4 text-green-600" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Drawer Footer */}
+                <div className="border-t border-gray-200 p-3">
+                  <Button
+                    onClick={() => {
+                      handleReset();
+                      setShowMobileHistory(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Conversation
                   </Button>
                 </div>
               </div>
-            </Card>
-          </div>
-        </div>
+            </div>
+          </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation.show && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/50 z-50 animate-fadeIn"
+              onClick={cancelDelete}
+            />
+            
+            {/* Modal */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-md border-0 shadow-2xl bg-white animate-scaleIn">
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center text-center">
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                      <AlertTriangle className="w-8 h-8 text-red-600" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      Delete Conversation?
+                    </h3>
+
+                    {/* Message */}
+                    <p className="text-gray-600 mb-6">
+                      Are you sure you want to delete this conversation? This action cannot be undone.
+                    </p>
+
+                    {/* Buttons */}
+                    <div className="flex gap-3 w-full">
+                      <Button
+                        onClick={cancelDelete}
+                        variant="outline"
+                        className="flex-1 border-gray-300 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={confirmDelete}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

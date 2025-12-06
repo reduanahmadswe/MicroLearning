@@ -67,6 +67,7 @@ export default function LessonDetailPage() {
   const [bookmarked, setBookmarked] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [courseData, setCourseData] = useState<any>(null);
 
   useEffect(() => {
     if (lessonId) {
@@ -86,6 +87,20 @@ export default function LessonDetailPage() {
       if (lessonData.likedBy && user?._id) {
         setLiked(lessonData.likedBy.includes(user._id));
       }
+
+      // Load course data to find next lesson
+      if (lessonData.course) {
+        try {
+          const courseResponse = await lessonsAPI.getAllLessons({ course: lessonData.course });
+          const allLessons = courseResponse.data.data.lessons || courseResponse.data.data;
+          setCourseData({
+            _id: lessonData.course,
+            lessons: Array.isArray(allLessons) ? allLessons.sort((a: any, b: any) => a.order - b.order) : []
+          });
+        } catch (err) {
+          console.error('Failed to load course lessons:', err);
+        }
+      }
     } catch (error: any) {
       toast.error('Failed to load lesson');
       console.error(error);
@@ -101,25 +116,6 @@ export default function LessonDetailPage() {
       setBookmarked(response.data.data.isBookmarked || false);
     } catch (error) {
       console.error('Error checking bookmark status:', error);
-    }
-  };
-
-  const handleCompleteLesson = async () => {
-    if (!token) {
-      toast.error('Please login to complete lessons');
-      router.push('/auth/login');
-      return;
-    }
-
-    try {
-      setCompleting(true);
-      await lessonsAPI.completeLesson(lessonId);
-      toast.success('🎉 Lesson completed! Keep learning!');
-      loadLesson();
-    } catch (error: any) {
-      toast.error('Failed to complete lesson');
-    } finally {
-      setCompleting(false);
     }
   };
 
@@ -171,6 +167,55 @@ export default function LessonDetailPage() {
     } else {
       navigator.clipboard.writeText(shareUrl);
       toast.success('📋 Link copied to clipboard!');
+    }
+  };
+
+  const handleCompleteLesson = async () => {
+    if (!token) {
+      toast.error('Please login to complete lessons');
+      router.push('/auth/login');
+      return;
+    }
+
+    if (lesson?.isCompleted) {
+      toast.info('This lesson is already completed');
+      return;
+    }
+
+    try {
+      setCompleting(true);
+      await lessonsAPI.completeLesson(lessonId);
+      toast.success('🎉 Lesson completed!');
+
+      // Find next lesson
+      if (courseData?.lessons && lesson) {
+        const currentLessonOrder = lesson.order || 1;
+        const nextLesson = courseData.lessons.find((l: any) => l.order === currentLessonOrder + 1);
+
+        if (nextLesson) {
+          // Redirect to next lesson after a short delay
+          setTimeout(() => {
+            router.push(`/lessons/${nextLesson._id}`);
+          }, 1000);
+        } else {
+          // Last lesson - redirect back to course page
+          setTimeout(() => {
+            if (lesson.course) {
+              router.push(`/courses/${lesson.course}?refresh=true`);
+            }
+          }, 1000);
+        }
+      } else {
+        // Fallback - redirect to course page
+        setTimeout(() => {
+          if (lesson?.course) {
+            router.push(`/courses/${lesson.course}?refresh=true`);
+          }
+        }, 1000);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to complete lesson');
+      setCompleting(false);
     }
   };
 

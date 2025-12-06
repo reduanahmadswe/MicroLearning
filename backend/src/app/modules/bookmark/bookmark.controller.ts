@@ -113,6 +113,20 @@ class BookmarkController {
       data: result,
     });
   });
+
+  // Toggle bookmark (add if not exists, remove if exists)
+  toggleBookmark = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const { lessonId } = req.params;
+    const result = await bookmarkService.toggleBookmark(userId, lessonId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: result.action === 'added' ? 'Bookmark added successfully' : 'Bookmark removed successfully',
+      data: result,
+    });
+  });
 }
 
 export default new BookmarkController();

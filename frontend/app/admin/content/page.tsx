@@ -22,10 +22,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { lessonsAPI, quizAPI, coursesAPI, flashcardsAPI, forumAPI } from '@/services/api.service';
+import { lessonsAPI, quizAPI, coursesAPI, forumAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 
-type ContentType = 'lessons' | 'quizzes' | 'courses' | 'flashcards' | 'forum';
+type ContentType = 'lessons' | 'quizzes' | 'courses' | 'forum';
 
 export default function AdminContentPage() {
   const router = useRouter();
@@ -57,10 +57,6 @@ export default function AdminContentPage() {
           response = await coursesAPI.getAllCourses({ search: searchQuery });
           setItems(response.data.data || []);
           break;
-        case 'flashcards':
-          response = await flashcardsAPI.getAllFlashcards({ search: searchQuery });
-          setItems(response.data.data || []);
-          break;
         case 'forum':
           response = await forumAPI.getAllPosts({ search: searchQuery });
           setItems(response.data.data || []);
@@ -87,9 +83,6 @@ export default function AdminContentPage() {
           break;
         case 'courses':
           await coursesAPI.deleteCourse(itemId);
-          break;
-        case 'flashcards':
-          await flashcardsAPI.deleteFlashcard(itemId);
           break;
         case 'forum':
           await forumAPI.deletePost(itemId);
@@ -148,7 +141,6 @@ export default function AdminContentPage() {
                 if (activeTab === 'lessons') router.push('/admin/content/lessons/create');
                 if (activeTab === 'quizzes') router.push('/admin/content/quizzes/create');
                 if (activeTab === 'courses') router.push('/admin/content/courses/create');
-                if (activeTab === 'flashcards') router.push('/admin/content/flashcards/create');
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -158,7 +150,7 @@ export default function AdminContentPage() {
 
           {/* Tabs */}
           <div className="flex gap-2 mt-6 overflow-x-auto">
-            {(['lessons', 'quizzes', 'courses', 'flashcards', 'forum'] as ContentType[]).map((tab) => (
+            {(['lessons', 'quizzes', 'courses', 'forum'] as ContentType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -171,7 +163,6 @@ export default function AdminContentPage() {
                 {tab === 'lessons' && <BookOpen className="w-4 h-4 inline mr-2" />}
                 {tab === 'quizzes' && <FileText className="w-4 h-4 inline mr-2" />}
                 {tab === 'courses' && <Award className="w-4 h-4 inline mr-2" />}
-                {tab === 'flashcards' && <Sparkles className="w-4 h-4 inline mr-2" />}
                 {tab === 'forum' && <MessageSquare className="w-4 h-4 inline mr-2" />}
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>

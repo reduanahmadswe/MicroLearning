@@ -39,8 +39,8 @@ export const generateFlashcardSchema = z.object({
   body: z.object({
     topic: z.string().min(3, 'Topic must be at least 3 characters').max(200),
     lessonContent: z.string().optional(),
-    numberOfCards: z.number().min(1).max(100).default(20),
-    difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+    numberOfCards: z.number().min(1).max(100).optional().default(20),
+    difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional().default('beginner'),
     includeExamples: z.boolean().optional().default(true),
     language: z.string().optional().default('en'),
   }),

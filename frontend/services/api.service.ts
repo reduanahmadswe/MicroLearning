@@ -52,8 +52,7 @@ export const aiAPI = {
     api.post('/ai/generate/lesson', data),
   generateQuiz: (data: { topic?: string; difficulty?: string; questionCount?: number; lessonId?: string }) => 
     api.post('/ai/generate/quiz', data),
-  generateFlashcards: (data: { topic: string; count?: number; lessonId?: string }) => 
-    api.post('/ai/generate/flashcards', data),
+
   chat: (data: { message: string; conversationHistory?: any[] }) => 
     api.post('/ai/chat', data),
   chatTutor: (data: { message: string; context?: string }) => 
@@ -77,19 +76,7 @@ export const quizAPI = {
   getUserAttempts: () => api.get('/quiz/attempts/me'),
 };
 
-// Flashcards APIs
-export const flashcardsAPI = {
-  getFlashcards: (params?: any) => api.get('/flashcards/me', { params }),
-  getAllFlashcards: (params?: any) => api.get('/flashcards/me', { params }),
-  getFlashcardById: (id: string) => api.get(`/flashcards/${id}`),
-  createFlashcard: (data: any) => api.post('/flashcards', data),
-  updateFlashcard: (id: string, data: any) => api.put(`/flashcards/${id}`, data),
-  deleteFlashcard: (id: string) => api.delete(`/flashcards/${id}`),
-  reviewFlashcard: (id: string, data: any) => 
-    api.post(`/flashcards/${id}/review`, data),
-  getDueFlashcards: () => api.get('/flashcards/due'),
-  getFlashcardStats: () => api.get('/flashcards/stats'),
-};
+
 
 // Progress APIs
 export const progressAPI = {
@@ -389,6 +376,7 @@ export const bookmarkAPI = {
     api.post('/bookmarks/add', data),
   removeBookmark: (lessonId: string) => api.delete(`/bookmarks/remove/${lessonId}`),
   checkBookmark: (lessonId: string) => api.get(`/bookmarks/check/${lessonId}`),
+  toggleBookmark: (lessonId: string) => api.post(`/bookmarks/toggle/${lessonId}`),
 };
 
 export const bookmarksAPI = bookmarkAPI;
@@ -487,7 +475,6 @@ export default {
   lessons: lessonsAPI,
   ai: aiAPI,
   quiz: quizAPI,
-  flashcards: flashcardsAPI,
   progress: progressAPI,
   courses: coursesAPI,
   leaderboard: leaderboardAPI,

@@ -78,7 +78,6 @@ const roleBasedNavItems = {
 // Additional menu items for profile dropdown
 const additionalMenuItems = {
   learner: [
-    { name: 'Flashcards', path: '/flashcards', icon: FileText },
     { name: 'Bookmarks', path: '/bookmarks', icon: Bookmark },
     { name: 'Videos', path: '/videos', icon: Video },
     { name: 'Leaderboard', path: '/leaderboard', icon: TrendingUp },

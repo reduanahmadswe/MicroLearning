@@ -16,6 +16,8 @@ router.post(
 
 router.delete('/remove/:lessonId', authGuard(), bookmarkController.removeBookmark);
 
+router.post('/toggle/:lessonId', authGuard(), bookmarkController.toggleBookmark);
+
 router.get('/me', authGuard(), bookmarkController.getUserBookmarks);
 
 router.get('/lesson/:lessonId', authGuard(), bookmarkController.getBookmarkByLesson);

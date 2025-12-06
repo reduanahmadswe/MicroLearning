@@ -157,6 +157,47 @@ class BookmarkService {
       collectionsCount,
     };
   }
+
+  // Toggle bookmark (add if not exists, remove if exists)
+  async toggleBookmark(userId: string, lessonId: string) {
+    // Check if lesson exists
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      throw new ApiError(404, 'Lesson not found');
+    }
+
+    // Check if already bookmarked
+    const existingBookmark = await Bookmark.findOne({
+      user: userId,
+      lesson: lessonId,
+    });
+
+    if (existingBookmark) {
+      // Remove bookmark
+      await Bookmark.findOneAndDelete({
+        user: userId,
+        lesson: lessonId,
+      });
+
+      return {
+        action: 'removed',
+        isBookmarked: false,
+      };
+    } else {
+      // Add bookmark
+      const bookmark = await Bookmark.create({
+        user: userId,
+        lesson: lessonId,
+        collection: 'Default',
+      });
+
+      return {
+        action: 'added',
+        isBookmarked: true,
+        bookmark: await bookmark.populate('lesson', 'title topic difficulty duration isPremium'),
+      };
+    }
+  }
 }
 
 export default new BookmarkService();
