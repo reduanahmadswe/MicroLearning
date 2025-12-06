@@ -840,19 +840,19 @@ export default function ForumPage() {
             className="fixed inset-0 bg-black/50 z-40 animate-fadeIn"
             onClick={() => setShowCreateModal(false)}
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3 lg:p-4">
-            <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border-0 shadow-2xl animate-scaleIn">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100 sticky top-0 z-10 p-3 sm:p-4 lg:p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+            <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border-0 shadow-2xl animate-scaleIn bg-white">
+              <CardHeader className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white sticky top-0 z-10 p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base sm:text-xl lg:text-2xl text-gray-900 flex items-center gap-1.5 sm:gap-2">
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
+                  <CardTitle className="text-base sm:text-xl lg:text-2xl font-bold flex items-center gap-1.5 sm:gap-2">
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                     Ask a Question
                   </CardTitle>
                   <button
                     onClick={() => setShowCreateModal(false)}
-                    className="p-1.5 sm:p-2 hover:bg-white rounded-lg transition-colors flex-shrink-0"
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                   >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </CardHeader>
@@ -861,7 +861,7 @@ export default function ForumPage() {
                 <div className="space-y-3 sm:space-y-4 lg:space-y-5">
                   {/* Title */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2 flex items-center gap-1">
                       Title <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -869,13 +869,13 @@ export default function ForumPage() {
                       value={createForm.title}
                       onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                       placeholder="What's your question?"
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300"
                     />
                   </div>
 
                   {/* Content */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2 flex items-center gap-1">
                       Description <span className="text-red-500">*</span>
                     </label>
                     <textarea
@@ -883,20 +883,20 @@ export default function ForumPage() {
                       onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
                       rows={6}
                       placeholder="Provide more details about your question..."
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 resize-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* Group Selection */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2 flex items-center gap-1">
                         Group <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={createForm.groupId}
                         onChange={(e) => setCreateForm({ ...createForm, groupId: e.target.value })}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300"
                       >
                         <option value="">Select a group</option>
                         {groups.map(group => (
@@ -913,7 +913,7 @@ export default function ForumPage() {
                       <select
                         value={createForm.contentType}
                         onChange={(e) => setCreateForm({ ...createForm, contentType: e.target.value })}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300"
                       >
                         <option value="question">❓ Question</option>
                         <option value="discussion">💬 Discussion</option>
@@ -930,7 +930,7 @@ export default function ForumPage() {
                     <select
                       value={createForm.courseId}
                       onChange={(e) => setCreateForm({ ...createForm, courseId: e.target.value })}
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300"
                     >
                       <option value="">Select a course</option>
                       {courses.map(course => (
@@ -945,29 +945,29 @@ export default function ForumPage() {
                       Tags (comma-separated)
                     </label>
                     <div className="relative">
-                      <Hash className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <Hash className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-green-500 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       <input
                         type="text"
                         value={createForm.tags}
                         onChange={(e) => setCreateForm({ ...createForm, tags: e.target.value })}
                         placeholder="javascript, react, beginner"
-                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300"
                       />
                     </div>
                   </div>
 
                   {/* Help Needed */}
-                  <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl hover:border-orange-300 transition-all">
                     <input
                       type="checkbox"
                       id="helpNeeded"
                       checked={createForm.isHelpNeeded}
                       onChange={(e) => setCreateForm({ ...createForm, isHelpNeeded: e.target.checked })}
-                      className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0"
+                      className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 text-orange-600 border-orange-300 rounded focus:ring-orange-500 flex-shrink-0 cursor-pointer"
                     />
                     <div className="flex-1 min-w-0">
                       <label htmlFor="helpNeeded" className="text-xs sm:text-sm font-semibold text-gray-900 cursor-pointer flex items-center gap-1.5 sm:gap-2">
-                        <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600" />
+                        <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 flex-shrink-0" />
                         <span className="line-clamp-1">Mark as "Urgent - Need Help"</span>
                       </label>
                       <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1 line-clamp-2">
@@ -978,17 +978,17 @@ export default function ForumPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t-2 border-gray-100">
                   <Button
                     onClick={() => setShowCreateModal(false)}
                     variant="outline"
-                    className="flex-1 border-gray-300 h-9 sm:h-10 text-xs sm:text-sm"
+                    className="flex-1 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 h-9 sm:h-10 text-xs sm:text-sm font-semibold rounded-xl transition-all"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleCreatePost}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 h-9 sm:h-10 text-xs sm:text-sm"
+                    className="flex-1 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 hover:from-green-700 hover:via-teal-700 hover:to-emerald-700 h-9 sm:h-10 text-xs sm:text-sm font-semibold shadow-lg rounded-xl transition-all"
                   >
                     <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     Post Question

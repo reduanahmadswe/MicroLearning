@@ -50,31 +50,31 @@ const NestedComment: React.FC<NestedCommentProps> = ({
   const isMaxDepth = depth >= maxDepth;
   
   return (
-    <div className="space-y-4">
-      <div className="flex gap-3">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex gap-2 sm:gap-3">
         {/* Vote Section for Nested Comment */}
-        <div className="flex flex-col items-center gap-1 min-w-[40px]">
+        <div className="flex flex-col items-center gap-0.5 sm:gap-1 min-w-[30px] sm:min-w-[40px]">
           <button
             onClick={() => onVote(comment._id, 'upvote')}
-            className="p-1.5 hover:bg-green-50 rounded-lg transition-colors"
+            className="p-1 sm:p-1.5 hover:bg-green-50 rounded-lg transition-colors"
           >
             <ThumbsUp 
-              className={`w-4 h-4 ${
+              className={`w-3 h-3 sm:w-4 sm:h-4 ${
                 comment.upvotes?.includes(userId) 
                   ? 'text-green-600 fill-green-600' 
                   : 'text-gray-400'
               }`} 
             />
           </button>
-          <span className="text-sm font-bold text-gray-900">
+          <span className="text-xs sm:text-sm font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
             {(comment.upvotes?.length || 0) - (comment.downvotes?.length || 0)}
           </span>
           <button
             onClick={() => onVote(comment._id, 'downvote')}
-            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1 sm:p-1.5 hover:bg-red-50 rounded-lg transition-colors"
           >
             <ThumbsDown 
-              className={`w-4 h-4 ${
+              className={`w-3 h-3 sm:w-4 sm:h-4 ${
                 comment.downvotes?.includes(userId) 
                   ? 'text-red-600 fill-red-600' 
                   : 'text-gray-400'
@@ -83,28 +83,28 @@ const NestedComment: React.FC<NestedCommentProps> = ({
           </button>
           
           {comment.isAcceptedAnswer && (
-            <div className="mt-1">
-              <Award className="w-5 h-5 text-green-600 fill-green-600" />
+            <div className="mt-0.5 sm:mt-1">
+              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-green-600 fill-green-600" />
             </div>
           )}
         </div>
 
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-[10px] sm:text-xs lg:text-sm flex-shrink-0 shadow-sm">
               {comment.author?.name?.charAt(0).toUpperCase()}
             </div>
-            <span className="font-semibold text-gray-900 text-sm">{comment.author?.name}</span>
-            <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+            <span className="font-semibold text-gray-900 text-[11px] sm:text-sm truncate">{comment.author?.name}</span>
+            <span className="text-[9px] sm:text-xs text-gray-500 flex-shrink-0">{formatDate(comment.createdAt)}</span>
           </div>
           
-          <p className="text-gray-700 text-sm leading-relaxed mb-2">{comment.content}</p>
+          <p className="text-[11px] sm:text-sm text-gray-700 leading-relaxed mb-1.5 sm:mb-2">{comment.content}</p>
           
           {/* Reply Button */}
           {!isMaxDepth && (
             <button
               onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[10px] sm:text-xs text-teal-600 hover:text-teal-700 font-semibold px-2 py-0.5 sm:py-1 hover:bg-teal-50 rounded transition-all"
             >
               {replyingTo === comment._id ? 'Cancel' : 'Reply'}
             </button>
@@ -112,25 +112,25 @@ const NestedComment: React.FC<NestedCommentProps> = ({
 
           {/* Reply Form */}
           {replyingTo === comment._id && (
-            <div className="mt-3 pl-0">
+            <div className="mt-2 sm:mt-3 pl-0">
               <textarea
                 value={replyText[comment._id] || ''}
                 onChange={(e) => setReplyText({ ...replyText, [comment._id]: e.target.value })}
                 placeholder="Write your reply..."
                 rows={2}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-2 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-sm bg-white border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-all hover:border-gray-300"
               />
-              <div className="flex justify-end gap-2 mt-2">
+              <div className="flex justify-end gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
                 <button
                   onClick={() => setReplyingTo(null)}
-                  className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-800 font-medium"
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs text-gray-600 hover:text-gray-800 font-semibold hover:bg-gray-100 rounded-lg transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => onReply(comment._id)}
                   disabled={!replyText[comment._id]?.trim()}
-                  className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-all font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Post Reply
                 </button>
@@ -140,7 +140,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
 
           {/* Recursive Nested Replies */}
           {comment.replies && comment.replies.length > 0 && (
-            <div className="mt-3 pl-4 border-l-2 border-gray-200 space-y-3">
+            <div className="mt-2 sm:mt-3 pl-2 sm:pl-4 border-l-2 border-gray-200 space-y-2 sm:space-y-3">
               {comment.replies.map((reply: any) => (
                 <NestedComment
                   key={reply._id}
@@ -413,48 +413,48 @@ export default function ForumPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
           <Link 
             href="/forum"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors font-medium"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-white hover:text-green-100 transition-colors font-semibold text-xs sm:text-sm"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Back to Forum
           </Link>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6 lg:py-8">
         {/* Main Post */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-          <div className="p-6">
-            <div className="flex gap-6">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-0 mb-3 sm:mb-6 overflow-hidden">
+          <div className="p-3 sm:p-6">
+            <div className="flex gap-2 sm:gap-6">
               {/* Vote Section */}
-              <div className="flex flex-col items-center gap-2 min-w-[60px]">
+              <div className="flex flex-col items-center gap-1 sm:gap-2 min-w-[35px] sm:min-w-[60px]">
                 <button
                   onClick={() => handleVotePost('upvote')}
-                  className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                  className="p-1 sm:p-2 hover:bg-green-50 rounded-lg transition-colors"
                 >
                   <ThumbsUp 
-                    className={`w-6 h-6 ${
+                    className={`w-4 h-4 sm:w-6 sm:h-6 ${
                       post.upvotes?.includes(user?._id) 
                         ? 'text-green-600 fill-green-600' 
                         : 'text-gray-400'
                     }`} 
                   />
                 </button>
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-base sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
                   {(post.upvotes?.length || 0) - (post.downvotes?.length || 0)}
                 </span>
                 <button
                   onClick={() => handleVotePost('downvote')}
-                  className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-1 sm:p-2 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <ThumbsDown 
-                    className={`w-6 h-6 ${
+                    className={`w-4 h-4 sm:w-6 sm:h-6 ${
                       post.downvotes?.includes(user?._id) 
                         ? 'text-red-600 fill-red-600' 
                         : 'text-gray-400'
@@ -464,44 +464,44 @@ export default function ForumPostPage() {
               </div>
 
               {/* Post Content */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {/* Badges */}
-                <div className="flex items-center gap-2 flex-wrap mb-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-2 sm:mb-4">
                   {post.isSolved && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                      <CheckCircle className="w-3 h-3" />
+                    <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full text-[10px] sm:text-xs font-semibold border border-green-200">
+                      <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Solved
                     </span>
                   )}
                   {post.isHelpNeeded && !post.isSolved && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                      <AlertCircle className="w-3 h-3" />
+                    <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 rounded-full text-[10px] sm:text-xs font-semibold border border-orange-200">
+                      <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Help Needed
                     </span>
                   )}
                   {post.course && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                      <BookOpen className="w-3 h-3" />
-                      {post.course.title}
+                    <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full text-[10px] sm:text-xs font-semibold border border-purple-200 truncate max-w-[150px] sm:max-w-none">
+                      <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                      <span className="truncate">{post.course.title}</span>
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-4 line-clamp-3 sm:line-clamp-none">{post.title}</h1>
 
                 {/* Content */}
-                <div className="prose max-w-none mb-6">
-                  <p className="text-gray-700 text-lg whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                <div className="prose max-w-none mb-3 sm:mb-6">
+                  <p className="text-sm sm:text-base lg:text-lg text-gray-700 whitespace-pre-wrap leading-relaxed">{post.content}</p>
                 </div>
 
                 {/* Tags */}
                 {post.tags && post.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-6">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-6">
                     {post.tags.map((tag: string, idx: number) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-lg"
+                        className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 text-[10px] sm:text-sm rounded-lg font-medium border border-gray-200"
                       >
                         #{tag}
                       </span>
@@ -510,29 +510,29 @@ export default function ForumPostPage() {
                 )}
 
                 {/* Post Meta */}
-                <div className="flex items-center gap-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 pt-3 sm:pt-6 border-t-2 border-gray-100">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-md">
                       {post.author?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{post.author?.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-semibold text-gray-900 text-xs sm:text-base">{post.author?.name}</p>
+                      <p className="text-[10px] sm:text-sm text-gray-500">
                         {post.author?.role === 'instructor' && (
-                          <span className="text-blue-600 font-medium">Instructor</span>
+                          <span className="text-green-600 font-semibold">Instructor</span>
                         )}
                         {post.author?.role !== 'instructor' && 'Member'}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-500 ml-auto">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
+                  <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-sm text-gray-500 sm:ml-auto">
+                    <div className="flex items-center gap-0.5 sm:gap-1">
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                       <span>{formatDate(post.createdAt)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
+                    <div className="flex items-center gap-0.5 sm:gap-1">
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-teal-600" />
                       <span>{post.viewCount || 0} views</span>
                     </div>
                   </div>
@@ -543,18 +543,20 @@ export default function ForumPostPage() {
         </div>
 
         {/* Answers Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <MessageSquare className="w-6 h-6 text-blue-600" />
-              {comments.length} {comments.length === 1 ? 'Answer' : 'Answers'}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-0 overflow-hidden">
+          <div className="p-3 sm:p-6 bg-gradient-to-r from-green-50 to-teal-50 border-b-2 border-green-100">
+            <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
+              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
+              <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                {comments.length} {comments.length === 1 ? 'Answer' : 'Answers'}
+              </span>
             </h2>
           </div>
 
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             {/* Answer Form */}
-            <form onSubmit={handleSubmitComment} className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <form onSubmit={handleSubmitComment} className="mb-4 sm:mb-8">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 Your Answer
               </label>
               <textarea
@@ -562,58 +564,60 @@ export default function ForumPostPage() {
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write your answer here..."
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-all hover:border-gray-300"
               />
-              <div className="flex justify-end mt-3">
+              <div className="flex justify-end mt-2 sm:mt-3">
                 <button
                   type="submit"
                   disabled={submitting || !newComment.trim()}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:via-teal-700 hover:to-emerald-700 transition-all flex items-center gap-1.5 sm:gap-2 font-semibold text-xs sm:text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   {submitting ? 'Posting...' : 'Post Answer'}
                 </button>
               </div>
             </form>
 
             {/* Answers List */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {comments.length === 0 ? (
-                <div className="text-center py-12">
-                  <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No answers yet</h3>
-                  <p className="text-gray-600">Be the first to answer this question!</p>
+                <div className="text-center py-8 sm:py-12">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">No answers yet</h3>
+                  <p className="text-xs sm:text-base text-gray-600">Be the first to answer this question!</p>
                 </div>
               ) : (
                 comments.map((comment) => (
                   <div
                     key={comment._id}
-                    className="border-b border-gray-200 last:border-0 pb-6 last:pb-0"
+                    className="border-b-2 border-gray-100 last:border-0 pb-4 sm:pb-6 last:pb-0"
                   >
-                    <div className="flex gap-4">
+                    <div className="flex gap-2 sm:gap-4">
                       {/* Vote Section for Comment */}
-                      <div className="flex flex-col items-center gap-2 min-w-[50px]">
+                      <div className="flex flex-col items-center gap-1 sm:gap-2 min-w-[35px] sm:min-w-[50px]">
                         <button
                           onClick={() => handleVoteComment(comment._id, 'upvote')}
-                          className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                          className="p-1 sm:p-2 hover:bg-green-50 rounded-lg transition-colors"
                         >
                           <ThumbsUp 
-                            className={`w-5 h-5 ${
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${
                               comment.upvotes?.includes(user?._id) 
                                 ? 'text-green-600 fill-green-600' 
                                 : 'text-gray-400'
                             }`} 
                           />
                         </button>
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
                           {(comment.upvotes?.length || 0) - (comment.downvotes?.length || 0)}
                         </span>
                         <button
                           onClick={() => handleVoteComment(comment._id, 'downvote')}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1 sm:p-2 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <ThumbsDown 
-                            className={`w-5 h-5 ${
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${
                               comment.downvotes?.includes(user?._id) 
                                 ? 'text-red-600 fill-red-600' 
                                 : 'text-gray-400'
@@ -622,56 +626,56 @@ export default function ForumPostPage() {
                         </button>
                         
                         {comment.isAcceptedAnswer && (
-                          <div className="mt-2">
-                            <Award className="w-6 h-6 text-green-600 fill-green-600" />
+                          <div className="mt-1 sm:mt-2">
+                            <Award className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600 fill-green-600" />
                           </div>
                         )}
                       </div>
 
                       {/* Comment Content */}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2 sm:mb-3">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-base shadow-md flex-shrink-0">
                               {comment.author?.name?.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">{comment.author?.name}</p>
-                              <p className="text-sm text-gray-500">{formatDate(comment.createdAt)}</p>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-gray-900 text-xs sm:text-base truncate">{comment.author?.name}</p>
+                              <p className="text-[10px] sm:text-sm text-gray-500">{formatDate(comment.createdAt)}</p>
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-gray-700 whitespace-pre-wrap leading-relaxed mb-4">
+                        <p className="text-xs sm:text-sm lg:text-base text-gray-700 whitespace-pre-wrap leading-relaxed mb-2 sm:mb-4">
                           {comment.content}
                         </p>
 
                         {/* Comment Actions */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                           {post.author?._id === user?._id && (
                             <button 
                               onClick={() => handleAcceptAnswer(comment._id)}
-                              className={`text-sm font-medium flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg ${
+                              className={`text-[11px] sm:text-sm font-semibold flex items-center gap-1 transition-all px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg ${
                                 comment.isAcceptedAnswer
-                                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 hover:from-green-200 hover:to-emerald-200 border border-green-200'
+                                  : 'text-green-600 hover:text-green-700 hover:bg-green-50 border border-green-200'
                               }`}
                             >
-                              <CheckCircle className={`w-4 h-4 ${comment.isAcceptedAnswer ? 'fill-green-700' : ''}`} />
-                              {comment.isAcceptedAnswer ? 'Accepted ✓' : 'Accept Answer'}
+                              <CheckCircle className={`w-3 h-3 sm:w-4 sm:h-4 ${comment.isAcceptedAnswer ? 'fill-green-700' : ''}`} />
+                              <span className="hidden xs:inline">{comment.isAcceptedAnswer ? 'Accepted ✓' : 'Accept Answer'}</span>
                             </button>
                           )}
                           
                           {comment.isAcceptedAnswer && post.author?._id !== user?._id && (
-                            <div className="text-sm text-green-700 font-semibold flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full">
-                              <CheckCircle className="w-4 h-4 fill-green-700" />
-                              Accepted Answer
+                            <div className="text-[11px] sm:text-sm text-green-700 font-semibold flex items-center gap-1 bg-gradient-to-r from-green-50 to-emerald-50 px-2 sm:px-3 py-1 rounded-full border border-green-200">
+                              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 fill-green-700" />
+                              <span className="hidden xs:inline">Accepted Answer</span>
                             </div>
                           )}
                           
                           <button
                             onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
-                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            className="text-[11px] sm:text-sm text-teal-600 hover:text-teal-700 font-semibold px-2 sm:px-3 py-1 sm:py-1.5 hover:bg-teal-50 rounded-lg transition-all"
                           >
                             {replyingTo === comment._id ? 'Cancel' : 'Reply'}
                           </button>
@@ -679,25 +683,25 @@ export default function ForumPostPage() {
 
                         {/* Reply Form */}
                         {replyingTo === comment._id && (
-                          <div className="mt-4 ml-0 pl-4 border-l-2 border-blue-200">
+                          <div className="mt-3 sm:mt-4 ml-0 pl-3 sm:pl-4 border-l-2 border-green-200">
                             <textarea
                               value={replyText[comment._id] || ''}
                               onChange={(e) => setReplyText({ ...replyText, [comment._id]: e.target.value })}
                               placeholder="Write your reply..."
                               rows={3}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                              className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-all hover:border-gray-300"
                             />
                             <div className="flex justify-end gap-2 mt-2">
                               <button
                                 onClick={() => setReplyingTo(null)}
-                                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-800 font-semibold hover:bg-gray-100 rounded-lg transition-all"
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={() => handleSubmitReply(comment._id)}
                                 disabled={!replyText[comment._id]?.trim()}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 transition-all font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Post Reply
                               </button>
@@ -707,7 +711,7 @@ export default function ForumPostPage() {
 
                         {/* Nested Replies */}
                         {comment.replies && comment.replies.length > 0 && (
-                          <div className="mt-4 ml-0 pl-6 border-l-2 border-gray-200 space-y-4">
+                          <div className="mt-3 sm:mt-4 ml-0 pl-3 sm:pl-6 border-l-2 border-gray-200 space-y-3 sm:space-y-4">
                             {comment.replies.map((reply: any) => (
                               <NestedComment
                                 key={reply._id}

@@ -246,8 +246,8 @@ export default function Navbar() {
               <div className={`w-10 h-10 bg-gradient-to-br ${getRoleColor()} rounded-lg flex items-center justify-center shadow-md`}>
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <div className="hidden sm:block">
-                <span className={`text-xl font-bold bg-gradient-to-r ${getRoleColor()} bg-clip-text text-transparent`}>
+              <div>
+                <span className={`text-base sm:text-xl font-bold bg-gradient-to-r ${getRoleColor()} bg-clip-text text-transparent`}>
                   MicroLearning
                 </span>
                 {user && <p className="text-[10px] text-gray-500 -mt-1">{getRoleLabel()} Portal</p>}
