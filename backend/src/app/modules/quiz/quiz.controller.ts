@@ -45,10 +45,16 @@ class QuizController {
     });
   });
 
-  // Get quiz by ID
+  // Get quiz by ID - with enrollment check for students
   getQuizById = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId;
+    
+    // Check enrollment access for students taking the quiz
+    if (userId) {
+      await quizService.checkQuizAccess(userId, id);
+    }
+    
     const result = await quizService.getQuizById(id, userId);
 
     sendResponse(res, {
@@ -86,9 +92,14 @@ class QuizController {
     });
   });
 
-  // Submit quiz
+  // Submit quiz - with enrollment check
   submitQuiz = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;
+    const { quizId } = req.body;
+    
+    // Verify enrollment before allowing quiz submission
+    await quizService.checkQuizAccess(userId, quizId);
+    
     const result = await quizService.submitQuiz(userId, req.body);
 
     sendResponse(res, {

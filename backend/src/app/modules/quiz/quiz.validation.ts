@@ -16,9 +16,7 @@ export const createQuizValidation = z.object({
     course: z.string({
       required_error: 'Course ID is required - must select course first',
     }).min(1, 'Course ID is required'),
-    lesson: z.string({
-      required_error: 'Lesson ID is required - must select lesson from course',
-    }).min(1, 'Lesson ID is required'),
+    lesson: z.string().optional(), // Optional for course-level quizzes (Quiz Arena)
     topic: z.string().min(2),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
     questions: z.array(quizQuestionSchema).min(1).max(50),

@@ -48,6 +48,7 @@ interface QuizResults {
     passRate: number;
     passedCount: number;
     failedCount: number;
+    enrolledStudents: number; // Added for Quiz Arena
   };
   attempts: Attempt[];
 }
@@ -170,7 +171,17 @@ export default function QuizResultsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-purple-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{results.stats.enrolledStudents}</p>
+            <p className="text-sm text-gray-600">Enrolled Students</p>
+          </div>
+
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -245,7 +256,7 @@ export default function QuizResultsPage() {
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">Student Attempts</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Detailed view of all quiz attempts
+              Showing attempts from enrolled students only ({results.stats.totalAttempts} total)
             </p>
           </div>
 

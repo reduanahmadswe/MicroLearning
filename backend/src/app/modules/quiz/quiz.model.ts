@@ -43,7 +43,7 @@ const quizSchema = new Schema<IQuiz>(
     lesson: {
       type: Schema.Types.ObjectId,
       ref: 'Lesson',
-      required: [true, 'Quiz must be linked to a lesson'],
+      required: false, // Optional for course-level quizzes (Quiz Arena)
       index: true,
     },
     course: {

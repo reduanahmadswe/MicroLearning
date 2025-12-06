@@ -3,12 +3,41 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import {
+  BookOpen,
+  Clock,
+  Heart,
+  Bookmark,
+  Share2,
+  CheckCircle,
+  ChevronLeft,
+  Star,
+  Play,
+  FileQuestion,
+  Video as VideoIcon,
+  Trophy,
+  ArrowRight,
+  Award,
+  Loader2,
+  MessageSquare,
+  ThumbsUp,
+  Eye,
+  Calendar,
+  User,
+  ChevronRight,
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { lessonsAPI, bookmarkAPI } from '@/services/api.service';
+import { toast } from 'sonner';
+import { Lesson } from '@/types';
+import { useAuthStore } from '@/store/authStore';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 // Utility function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string | null => {
   if (!url) return null;
   
-  // Handle different YouTube URL formats
   const patterns = [
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
@@ -25,264 +54,38 @@ const getYouTubeVideoId = (url: string): string | null => {
   
   return null;
 };
-import {
-  BookOpen,
-  Clock,
-  Heart,
-  Bookmark,
-  Share2,
-  CheckCircle,
-  Volume2,
-  MessageSquare,
-  ChevronLeft,
-  Star,
-  User,
-  Play,
-  FileQuestion,
-  Video as VideoIcon,
-  Trophy,
-  Lock,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { lessonsAPI, bookmarkAPI, commentAPI } from '@/services/api.service';
-import { toast } from 'sonner';
-import { Lesson } from '@/types';
-import VideoPlayer from '@/components/VideoPlayer';
-import { useAuthStore } from '@/store/authStore';
 
 export default function LessonDetailPage() {
   const router = useRouter();
   const params = useParams();
   const lessonId = params?.id as string;
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [playingAudio, setPlayingAudio] = useState(false);
-  const [accessGranted, setAccessGranted] = useState(false);
-  const [accessMessage, setAccessMessage] = useState('');
-  const [quiz, setQuiz] = useState<any>(null);
+  const [likeCount, setLikeCount] = useState(0);
 
   useEffect(() => {
     if (lessonId) {
-      checkAccessAndLoadLesson();
-      loadComments();
+      loadLesson();
       checkBookmarkStatus();
     }
   }, [lessonId]);
-
-  useEffect(() => {
-    if (lesson) {
-      checkLikeStatus();
-    }
-  }, [lesson]);
-
-  const checkBookmarkStatus = async () => {
-    if (!token) return;
-    
-    try {
-      const response = await bookmarkAPI.checkBookmark(lessonId);
-      const isBookmarked = response.data.data.isBookmarked || false;
-      setBookmarked(isBookmarked);
-      console.log('Bookmark status loaded:', isBookmarked);
-    } catch (error) {
-      console.error('Error checking bookmark status:', error);
-      setBookmarked(false);
-    }
-  };
-
-  const checkLikeStatus = async () => {
-    if (!token || !lesson) return;
-    
-    try {
-      // Check if current user's ID is in the likedBy array
-      const response = await lessonsAPI.getLesson(lessonId);
-      const lessonData = response.data.data;
-      
-      // Get user ID from profile endpoint
-      const userResponse = await fetch('http://localhost:5000/api/v1/profile/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!userResponse.ok) {
-        console.error('Failed to fetch user data');
-        setLiked(false);
-        return;
-      }
-      
-      const userData = await userResponse.json();
-      const userId = userData?.data?._id;
-      
-      if (!userId) {
-        console.error('User ID not found');
-        setLiked(false);
-        return;
-      }
-      
-      // Check if user has liked
-      const hasLiked = lessonData.likedBy?.some((id: string) => id === userId) || false;
-      setLiked(hasLiked);
-      console.log('Like status check:', { 
-        userId, 
-        likedBy: lessonData.likedBy, 
-        hasLiked,
-        lessonLikes: lessonData.likes 
-      });
-    } catch (error) {
-      console.error('Error checking like status:', error);
-      setLiked(false);
-    }
-  };
-
-  const checkAccessAndLoadLesson = async () => {
-    try {
-      setLoading(true);
-      
-      // First, load lesson data
-      const lessonResponse = await lessonsAPI.getLesson(lessonId);
-      const lessonData = lessonResponse.data.data;
-      setLesson(lessonData);
-      
-      // Check if user is enrolled in the course
-      if (!token) {
-        setAccessGranted(false);
-        setAccessMessage('Please login to access this lesson');
-        setLoading(false);
-        return;
-      }
-      
-      // Check enrollment
-      try {
-        const enrollmentResponse = await fetch(
-          `http://localhost:5000/api/v1/courses/${lessonData.course}/enrollment`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        
-        if (!enrollmentResponse.ok) {
-          setAccessGranted(false);
-          setAccessMessage('You need to enroll in this course first');
-          setLoading(false);
-          return;
-        }
-        
-        const enrollment = await enrollmentResponse.json();
-        
-        // Check if this is the first lesson (always accessible)
-        if (lessonData.order === 1) {
-          setAccessGranted(true);
-          loadQuizForLesson(lessonId);
-        } else {
-          // Check if previous lesson quiz was passed
-          await checkPreviousLessonQuiz(lessonData, enrollment.data);
-        }
-      } catch (error) {
-        setAccessGranted(false);
-        setAccessMessage('You need to enroll in this course first');
-      }
-    } catch (error: any) {
-      toast.error('Failed to load lesson');
-      console.error(error);
-      setAccessGranted(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkPreviousLessonQuiz = async (lessonData: any, enrollmentData: any) => {
-    try {
-      
-      // Find previous lesson
-      const previousLessonResponse = await fetch(
-        `http://localhost:5000/api/v1/lessons?course=${lessonData.course}&order=${lessonData.order - 1}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (!previousLessonResponse.ok) {
-        setAccessGranted(true); // No previous lesson, unlock
-        loadQuizForLesson(lessonId);
-        return;
-      }
-      
-      const previousLessons = await previousLessonResponse.json();
-      const previousLesson = previousLessons.data?.[0];
-      
-      if (!previousLesson) {
-        setAccessGranted(true); // No previous lesson found
-        loadQuizForLesson(lessonId);
-        return;
-      }
-      
-      // Check if quiz exists for previous lesson
-      const quizResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${previousLesson._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (!quizResponse.ok) {
-        // No quiz for previous lesson, allow access
-        setAccessGranted(true);
-        loadQuizForLesson(lessonId);
-        return;
-      }
-      
-      const quizData = await quizResponse.json();
-      const previousQuiz = quizData.data;
-      
-      // Check if student passed the quiz
-      const attemptResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/quiz/${previousQuiz._id}/attempts`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (attemptResponse.ok) {
-        const attempts = await attemptResponse.json();
-        const passedAttempt = attempts.data?.find((a: any) => a.passed === true);
-        
-        if (passedAttempt) {
-          setAccessGranted(true);
-          loadQuizForLesson(lessonId);
-        } else {
-          setAccessGranted(false);
-          setAccessMessage(`🔒 This lesson is locked. You must pass the quiz for "${previousLesson.title}" with at least 80% to unlock it.`);
-        }
-      } else {
-        setAccessGranted(false);
-        setAccessMessage(`🔒 This lesson is locked. You must complete and pass the quiz for "${previousLesson.title}" first.`);
-      }
-    } catch (error) {
-      console.error('Error checking previous lesson quiz:', error);
-      setAccessGranted(false);
-      setAccessMessage('Unable to verify access. Please try again.');
-    }
-  };
-
-  const loadQuizForLesson = async (lessonId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${lessonId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.ok) {
-        const quizData = await response.json();
-        setQuiz(quizData.data);
-      }
-    } catch (error) {
-      console.error('Error loading quiz:', error);
-    }
-  };
 
   const loadLesson = async () => {
     try {
       setLoading(true);
       const response = await lessonsAPI.getLesson(lessonId);
-      setLesson(response.data.data);
+      const lessonData = response.data.data;
+      setLesson(lessonData);
+      setLikeCount(lessonData.likes || 0);
+      
+      if (lessonData.likedBy && user?._id) {
+        setLiked(lessonData.likedBy.includes(user._id));
+      }
     } catch (error: any) {
       toast.error('Failed to load lesson');
       console.error(error);
@@ -291,636 +94,416 @@ export default function LessonDetailPage() {
     }
   };
 
-  const loadComments = async () => {
+  const checkBookmarkStatus = async () => {
+    if (!token) return;
     try {
-      const response = await commentAPI.getLessonComments(lessonId);
-      setComments(response.data.data || []);
-    } catch (error: any) {
-      console.error('Failed to load comments:', error);
+      const response = await bookmarkAPI.checkBookmark(lessonId);
+      setBookmarked(response.data.data.isBookmarked || false);
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
     }
   };
 
-  const handleComplete = async () => {
+  const handleCompleteLesson = async () => {
+    if (!token) {
+      toast.error('Please login to complete lessons');
+      router.push('/auth/login');
+      return;
+    }
+
     try {
       setCompleting(true);
-      const response = await lessonsAPI.completeLesson(lessonId);
-      const xpEarned = response.data.data?.xpEarned || 50;
-      
-      toast.success(`🎉 Lesson completed! +${xpEarned} XP earned`);
-      
-      if (lesson) {
-        setLesson({ ...lesson, isCompleted: true });
-      }
-      
-      // Navigate based on quiz availability
-      if (quiz) {
-        // If quiz exists, go to quiz
-        toast.info('Redirecting to quiz...', { duration: 2000 });
-        setTimeout(() => {
-          router.push(`/quiz/${quiz._id}`);
-        }, 2000);
-      } else {
-        // If no quiz, find and go to next lesson
-        await goToNextLesson();
-      }
+      await lessonsAPI.completeLesson(lessonId);
+      toast.success('🎉 Lesson completed! Keep learning!');
+      loadLesson();
     } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || 'Failed to complete lesson';
-      toast.error(errorMsg);
-      console.error('Complete lesson error:', error);
+      toast.error('Failed to complete lesson');
     } finally {
       setCompleting(false);
     }
   };
 
-  const goToNextLesson = async () => {
-    try {
-      if (!lesson?.course) {
-        router.push('/dashboard');
-        return;
-      }
-
-      const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course._id;
-      
-      // Get next lesson in the course
-      const response = await fetch(
-        `http://localhost:5000/api/v1/lessons?course=${courseId}&order=${(lesson.order || 0) + 1}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.ok) {
-        const nextLessons = await response.json();
-        const nextLesson = nextLessons.data?.[0];
-        
-        if (nextLesson) {
-          toast.info('Going to next lesson...', { duration: 1500 });
-          setTimeout(() => {
-            router.push(`/lessons/${nextLesson._id}`);
-          }, 1500);
-        } else {
-          // No more lessons, go back to course
-          toast.success('Course completed! 🎉', { duration: 2000 });
-          setTimeout(() => {
-            router.push(`/courses/${courseId}`);
-          }, 2000);
-        }
-      } else {
-        // Fallback to course page
-        router.push(`/courses/${courseId}`);
-      }
-    } catch (error) {
-      console.error('Error finding next lesson:', error);
-      if (lesson?.course) {
-        const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course._id;
-        router.push(`/courses/${courseId}`);
-      } else {
-        router.push('/dashboard');
-      }
-    }
-  };
-
   const handleBookmark = async () => {
+    if (!token) {
+      toast.error('Please login to bookmark lessons');
+      router.push('/auth/login');
+      return;
+    }
+
     try {
-      if (bookmarked) {
-        await bookmarkAPI.removeBookmark(lessonId);
-        toast.success('Bookmark removed');
-        setBookmarked(false);
-      } else {
-        await bookmarkAPI.createBookmark({ lessonId });
-        toast.success('Lesson bookmarked');
-        setBookmarked(true);
-      }
+      await bookmarkAPI.toggleBookmark(lessonId);
+      setBookmarked(!bookmarked);
+      toast.success(bookmarked ? 'Bookmark removed' : '📌 Lesson bookmarked!');
     } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || 'Failed to bookmark lesson';
-      toast.error(errorMsg);
-      console.error('Bookmark error:', error?.response?.data || error);
+      toast.error('Failed to bookmark lesson');
     }
   };
 
   const handleLike = async () => {
     if (!token) {
       toast.error('Please login to like lessons');
+      router.push('/auth/login');
       return;
     }
 
     try {
-      // Call API to toggle like
-      const response = await lessonsAPI.likeLesson(lessonId);
-      const updatedLesson = response.data.data;
-      
-      console.log('Like response:', { hasLiked: updatedLesson.hasLiked, likes: updatedLesson.likes });
-      
-      // Update local state immediately
-      const newLikedState = updatedLesson.hasLiked;
-      setLiked(newLikedState);
-      
-      if (lesson) {
-        setLesson({
-          ...lesson,
-          likes: updatedLesson.likes,
-          likedBy: updatedLesson.likedBy,
+      await lessonsAPI.likeLesson(lessonId);
+      setLiked(!liked);
+      setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+      toast.success(liked ? 'Like removed' : '❤️ Lesson liked!');
+    } catch (error: any) {
+      toast.error('Failed to like lesson');
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: lesson?.title,
+          text: lesson?.summary,
+          url: shareUrl,
         });
+      } catch (error) {
+        console.error('Error sharing:', error);
       }
-      
-      toast.success(newLikedState ? 'Lesson liked!' : 'Like removed');
-    } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || 'Failed to like lesson';
-      toast.error(errorMsg);
-      console.error('Like error:', error?.response?.data || error);
-    }
-  };
-
-  const handlePlayAudio = () => {
-    if (lesson?.audioUrl) {
-      // Play audio logic
-      setPlayingAudio(true);
-      toast.info('Playing audio...');
     } else {
-      toast.error('Audio not available for this lesson');
-    }
-  };
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-
-    try {
-      await commentAPI.createComment({
-        lesson: lessonId,
-        content: newComment,
-      });
-      setNewComment('');
-      loadComments();
-      toast.success('Comment added!');
-    } catch (error: any) {
-      toast.error('Failed to add comment');
-    }
-  };
-
-  const handleShare = () => {
-    if (navigator.share && lesson) {
-      navigator
-        .share({
-          title: lesson.title,
-          text: lesson.summary,
-          url: window.location.href,
-        })
-        .catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied to clipboard!');
+      navigator.clipboard.writeText(shareUrl);
+      toast.success('📋 Link copied to clipboard!');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading lesson...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-4">
+        <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center justify-center py-16 px-8">
+            <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
+            <p className="text-gray-600 font-medium">Loading lesson...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!lesson) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Lesson not found</h2>
-          <p className="text-gray-600 mb-4">The lesson you're looking for doesn't exist.</p>
-          <Link href="/lessons">
-            <Button>Back to Lessons</Button>
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-4">
+        <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson not found</h3>
+            <p className="text-gray-600 mb-6">The lesson you're looking for doesn't exist.</p>
+            <Link href="/lessons">
+              <Button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700">
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back to Lessons
+              </Button>
+            </Link>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Show access denied message if not granted
-  if (!accessGranted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => lesson?.course ? router.push(`/courses/${lesson.course}`) : router.push('/courses')}
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back to Course
-            </Button>
-          </div>
-        </header>
-        
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-8 h-8 text-orange-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Lesson Locked</h2>
-            <p className="text-gray-600 mb-6 text-lg">{accessMessage}</p>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-900 mb-2">How to Unlock:</h3>
-              <ol className="text-left text-sm text-blue-800 space-y-2">
-                <li>1. Go back to the course page</li>
-                <li>2. Complete the previous lesson</li>
-                <li>3. Pass the quiz with <strong>80% or higher</strong></li>
-                <li>4. This lesson will automatically unlock!</li>
-              </ol>
-            </div>
-            
-            <div className="flex gap-3 justify-center">
-              <Button 
-                onClick={() => lesson?.course ? router.push(`/courses/${lesson.course}`) : router.push('/courses')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Back to Course
-              </Button>
-              <Link href="/dashboard">
-                <Button variant="outline">Go to Dashboard</Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  const difficultyColors = {
+    beginner: 'bg-gradient-to-r from-green-500 to-green-600 text-white',
+    intermediate: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white',
+    advanced: 'bg-gradient-to-r from-red-500 to-red-600 text-white',
+  };
+
+  // Get video from lesson media
+  const lessonVideo = lesson.media?.find(m => m.type === 'video');
+  const videoId = lessonVideo ? getYouTubeVideoId(lessonVideo.url) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => lesson?.course ? router.push(`/courses/${lesson.course}`) : router.push('/lessons')}
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back to Course
-            </Button>
-            
-            {lesson.order === 1 && (
-              <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                ✓ Always Unlocked
-              </span>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Back Button */}
+        <div className="mb-4 sm:mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
+          >
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Lesson Header Card */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-teal-600 p-6 sm:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg ${difficultyColors[lesson.difficulty]}`}>
+                      {lesson.difficulty}
+                    </span>
+                    {lesson.topic && (
+                      <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                        {lesson.topic}
+                      </span>
+                    )}
+                  </div>
+                  {lesson.isCompleted && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                      <span className="text-xs sm:text-sm font-bold text-white">Completed</span>
+                    </div>
+                  )}
+                </div>
+                
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight">
+                  {lesson.title}
+                </h1>
+
+                {lesson.summary && (
+                  <p className="text-green-50 text-sm sm:text-base leading-relaxed mb-6">
+                    {lesson.summary}
+                  </p>
+                )}
+
+                {/* Stats Row */}
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-green-200" />
+                    <span className="text-white text-sm sm:text-base font-medium">{lesson.estimatedTime} min</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-green-200" />
+                    <span className="text-white text-sm sm:text-base font-medium">{lesson.views || 0} views</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-green-200" />
+                    <span className="text-white text-sm sm:text-base font-medium">{likeCount} likes</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-100">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <Button
+                    onClick={handleLike}
+                    variant="outline"
+                    className={`flex-1 sm:flex-none ${liked ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' : 'hover:bg-white'}`}
+                  >
+                    <Heart className={`w-4 h-4 mr-2 ${liked ? 'fill-current' : ''}`} />
+                    <span className="hidden sm:inline">Like</span>
+                  </Button>
+                  
+                  <Button
+                    onClick={handleBookmark}
+                    variant="outline"
+                    className={`flex-1 sm:flex-none ${bookmarked ? 'bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100' : 'hover:bg-white'}`}
+                  >
+                    <Bookmark className={`w-4 h-4 mr-2 ${bookmarked ? 'fill-current' : ''}`} />
+                    <span className="hidden sm:inline">Save</span>
+                  </Button>
+                  
+                  <Button
+                    onClick={handleShare}
+                    variant="outline"
+                    className="flex-1 sm:flex-none hover:bg-white"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Share</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Video Section */}
+            {videoId && (
+              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Play className="w-5 h-5 text-green-600" />
+                    <h2 className="text-xl font-bold text-gray-900">Video Lesson</h2>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-4">Watch the video to understand the concepts better</p>
+                  
+                  <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      className="absolute top-0 left-0 w-full h-full"
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title={lesson.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
+                    <Clock className="w-4 h-4" />
+                    <span>{lessonVideo?.duration ? `${lessonVideo.duration} min` : '10 min'}</span>
+                    <span className="mx-2">•</span>
+                    <span>HD Quality</span>
+                    <span className="mx-2">•</span>
+                    <span className="text-amber-600">💡 Tip: Use playback speed controls to learn faster</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Lesson Content */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Lesson Content</h2>
+                </div>
+
+                <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+                  <MarkdownRenderer content={lesson.content} />
+                </div>
+
+                {/* Key Points */}
+                {lesson.tags && lesson.tags.length > 0 && (
+                  <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl border border-green-100">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-green-600" />
+                      Key Points
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {lesson.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1.5 bg-white text-green-700 rounded-lg text-sm font-medium border border-green-200 shadow-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Complete Lesson Button */}
+            {!lesson.isCompleted && (
+              <Card className="border-0 shadow-xl bg-gradient-to-r from-green-600 to-teal-600">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="text-center">
+                    <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-white mx-auto mb-4" />
+                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Ready to Complete?</h3>
+                    <p className="text-green-50 mb-6">Mark this lesson as complete and earn XP!</p>
+                    <Button
+                      onClick={handleCompleteLesson}
+                      disabled={completing}
+                      className="bg-white text-green-600 hover:bg-green-50 shadow-lg font-bold px-8 py-6 text-base sm:text-lg"
+                    >
+                      {completing ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Completing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Complete Lesson
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm sticky top-6">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+                <div className="space-y-3">
+                  <Link href={`/quiz?lessonId=${lessonId}`} className="block">
+                    <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-purple-50 border-2 border-transparent hover:border-purple-200 transition-all group">
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FileQuestion className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-gray-900 group-hover:text-purple-600">Take Quiz</p>
+                        <p className="text-xs text-gray-500">Test your knowledge</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                    </button>
+                  </Link>
+
+                  {!videoId ? (
+                    <Link href={`/videos?lessonId=${lessonId}`} className="block">
+                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all group">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <VideoIcon className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold text-gray-900 group-hover:text-blue-600">Watch Video</p>
+                          <p className="text-xs text-gray-500">Visual learning</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </Link>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        const videoSection = document.querySelector('iframe');
+                        videoSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}
+                      className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all group"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-gray-900 group-hover:text-blue-600">Watch Video</p>
+                        <p className="text-xs text-gray-500">Scroll to video</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </button>
+                  )}
+
+                  {lesson.isCompleted && (
+                    <Link href={`/certificates?lessonId=${lessonId}`} className="block">
+                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-yellow-50 border-2 border-transparent hover:border-yellow-200 transition-all group">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Award className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold text-gray-900 group-hover:text-yellow-600">Get Certificate</p>
+                          <p className="text-xs text-gray-500">Download proof</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-600 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Progress Card */}
+            {lesson.isCompleted && (
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-green-500 to-teal-600">
+                <CardContent className="p-6 text-center">
+                  <Trophy className="w-12 h-12 text-white mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-white mb-2">Lesson Completed!</h3>
+                  <p className="text-green-50 text-sm">Great job! Keep up the momentum.</p>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Lesson Header */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      lesson.difficulty === 'beginner'
-                        ? 'bg-green-100 text-green-700'
-                        : lesson.difficulty === 'intermediate'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {lesson.difficulty}
-                  </span>
-                  <span className="text-sm text-gray-500">{lesson.topic}</span>
-                </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{lesson.title}</h1>
-                <p className="text-gray-600">{lesson.summary}</p>
-                
-                {/* Completed Badge */}
-                {lesson.isCompleted && (
-                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="font-semibold">Lesson Completed</span>
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-gray-600 border-t border-gray-200 pt-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{lesson.estimatedTime} min</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500 text-red-500' : ''}`} />
-                  <span>{lesson.likes || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  <span>{lesson.author?.name || 'Anonymous'}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {lesson.audioUrl && (
-                  <Button variant="outline" size="sm" onClick={handlePlayAudio}>
-                    <Volume2 className="w-4 h-4" />
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={handleBookmark}>
-                  <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleLike}
-                  className={liked ? 'border-red-200 bg-red-50' : ''}
-                >
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-                  <span className={`ml-1 ${liked ? 'text-red-600 font-medium' : ''}`}>
-                    {liked ? 'Liked' : 'Like'}
-                  </span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleShare}>
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Video Player (if available) */}
-        {lesson.media && lesson.media.some(m => m.type === 'video') && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-blue-600" />
-                Video Lesson
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                Watch the video to understand the concepts better
-              </p>
-            </CardHeader>
-            <CardContent className="p-4">
-              {lesson.media
-                .filter(m => m.type === 'video')
-                .map((media, index) => {
-                  const youtubeId = getYouTubeVideoId(media.url);
-                  
-                  if (youtubeId) {
-                    // Render YouTube iframe embed
-                    return (
-                      <div key={index} className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                        <iframe
-                          className="absolute top-0 left-0 w-full h-full rounded-lg"
-                          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-                          title="Video Lesson"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    );
-                  } else {
-                    // Render native VideoPlayer for direct video files
-                    return (
-                      <VideoPlayer
-                        key={index}
-                        src={media.url}
-                        poster={lesson.thumbnailUrl || media.thumbnail}
-                        onEnded={() => {
-                          toast.success('🎉 Video completed! +30 XP earned');
-                        }}
-                        onProgress={(progress) => {
-                          // Track video progress for analytics
-                          if (progress > 90) {
-                            console.log('Video almost complete:', progress);
-                          }
-                        }}
-                      />
-                    );
-                  }
-                })}
-              
-              {/* Video Info */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1 text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      {lesson.media.find(m => m.type === 'video')?.duration || lesson.estimatedTime} min
-                    </span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-gray-600">HD Quality</span>
-                  </div>
-                  <div className="text-gray-600">
-                    💡 Tip: Use playback speed controls to learn faster
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Lesson Content */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-blue-600" />
-              Lesson Content
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: lesson.content }}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Tags */}
-        {lesson.tags && lesson.tags.length > 0 && (
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-wrap gap-2">
-                {lesson.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Quick Actions - Quiz, Video, Certificate */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Related Resources</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Quiz */}
-              {quiz ? (
-                <Link href={`/quiz/${quiz._id}`}>
-                  <div className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-400 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                        <FileQuestion className="w-6 h-6 text-purple-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Take Quiz</h3>
-                        <p className="text-xs text-gray-600">Pass with 80%+ to unlock next</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50 opacity-60 cursor-not-allowed">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                      <FileQuestion className="w-6 h-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-500">No Quiz Yet</h3>
-                      <p className="text-xs text-gray-500">Instructor hasn't added a quiz</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Video */}
-              <Link href={`/videos?lessonId=${lessonId}`}>
-                <div className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all cursor-pointer group">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                      <VideoIcon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Watch Video</h3>
-                      <p className="text-xs text-gray-600">Visual learning</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Complete Lesson */}
-        {!lesson.isCompleted && (
-          <Card className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold mb-1">Mark as Complete & Go to Next</h3>
-                  <p className="text-white/90 text-sm">
-                    {quiz 
-                      ? '✓ Earn 50 XP → Go to Quiz (Required to unlock next lesson)' 
-                      : '✓ Earn 50 XP → Go to Next Lesson'}
-                  </p>
-                </div>
-                <Button
-                  onClick={handleComplete}
-                  disabled={completing}
-                  className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
-                >
-                  {completing ? (
-                    'Completing...'
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      {quiz ? 'Complete & Take Quiz' : 'Complete & Next'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {lesson.isCompleted && (
-          <Card className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-1">Lesson Completed! 🎉</h3>
-                  <p className="text-white/90 text-sm">Great job! Continue to the next lesson or complete all course lessons to earn your certificate.</p>
-                </div>
-                {lesson?.course && (
-                  <Link href={`/courses/${lesson.course}`}>
-                    <Button className="bg-white text-green-600 hover:bg-gray-100">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Back to Course
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Comments Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              Comments ({comments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddComment} className="mb-6">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Share your thoughts..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={3}
-              />
-              <div className="flex justify-end mt-2">
-                <Button type="submit" disabled={!newComment.trim()}>
-                  Post Comment
-                </Button>
-              </div>
-            </form>
-
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment._id} className="border-b border-gray-200 pb-4 last:border-0">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {comment.user?.name?.charAt(0).toUpperCase() || 'A'}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {comment.user?.name || 'Anonymous'}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-700">{comment.content}</p>
-                      {comment.likes > 0 && (
-                        <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
-                          <Heart className="w-3 h-3" />
-                          <span>{comment.likes}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -69,6 +69,7 @@ export interface IAuthResponse {
     email: string;
     name: string;
     role: string;
+    profilePicture?: string;
     xp?: number;
     level?: number;
     streak?: number;

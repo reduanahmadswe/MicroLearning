@@ -62,19 +62,19 @@ export const aiAPI = {
 
 // Quiz APIs
 export const quizAPI = {
-  getQuizzes: (params?: any) => api.get('/quizzes', { params }),
-  getAllQuizzes: (params?: any) => api.get('/quizzes', { params }),
-  getQuiz: (id: string) => api.get(`/quizzes/${id}`),
-  getQuizById: (id: string) => api.get(`/quizzes/${id}`),
-  createQuiz: (data: any) => api.post('/quizzes', data),
-  updateQuiz: (id: string, data: any) => api.put(`/quizzes/${id}`, data),
-  deleteQuiz: (id: string) => api.delete(`/quizzes/${id}`),
-  submitQuiz: (id: string, data: any) => api.post(`/quizzes/${id}/attempt`, data),
-  getQuizResult: (attemptId: string) => api.get(`/quizzes/attempt/${attemptId}`),
-  getQuizResults: (id: string) => api.get(`/quizzes/${id}/results`),
-  getUserStats: () => api.get('/quizzes/attempts/me'),
-  getMyQuizHistory: () => api.get('/quizzes/attempts/me'),
-  getUserAttempts: () => api.get('/quizzes/attempts/me'),
+  getQuizzes: (params?: any) => api.get('/quiz', { params }),
+  getAllQuizzes: (params?: any) => api.get('/quiz', { params }),
+  getQuiz: (id: string) => api.get(`/quiz/${id}`),
+  getQuizById: (id: string) => api.get(`/quiz/${id}`),
+  createQuiz: (data: any) => api.post('/quiz', data),
+  updateQuiz: (id: string, data: any) => api.put(`/quiz/${id}`, data),
+  deleteQuiz: (id: string) => api.delete(`/quiz/${id}`),
+  submitQuiz: (id: string, data: any) => api.post(`/quiz/${id}/attempt`, data),
+  getQuizResult: (attemptId: string) => api.get(`/quiz/attempt/${attemptId}`),
+  getQuizResults: (id: string) => api.get(`/quiz/${id}/results`),
+  getUserStats: () => api.get('/quiz/attempts/me'),
+  getMyQuizHistory: () => api.get('/quiz/attempts/me'),
+  getUserAttempts: () => api.get('/quiz/attempts/me'),
 };
 
 // Flashcards APIs

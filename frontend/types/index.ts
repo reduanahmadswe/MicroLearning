@@ -38,6 +38,7 @@ export interface Lesson {
   likedBy?: string[]; // Array of user IDs who liked this lesson
   isPublished: boolean;
   isCompleted?: boolean;
+  aiGenerated?: boolean;
   audioUrl?: string;
   thumbnailUrl?: string;
   course?: string | { _id: string; title: string }; // Course ID reference or populated course

@@ -297,7 +297,7 @@ export default function FeedPage() {
           {/* Sidebar - Hidden on mobile, visible on large screens */}
           <div className="hidden lg:block space-y-6">
             {/* Trending Topics */}
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm sticky top-6">
+            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent flex items-center space-x-2">
                   <TrendingUp className="w-5 h-5 text-green-600" />

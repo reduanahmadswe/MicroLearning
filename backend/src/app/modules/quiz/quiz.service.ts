@@ -19,16 +19,6 @@ class QuizService {
       throw new ApiError(404, 'Course not found');
     }
 
-    // Verify lesson exists and belongs to the course
-    const lesson = await Lesson.findById(quizData.lesson);
-    if (!lesson) {
-      throw new ApiError(404, 'Lesson not found');
-    }
-    
-    if (lesson.course?.toString() !== (quizData as any).course) {
-      throw new ApiError(400, 'Lesson does not belong to the selected course');
-    }
-
     // Check if user is course author or admin
     if (course.author.toString() !== userId) {
       const user = await User.findById(userId);
@@ -37,10 +27,22 @@ class QuizService {
       }
     }
 
-    // Check if quiz already exists for this lesson
-    const existingQuiz = await Quiz.findOne({ lesson: quizData.lesson });
-    if (existingQuiz) {
-      throw new ApiError(400, 'A quiz already exists for this lesson. Please update the existing quiz instead.');
+    // If lesson is provided, verify it exists and belongs to the course
+    if (quizData.lesson) {
+      const lesson = await Lesson.findById(quizData.lesson);
+      if (!lesson) {
+        throw new ApiError(404, 'Lesson not found');
+      }
+      
+      if (lesson.course?.toString() !== (quizData as any).course) {
+        throw new ApiError(400, 'Lesson does not belong to the selected course');
+      }
+
+      // Check if quiz already exists for this lesson
+      const existingQuiz = await Quiz.findOne({ lesson: quizData.lesson });
+      if (existingQuiz) {
+        throw new ApiError(400, 'A quiz already exists for this lesson. Please update the existing quiz instead.');
+      }
     }
 
     const quiz = await Quiz.create({
@@ -50,6 +52,26 @@ class QuizService {
     });
 
     return quiz;
+  }
+
+  // Check if user has access to quiz (enrollment check for Quiz Arena)
+  async checkQuizAccess(userId: string, quizId: string) {
+    const quiz = await Quiz.findById(quizId).populate('course');
+    if (!quiz) {
+      throw new ApiError(404, 'Quiz not found');
+    }
+
+    // Check if user is enrolled in the course
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: quiz.course,
+    });
+
+    if (!enrollment) {
+      throw new ApiError(403, 'You must be enrolled in the course to access this quiz');
+    }
+
+    return { quiz, enrollment };
   }
 
   // Generate AI quiz (placeholder - integrate with AI later)
@@ -106,11 +128,20 @@ class QuizService {
       query.lesson = filters.lesson;
     }
 
+    // Filter for course-level quizzes only (Quiz Arena)
+    if (filters.courseOnly === 'true' || filters.courseOnly === true) {
+      query.$or = [
+        { lesson: { $exists: false } },
+        { lesson: null }
+      ];
+    }
+
     const skip = (page - 1) * limit;
 
     const [quizzes, total] = await Promise.all([
       Quiz.find(query)
         .populate('author', 'name profilePicture')
+        .populate('course', 'title thumbnail') // Populate course for Quiz Arena
         .populate('lesson', 'title topic')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -504,9 +535,9 @@ class QuizService {
     };
   }
 
-  // Get quiz results (all attempts)
+  // Get quiz results (all attempts) - filtered by enrolled students
   async getQuizResults(quizId: string, userId: string) {
-    const quiz = await Quiz.findById(quizId);
+    const quiz = await Quiz.findById(quizId).populate('course');
     if (!quiz) {
       throw new ApiError(404, 'Quiz not found');
     }
@@ -519,8 +550,19 @@ class QuizService {
       }
     }
 
-    const attempts = await QuizAttempt.find({ quiz: quizId })
-      .populate('user', 'name email')
+    // Get only enrolled students for this course
+    const enrolledStudents = await Enrollment.find({ 
+      course: quiz.course 
+    }).select('user');
+    
+    const enrolledUserIds = enrolledStudents.map(e => e.user.toString());
+
+    // Filter attempts to only show enrolled students
+    const attempts = await QuizAttempt.find({ 
+      quiz: quizId,
+      user: { $in: enrolledUserIds }
+    })
+      .populate('user', 'name email profilePicture')
       .sort('-createdAt')
       .lean();
 
@@ -545,6 +587,7 @@ class QuizService {
         passRate: Math.round(passRate),
         passedCount,
         failedCount: totalAttempts - passedCount,
+        enrolledStudents: enrolledStudents.length,
       },
       attempts,
     };

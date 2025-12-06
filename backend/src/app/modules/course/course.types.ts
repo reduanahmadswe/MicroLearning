@@ -21,6 +21,7 @@ export interface ICourse {
   rating: number;
   ratingCount: number;
   isPublished: boolean;
+  isAIGenerated?: boolean;
   slug: string;
   createdAt: Date;
   updatedAt: Date;

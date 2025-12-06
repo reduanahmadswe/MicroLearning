@@ -92,6 +92,11 @@ const courseSchema = new Schema<ICourse>(
       default: false,
       index: true,
     },
+    isAIGenerated: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     slug: {
       type: String,
       unique: true,
