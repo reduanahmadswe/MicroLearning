@@ -13,6 +13,9 @@ const router = express.Router();
 // All routes require authentication
 router.use(authGuard());
 
+// Get all challenges (list view)
+router.get('/', ChallengeController.getActiveChallenges);
+
 // Get daily challenge
 router.get('/daily', ChallengeController.getDailyChallenge);
 
@@ -24,6 +27,7 @@ router.get('/me', ChallengeController.getMyChallenges);
 
 // Get challenge statistics
 router.get('/stats', ChallengeController.getChallengeStats);
+router.get('/stats/me', ChallengeController.getChallengeStats); // Alias for frontend
 
 // Update challenge progress
 router.post('/progress/:challengeId', ChallengeController.updateChallengeProgress);
@@ -33,6 +37,10 @@ router.post('/friend', validateRequest(challengeFriendSchema), ChallengeControll
 
 // Respond to friend challenge
 router.post('/respond', validateRequest(respondToChallengeSchema), ChallengeController.respondToChallenge);
+
+// Quiz Battle routes (public)
+router.get('/quiz-battles', ChallengeController.getQuizBattles);
+router.post('/quiz-battles', ChallengeController.createQuizBattle);
 
 // Create challenge (admin/instructor only)
 router.post(

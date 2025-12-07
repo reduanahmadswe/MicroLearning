@@ -18,6 +18,7 @@ import {
   Bot,
   Home,
   Menu,
+  Settings,
   X,
   LogOut,
   User,
@@ -25,7 +26,6 @@ import {
   ShoppingBag,
   Shield,
   FileText,
-  Settings,
   BarChart3,
   DollarSign,
   Bell,
@@ -208,7 +208,6 @@ export default function Navbar() {
     const role = user?.role?.toLowerCase();
     const commonItems = [
       { icon: User, label: 'My Profile', path: '/profile' },
-      { icon: Settings, label: 'Settings', path: '/settings' },
       { icon: HelpCircle, label: 'Help & Support', path: '/help' },
     ];
 

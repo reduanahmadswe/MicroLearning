@@ -9,6 +9,11 @@ import { Types } from 'mongoose';
  * Generate Roadmap
  */
 export const generateRoadmap = catchAsync(async (req: Request, res: Response) => {
+  console.log('🎯 [Roadmap Controller] Received request:', {
+    body: req.body,
+    userId: req.user?.userId,
+  });
+
   const userId = new Types.ObjectId(req.user?.userId);
   const result = await RoadmapService.generateRoadmap(userId, req.body);
 

@@ -201,35 +201,36 @@ export default function InstructorCreateLessonPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <Link href="/instructor">
-          <Button variant="ghost" size="sm" className="mb-4">
+          <Button variant="ghost" size="sm" className="mb-4 hover:bg-green-50 text-sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
         </Link>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Create New Lesson</CardTitle>
+        <Card className="bg-white border-green-100 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 px-4 sm:px-6 py-4 sm:py-6">
+            <CardTitle className="text-xl sm:text-2xl text-white">Create New Lesson</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="bg-white px-4 sm:px-6 py-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm sm:text-base font-medium text-gray-900">
                   Title *
                 </label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Enter lesson title"
+                  className="bg-white text-gray-900 border-green-200 focus:border-green-500 focus:ring-green-500 text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm sm:text-base font-medium text-gray-900">
                   Description *
                 </label>
                 <RichTextEditor
@@ -237,13 +238,13 @@ export default function InstructorCreateLessonPage() {
                   onChange={(value) => setFormData({ ...formData, description: value })}
                   placeholder="Write a brief description of the lesson..."
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">
                   Brief overview of what students will learn
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm sm:text-base font-medium text-gray-900">
                   Content *
                 </label>
                 <RichTextEditor
@@ -251,32 +252,33 @@ export default function InstructorCreateLessonPage() {
                   onChange={(value) => setFormData({ ...formData, content: value })}
                   placeholder="Write your lesson content with rich formatting..."
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">
                   Use the toolbar to format your lesson with headings, bold, italic, lists, links, and images
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm sm:text-base font-medium text-gray-900">
                   Topic *
                 </label>
                 <Input
                   value={formData.topic}
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                   placeholder="e.g., JavaScript, Python, Math"
+                  className="bg-white text-gray-900 border-green-200 focus:border-green-500 focus:ring-green-500"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm sm:text-base font-medium text-gray-900">
                     Difficulty *
                   </label>
                   <select
                     value={formData.difficulty}
                     onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white text-gray-900 text-sm sm:text-base border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -285,13 +287,14 @@ export default function InstructorCreateLessonPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm sm:text-base font-medium text-gray-900">
                     Estimated Time (minutes)
                   </label>
                   <Input
                     type="number"
                     value={formData.estimatedTime || ''}
                     onChange={(e) => setFormData({ ...formData, estimatedTime: parseInt(e.target.value) || 0 })}
+                    className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500"
                     min={1}
                     max={60}
                   />
@@ -299,68 +302,71 @@ export default function InstructorCreateLessonPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm sm:text-base font-medium text-gray-900">
                   Tags (comma separated)
                 </label>
                 <Input
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                   placeholder="programming, tutorial, basics"
+                  className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
 
               {/* Video Section */}
-              <div className="border-t pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Video className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold">Video (Optional)</h3>
+              <div className="border-t border-green-100 pt-4 sm:pt-6">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">Video (Optional)</h3>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm sm:text-base font-medium text-gray-900">
                     Video URL
                   </label>
                   <Input
                     value={formData.videoUrl}
                     onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                     placeholder="https://example.com/video.mp4"
+                    className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500"
                     type="url"
                   />
-                  <p className="text-xs text-gray-500">Add a video URL for visual learning</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Add a video URL for visual learning</p>
                 </div>
               </div>
 
               {/* Quiz Section */}
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="border-t border-green-100 pt-4 sm:pt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 sm:mb-4">
                   <div className="flex items-center gap-2">
-                    <FileQuestion className="w-5 h-5 text-purple-600" />
-                    <h3 className="text-lg font-semibold">Quiz Questions</h3>
+                    <FileQuestion className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Quiz Questions</h3>
                   </div>
-                  <Button type="button" onClick={addQuestion} size="sm" variant="outline">
+                  <Button type="button" onClick={addQuestion} size="sm" className="border-green-600 bg-green-600 text-black hover:bg-green-600 text-white w-full sm:w-auto" variant="outline">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Question
                   </Button>
                 </div>
 
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm sm:text-base font-medium text-gray-900">
                     Passing Score (%)
                   </label>
                   <Input
                     type="number"
                     value={formData.passingScore}
                     onChange={(e) => setFormData({ ...formData, passingScore: parseInt(e.target.value) })}
+                    className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500"
                     min={0}
                     max={100}
                   />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {formData.quizQuestions.map((q, qIndex) => (
-                    <Card key={qIndex}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-semibold">Question {qIndex + 1}</h4>
+                    <Card key={qIndex} className="bg-white border-green-100">
+                      <CardContent className="p-3 sm:p-4 bg-white">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                          <h4 className="font-semibold text-sm sm:text-base text-gray-900">Question {qIndex + 1}</h4>
                           {formData.quizQuestions.length > 1 && (
                             <Button
                               type="button"
@@ -373,19 +379,20 @@ export default function InstructorCreateLessonPage() {
                           )}
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                           <div>
-                            <label className="text-sm font-medium text-gray-700">Question Text</label>
+                            <label className="text-sm sm:text-base font-medium text-gray-900">Question Text</label>
                             <Input
                               value={q.question}
                               onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
                               placeholder="Enter your question"
+                              className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500 mt-1"
                               required
                             />
                           </div>
 
                           <div>
-                            <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            <label className="text-sm sm:text-base font-medium text-gray-900 mb-2 block">
                               Options (Select correct answer)
                             </label>
                             <div className="space-y-2">
@@ -396,28 +403,29 @@ export default function InstructorCreateLessonPage() {
                                     name={`correct-${qIndex}`}
                                     checked={q.correctAnswer === oIndex}
                                     onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)}
-                                    className="w-4 h-4 text-green-600"
+                                    className="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
                                   />
                                   <Input
                                     value={option}
                                     onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
                                     placeholder={`Option ${oIndex + 1}`}
+                                    className="bg-white text-gray-900 text-sm sm:text-base border-green-200 focus:border-green-500 focus:ring-green-500"
                                     required
                                   />
                                 </div>
                               ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Select the correct answer</p>
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1">Select the correct answer</p>
                           </div>
 
                           <div>
-                            <label className="text-sm font-medium text-gray-700">Explanation (Optional)</label>
+                            <label className="text-sm sm:text-base font-medium text-gray-900">Explanation (Optional)</label>
                             <textarea
                               value={q.explanation}
                               onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
                               placeholder="Explain why this is the correct answer"
                               rows={2}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 bg-white text-gray-900 text-sm sm:text-base border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 mt-1"
                             />
                           </div>
                         </div>
@@ -427,11 +435,11 @@ export default function InstructorCreateLessonPage() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white w-full sm:flex-1"
                 >
                   {loading ? (
                     <>
@@ -448,6 +456,7 @@ export default function InstructorCreateLessonPage() {
                 <Button
                   type="button"
                   variant="outline"
+                  className="border-green-600 bg-white text-green-600 hover:bg-white hover:text-black w-full sm:flex-1"
                   onClick={() => router.push('/instructor')}
                 >
                   Cancel

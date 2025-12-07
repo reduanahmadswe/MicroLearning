@@ -127,12 +127,12 @@ export default function InstructorDashboard() {
           {statsCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
+              <Card key={index} className="hover:shadow-lg transition-shadow bg-white border border-gray-100">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                      <p className="text-3xl font-bold">{stat.value}</p>
+                      <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
                     </div>
                     <div className={`${stat.bgColor} p-3 rounded-lg`}>
                       <Icon className={`w-6 h-6 ${stat.color}`} />
@@ -148,36 +148,36 @@ export default function InstructorDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card 
             onClick={() => setShowCourseModal(true)}
-            className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500"
+            className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500 bg-white"
           >
             <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
               <div className="bg-blue-50 p-4 rounded-full mb-3">
                 <Plus className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-lg mb-1">Create Lesson</h3>
+              <h3 className="font-semibold text-lg mb-1 text-black">Create Lesson</h3>
               <p className="text-sm text-gray-600">Create a new micro-lesson</p>
             </CardContent>
           </Card>
 
           <Link href="/instructor/courses/create">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500 bg-white">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
                 <div className="bg-green-50 p-4 rounded-full mb-3">
                   <Video className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">Create Course</h3>
+                <h3 className="font-semibold text-lg mb-1 text-black">Create Course</h3>
                 <p className="text-sm text-gray-600">Build a complete course</p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/instructor/quizzes/create">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-500">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-500 bg-white">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
                 <div className="bg-purple-50 p-4 rounded-full mb-3">
                   <FileQuestion className="w-8 h-8 text-purple-600" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">Create Quiz</h3>
+                <h3 className="font-semibold text-lg mb-1 text-black">Create Quiz</h3>
                 <p className="text-sm text-gray-600">Design interactive quizzes</p>
               </CardContent>
             </Card>
@@ -185,12 +185,12 @@ export default function InstructorDashboard() {
         </div>
 
         {/* Recent Lessons */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-white border border-gray-100">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">Recent Lessons</CardTitle>
+              <CardTitle className="text-xl text-gray-900">Recent Lessons</CardTitle>
               <Link href="/instructor/lessons">
-                <Button variant="outline" size="sm">
+                <Button className="bg-green-600 hover:bg-green-700 text-white" size="sm">
                   View All
                 </Button>
               </Link>
@@ -215,10 +215,10 @@ export default function InstructorDashboard() {
                 {lessons.slice(0, 5).map((lesson: any) => (
                   <div
                     key={lesson._id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-green-100 rounded-lg hover:bg-green-50 transition-colors"
                   >
                     <div className="flex-1">
-                      <h4 className="font-semibold text-lg mb-1">{lesson.title}</h4>
+                      <h4 className="font-semibold text-lg mb-1 text-gray-900">{lesson.title}</h4>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <span className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
@@ -248,12 +248,12 @@ export default function InstructorDashboard() {
         </Card>
 
         {/* Recent Courses */}
-        <Card>
+        <Card className="bg-white border border-gray-100">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">Recent Courses</CardTitle>
+              <CardTitle className="text-xl text-gray-900">Recent Courses</CardTitle>
               <Link href="/instructor/courses">
-                <Button variant="outline" size="sm">
+                <Button className="bg-green-600 hover:bg-green-700 text-white" size="sm">
                   View All
                 </Button>
               </Link>
@@ -274,9 +274,9 @@ export default function InstructorDashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {courses.slice(0, 6).map((course: any) => (
-                  <Card key={course._id} className="hover:shadow-lg transition-shadow">
+                  <Card key={course._id} className="hover:shadow-lg transition-shadow bg-white border border-green-100">
                     <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2">{course.title}</h4>
+                      <h4 className="font-semibold mb-2 text-gray-900">{course.title}</h4>
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                         {course.description}
                       </p>
@@ -301,11 +301,11 @@ export default function InstructorDashboard() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+              <div className="bg-gradient-to-r from-green-600 to-teal-600 p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold mb-1">Create New Lesson</h2>
-                    <p className="text-blue-100 text-sm">Select a course to add this lesson to</p>
+                    <p className="text-green-100 text-sm">Select a course to add this lesson to</p>
                   </div>
                   <button
                     onClick={() => {
@@ -353,8 +353,8 @@ export default function InstructorDashboard() {
                           onClick={() => setSelectedCourse(course)}
                           className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
                             selectedCourse?._id === course._id
-                              ? 'border-blue-500 bg-blue-50 shadow-md'
-                              : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+                              ? 'border-green-500 bg-green-50 shadow-md'
+                              : 'border-gray-200 hover:border-green-300 hover:shadow-sm'
                           }`}
                         >
                           <div className="flex items-start justify-between">
@@ -362,7 +362,7 @@ export default function InstructorDashboard() {
                               <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
                                 {course.title}
                                 {selectedCourse?._id === course._id && (
-                                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                                  <CheckCircle className="w-5 h-5 text-green-600" />
                                 )}
                               </h4>
                               <p className="text-sm text-gray-600 mb-2 line-clamp-2">
@@ -392,19 +392,19 @@ export default function InstructorDashboard() {
                       onClick={() => setSelectedCourse({ _id: 'standalone', title: 'Standalone Lesson' })}
                       className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
                         selectedCourse?._id === 'standalone'
-                          ? 'border-purple-500 bg-purple-50 shadow-md'
-                          : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
+                          ? 'border-green-500 bg-green-50 shadow-md'
+                          : 'border-gray-200 hover:border-green-300 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <BookOpen className="w-5 h-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <BookOpen className="w-5 h-5 text-green-600" />
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900 flex items-center gap-2">
                             Create Standalone Lesson
                             {selectedCourse?._id === 'standalone' && (
-                              <CheckCircle className="w-5 h-5 text-purple-600" />
+                              <CheckCircle className="w-5 h-5 text-green-600" />
                             )}
                           </h4>
                           <p className="text-sm text-gray-600">
@@ -427,7 +427,7 @@ export default function InstructorDashboard() {
                         setShowCourseModal(false);
                         setSelectedCourse(null);
                       }}
-                      className="flex-1"
+                      className="flex-1 bg-white text-black border-green-600 hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
                       Cancel
                     </Button>
@@ -445,7 +445,7 @@ export default function InstructorDashboard() {
                         }
                       }}
                       disabled={!selectedCourse}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg disabled:opacity-50"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:shadow-lg disabled:opacity-50"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Continue to Create Lesson

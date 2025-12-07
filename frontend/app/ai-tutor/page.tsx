@@ -405,7 +405,7 @@ export default function AITutorPage() {
             <div className="flex gap-0 lg:gap-6 h-full px-0 lg:px-4 lg:py-6">
               {/* Left Sidebar - Chat History (Desktop Only) */}
               <div className="hidden lg:block w-80 flex-shrink-0 h-full">
-                <Card className="h-full flex flex-col border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+                <Card className="h-full flex flex-col border border-green-100 shadow-xl bg-white/90 backdrop-blur-sm">
                   <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-green-50 to-teal-50 flex-shrink-0 p-4">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
@@ -443,7 +443,7 @@ export default function AITutorPage() {
                             className={`group relative p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
                               sessionId === session._id
                                 ? 'bg-green-50 border-green-300 shadow-sm'
-                                : 'bg-white border-gray-200 hover:border-green-200'
+                                : 'bg-white border-green-100 hover:border-green-200'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
@@ -482,7 +482,7 @@ export default function AITutorPage() {
 
               {/* Main Chat Area */}
               <div className="flex-1 flex flex-col h-full">
-                <Card className="h-full flex flex-col border-0 lg:border shadow-none lg:shadow-xl bg-white lg:bg-white/90 lg:backdrop-blur-sm rounded-none lg:rounded-2xl">
+                <Card className="h-full flex flex-col border-0 lg:border lg:border-green-100 shadow-none lg:shadow-xl bg-white lg:bg-white/90 lg:backdrop-blur-sm rounded-none lg:rounded-2xl">
                   {/* Desktop Header */}
                   <CardHeader className="hidden lg:block border-b border-gray-100 bg-gradient-to-br from-green-50 to-teal-50 flex-shrink-0 p-4 lg:p-6 rounded-t-2xl">
                     <div className="flex items-center justify-between">
@@ -626,7 +626,7 @@ export default function AITutorPage() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Ask me anything..."
-                        className="flex-1 border-gray-200 focus:border-green-300 focus:ring-green-500 text-sm sm:text-base"
+                        className="flex-1 bg-white text-gray-900 border-gray-200 focus:border-green-300 focus:ring-green-500 text-sm sm:text-base"
                         disabled={loading}
                       />
                       <Button

@@ -2,10 +2,14 @@ import { z } from 'zod';
 
 export const generateRoadmapSchema = z.object({
   body: z.object({
-    goal: z.string().min(5).max(500),
-    currentLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
-    timeCommitment: z.number().min(1).max(168).optional(),
-    targetDuration: z.number().min(1).max(260).optional(),
+    goal: z.string().min(3, 'Goal must be at least 3 characters').max(500, 'Goal must be less than 500 characters'),
+    currentLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert'], {
+      errorMap: () => ({ message: 'Current level must be one of: beginner, intermediate, advanced, expert' })
+    }).optional().default('intermediate'),
+    timeCommitment: z.number({
+      invalid_type_error: 'Time commitment must be a number',
+    }).min(1, 'Time commitment must be at least 1 hour').max(168, 'Time commitment cannot exceed 168 hours').optional().default(10),
+    targetDuration: z.number().min(1).max(260).optional().default(12),
     existingSkills: z.array(z.string()).optional(),
     learningStyle: z.enum(['visual', 'auditory', 'reading', 'kinesthetic', 'mixed']).optional(),
     preferences: z.object({

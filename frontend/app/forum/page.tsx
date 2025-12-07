@@ -378,7 +378,7 @@ export default function ForumPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3 lg:gap-4 mb-3 sm:mb-6">
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
             <CardContent className="p-2 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex-1 min-w-0">
@@ -392,7 +392,7 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
             <CardContent className="p-2 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex-1 min-w-0">
@@ -408,7 +408,7 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
             <CardContent className="p-2 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex-1 min-w-0">
@@ -424,7 +424,7 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
             <CardContent className="p-2 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex-1 min-w-0">
@@ -445,7 +445,7 @@ export default function ForumPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-2 sm:space-y-6">
             {/* Search & Filters */}
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg bg-white">
               <CardContent className="p-2 sm:p-4 lg:p-6">
                 <div className="space-y-2 sm:space-y-3">
                   {/* Search */}
@@ -510,7 +510,7 @@ export default function ForumPage() {
             </Card>
             {/* Posts List */}
             {loading ? (
-              <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white">
                 <CardContent className="p-8 sm:p-12 lg:p-16">
                   <div className="flex flex-col justify-center items-center">
                     <div className="relative">
@@ -522,7 +522,7 @@ export default function ForumPage() {
                 </CardContent>
               </Card>
             ) : posts.length === 0 ? (
-              <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white">
                 <CardContent className="p-8 sm:p-12 text-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
@@ -550,7 +550,7 @@ export default function ForumPage() {
                   return (
                     <Card
                       key={post._id}
-                      className="border-0 shadow-md hover:shadow-xl transition-all cursor-pointer group"
+                      className="border-0 shadow-md hover:shadow-xl transition-all cursor-pointer group bg-white"
                     >
                       <CardContent className="p-3 sm:p-4 lg:p-6">
                         <div className="flex gap-2 sm:gap-3 lg:gap-4">
@@ -702,7 +702,7 @@ export default function ForumPage() {
           {/* Sidebar */}
           <div className="space-y-2 sm:space-y-6">
             {/* Trending Topics */}
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100 p-2.5 sm:p-4 lg:p-6">
                 <CardTitle className="text-sm sm:text-lg flex items-center gap-1.5 sm:gap-2 text-gray-900">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
@@ -778,7 +778,7 @@ export default function ForumPage() {
             </Card>
 
             {/* Quick Guide */}
-            <Card className="border-0 shadow-lg hidden lg:block">
+            <Card className="border-0 shadow-lg bg-white hidden lg:block">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100">
                 <CardTitle className="text-base flex items-center gap-2 text-gray-900">
                   <Award className="w-5 h-5 text-green-600" />

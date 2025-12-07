@@ -409,20 +409,23 @@ class LessonService {
 
     console.log('User XP updated:', { oldXP: updatedUser.xp - xpAmount, newXP: updatedUser.xp });
 
-    // Update user progress
-    const progress = await UserProgress.findOneAndUpdate(
-      { user: userId },
+    // Create or update individual lesson progress entry
+    const lessonProgress = await UserProgress.findOneAndUpdate(
+      { 
+        user: userId,
+        lesson: lessonId 
+      },
       {
-        $inc: { 
-          totalXP: xpAmount,
-          lessonsCompleted: 1 
-        },
-        $addToSet: { completedLessons: lessonId }
+        status: 'completed',
+        progress: 100,
+        completedAt: new Date(),
+        lastAccessed: new Date(),
       },
       { upsert: true, new: true }
     );
 
-    console.log('Progress updated:', progress);
+    console.log('Lesson progress updated:', lessonProgress);
+
     console.log('📚 Lesson.course exists?', !!lesson.course);
     console.log('📚 Lesson.course value:', lesson.course);
 

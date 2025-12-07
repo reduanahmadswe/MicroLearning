@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   Users,
@@ -23,6 +24,9 @@ import {
   MessageSquare,
   PlayCircle,
   FileText,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -72,10 +76,15 @@ interface Analytics {
 }
 
 export default function InstructorAnalyticsPage() {
+  const router = useRouter();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [selectedMetric, setSelectedMetric] = useState<'enrollments' | 'revenue' | 'completion'>('enrollments');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const coursesPerPage = 5;
 
   useEffect(() => {
     fetchAnalytics();
@@ -297,7 +306,7 @@ export default function InstructorAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading analytics...</p>
@@ -308,9 +317,9 @@ export default function InstructorAnalyticsPage() {
 
   if (!analytics || !analytics.overview) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center px-3">
         <div className="text-center">
-          <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <BarChart3 className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No analytics data available</h3>
           <p className="text-gray-600">Start creating courses to see your analytics</p>
         </div>
@@ -318,27 +327,141 @@ export default function InstructorAnalyticsPage() {
     );
   }
 
+  // Pagination calculations
+  const totalPages = Math.ceil(analytics.courses.length / coursesPerPage);
+  const startIndex = (currentPage - 1) * coursesPerPage;
+  const endIndex = startIndex + coursesPerPage;
+  const paginatedCourses = analytics.courses.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const showEllipsisStart = currentPage > 3;
+    const showEllipsisEnd = currentPage < totalPages - 2;
+
+    // First page
+    pages.push(
+      <button
+        key={1}
+        onClick={() => goToPage(1)}
+        className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+          currentPage === 1
+            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+            : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+        }`}
+      >
+        1
+      </button>
+    );
+
+    // Ellipsis after first page
+    if (showEllipsisStart) {
+      pages.push(<span key="ellipsis-start" className="px-2 text-gray-400">...</span>);
+    }
+
+    // Pages around current
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => goToPage(i)}
+          className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+            currentPage === i
+              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Ellipsis before last page
+    if (showEllipsisEnd) {
+      pages.push(<span key="ellipsis-end" className="px-2 text-gray-400">...</span>);
+    }
+
+    // Last page
+    if (totalPages > 1) {
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => goToPage(totalPages)}
+          className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+            currentPage === totalPages
+              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+          }`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+        <button
+          onClick={() => goToPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="flex items-center gap-1 px-3 py-2 sm:px-4 text-xs sm:text-sm bg-white text-gray-700 rounded-lg hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-green-100"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Previous</span>
+        </button>
+        
+        {pages}
+        
+        <button
+          onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="flex items-center gap-1 px-3 py-2 sm:px-4 text-xs sm:text-sm bg-white text-gray-700 rounded-lg hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-green-100"
+        >
+          <span className="hidden sm:inline">Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <button
+            onClick={() => router.push('/instructor/dashboard')}
+            className="flex items-center gap-2 text-gray-600 hover:text-green-600 mb-4 text-sm sm:text-base transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Back to Dashboard</span>
+          </button>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-white" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                Instructor Analytics
+                <span className="text-xl sm:text-3xl">Instructor Analytics</span>
               </h1>
-              <p className="text-gray-600 mt-2">Track your teaching performance and student engagement</p>
+              <p className="text-gray-600 mt-2 text-xs sm:text-sm lg:text-base">Track your teaching performance and student engagement</p>
             </div>
-            <div className="flex items-center gap-3">
+            
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Time Range Filter */}
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as any)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="px-3 py-2 sm:px-4 text-xs sm:text-sm border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
@@ -347,119 +470,119 @@ export default function InstructorAnalyticsPage() {
               </select>
               <button
                 onClick={exportAnalyticsToExcel}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all"
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all text-xs sm:text-sm"
               >
-                <Download className="w-4 h-4" />
-                Export
+                <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Export</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-green-100 shadow-sm hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
               {getChangeIndicator(12)}
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">{analytics.overview.totalStudents}</h3>
-            <p className="text-sm text-gray-600">Total Students</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{analytics.overview.totalStudents}</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Total Students</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-purple-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-teal-100 shadow-sm hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               {getChangeIndicator(8)}
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">{analytics.overview.totalCourses}</h3>
-            <p className="text-sm text-gray-600">Total Courses</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{analytics.overview.totalCourses}</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Total Courses</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-emerald-100 shadow-sm hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
               {getChangeIndicator(15)}
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 truncate">
               {formatCurrency(analytics.overview.totalRevenue)}
             </h3>
-            <p className="text-sm text-gray-600">Total Revenue</p>
+            <p className="text-xs sm:text-sm text-gray-600">Total Revenue</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-orange-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-green-100 shadow-sm hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
               {getChangeIndicator(5)}
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">{analytics.overview.avgProgress}%</h3>
-            <p className="text-sm text-gray-600">Avg Progress</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{analytics.overview.avgProgress}%</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Avg Progress</p>
           </div>
         </div>
 
         {/* Key Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 border border-green-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Activity className="w-5 h-5 text-green-600" />
-              <p className="text-sm font-semibold text-gray-700">Active Students</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-4 sm:p-6 border-2 border-green-200">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700">Active Students</p>
             </div>
-            <p className="text-3xl font-bold text-green-600">{analytics.overview.activeStudents}</p>
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{analytics.overview.activeStudents}</p>
+            <p className="text-xs text-gray-600 mt-1 sm:mt-2">
               {Math.round((analytics.overview.activeStudents / analytics.overview.totalStudents) * 100)}% of total
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Target className="w-5 h-5 text-blue-600" />
-              <p className="text-sm font-semibold text-gray-700">Completion Rate</p>
+          <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl p-4 sm:p-6 border-2 border-teal-200">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700">Completion Rate</p>
             </div>
-            <p className="text-3xl font-bold text-blue-600">{analytics.overview.completionRate}%</p>
-            <p className="text-xs text-gray-600 mt-2">Students completing courses</p>
+            <p className="text-2xl sm:text-3xl font-bold text-teal-600">{analytics.overview.completionRate}%</p>
+            <p className="text-xs text-gray-600 mt-1 sm:mt-2">Students completing courses</p>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Zap className="w-5 h-5 text-purple-600" />
-              <p className="text-sm font-semibold text-gray-700">Total Enrollments</p>
+          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 sm:p-6 border-2 border-emerald-200">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700">Total Enrollments</p>
             </div>
-            <p className="text-3xl font-bold text-purple-600">{analytics.overview.totalEnrollments}</p>
-            <p className="text-xs text-gray-600 mt-2">Across all courses</p>
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{analytics.overview.totalEnrollments}</p>
+            <p className="text-xs text-gray-600 mt-1 sm:mt-2">Across all courses</p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Calendar className="w-5 h-5 text-orange-600" />
-              <p className="text-sm font-semibold text-gray-700">Recent Enrollments</p>
+          <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-4 sm:p-6 border-2 border-green-200">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700">Recent Enrollments</p>
             </div>
-            <p className="text-3xl font-bold text-orange-600">{analytics.overview.recentEnrollments}</p>
-            <p className="text-xs text-gray-600 mt-2">In last {timeRange === '7d' ? '7 days' : timeRange === '30d' ? '30 days' : '90 days'}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{analytics.overview.recentEnrollments}</p>
+            <p className="text-xs text-gray-600 mt-1 sm:mt-2">In last {timeRange === '7d' ? '7 days' : timeRange === '30d' ? '30 days' : '90 days'}</p>
           </div>
         </div>
 
         {/* Student Engagement Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-600" />
-              Student Engagement
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-green-100 shadow-sm">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <span className="text-sm sm:text-lg">Student Engagement</span>
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Active</span>
-                  <span className="text-sm font-bold text-green-600">{analytics.studentEngagement.active}</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Active</span>
+                  <span className="text-xs sm:text-sm font-bold text-green-600">{analytics.studentEngagement.active}</span>
                 </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 rounded-full transition-all"
                     style={{
@@ -477,12 +600,12 @@ export default function InstructorAnalyticsPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Moderately Active</span>
-                  <span className="text-sm font-bold text-yellow-600">{analytics.studentEngagement.moderatelyActive}</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Moderately Active</span>
+                  <span className="text-xs sm:text-sm font-bold text-teal-600">{analytics.studentEngagement.moderatelyActive}</span>
                 </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-yellow-500 rounded-full transition-all"
+                    className="h-full bg-teal-500 rounded-full transition-all"
                     style={{
                       width: `${
                         (analytics.studentEngagement.moderatelyActive /
@@ -498,10 +621,10 @@ export default function InstructorAnalyticsPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Inactive</span>
-                  <span className="text-sm font-bold text-red-600">{analytics.studentEngagement.inactive}</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Inactive</span>
+                  <span className="text-xs sm:text-sm font-bold text-red-600">{analytics.studentEngagement.inactive}</span>
                 </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-red-500 rounded-full transition-all"
                     style={{
@@ -520,27 +643,27 @@ export default function InstructorAnalyticsPage() {
           </div>
 
           {/* Top Performing Courses */}
-          <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-600" />
-              Top Performing Courses
+          <div className="lg:col-span-2 bg-white rounded-xl p-4 sm:p-6 border-2 border-green-100 shadow-sm">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <span className="text-sm sm:text-lg">Top Performing Courses</span>
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {analytics.topPerformingCourses.map((course, index) => (
-                <div key={course._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                    index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                    index === 1 ? 'bg-gray-200 text-gray-700' :
-                    'bg-orange-100 text-orange-700'
+                <div key={course._id} className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
+                    index === 0 ? 'bg-green-100 text-green-700' :
+                    index === 1 ? 'bg-teal-100 text-teal-700' :
+                    'bg-emerald-100 text-emerald-700'
                   }`}>
                     #{index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{course.title}</p>
-                    <p className="text-sm text-gray-600">{course.metric} enrollments</p>
+                    <p className="font-semibold text-gray-900 truncate text-xs sm:text-sm lg:text-base">{course.title}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">{course.metric} enrollments</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 fill-green-500" />
                   </div>
                 </div>
               ))}
@@ -549,16 +672,85 @@ export default function InstructorAnalyticsPage() {
         </div>
 
         {/* Course Performance Table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-purple-600" />
-              Course Performance
-            </h3>
+        <div className="bg-white rounded-xl border-2 border-green-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
+          <div className="p-4 sm:p-6 border-b-2 border-green-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                <span className="text-sm sm:text-lg">Course Performance</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600">
+                Showing {startIndex + 1}-{Math.min(endIndex, analytics.courses.length)} of {analytics.courses.length}
+              </p>
+            </div>
           </div>
-          <div className="overflow-x-auto">
+          
+          {/* Mobile Card View */}
+          <div className="block lg:hidden">
+            {paginatedCourses.map((course) => (
+              <div key={course._id} className="p-4 border-b-2 border-green-50 hover:bg-green-50 transition-colors">
+                <div className="mb-3">
+                  <p className="font-semibold text-gray-900 text-sm mb-1">{course.title}</p>
+                  <p className="text-xs text-gray-600">
+                    {course.totalLessons} lessons · {course.totalQuizzes} quizzes
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-green-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Students</p>
+                    <p className="flex items-center gap-1 text-sm font-bold text-green-600">
+                      <Users className="w-3 h-3" />
+                      {course.enrolledCount}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-teal-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Active</p>
+                    <p className="flex items-center gap-1 text-sm font-bold text-teal-600">
+                      <Activity className="w-3 h-3" />
+                      {course.activeStudents}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-emerald-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Completion</p>
+                    <p className={`text-sm font-bold ${
+                      course.completionRate >= 70 ? 'text-green-600' :
+                      course.completionRate >= 50 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {course.completionRate}%
+                    </p>
+                  </div>
+                  
+                  <div className="bg-green-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Avg Progress</p>
+                    <p className="text-sm font-bold text-green-600">{course.avgProgress}%</p>
+                  </div>
+                  
+                  <div className="bg-teal-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Rating</p>
+                    <p className="flex items-center gap-1 text-sm font-bold text-teal-600">
+                      <Star className="w-3 h-3 fill-teal-600" />
+                      {course.avgRating}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-emerald-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600 mb-1">Revenue</p>
+                    <p className="text-sm font-bold text-emerald-600 truncate">
+                      {formatCurrency(course.totalRevenue)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-green-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Course
@@ -583,9 +775,9 @@ export default function InstructorAnalyticsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {analytics.courses.map((course) => (
-                  <tr key={course._id} className="hover:bg-gray-50 transition-colors">
+              <tbody className="divide-y divide-green-100">
+                {paginatedCourses.map((course) => (
+                  <tr key={course._id} className="hover:bg-green-50 transition-colors">
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-semibold text-gray-900">{course.title}</p>
@@ -595,7 +787,7 @@ export default function InstructorAnalyticsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
                         <Users className="w-4 h-4" />
                         {course.enrolledCount}
                       </span>
@@ -624,7 +816,7 @@ export default function InstructorAnalyticsPage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <Star className="w-4 h-4 text-green-500 fill-green-500" />
                         <span className="text-sm font-semibold text-gray-900">{course.avgRating}</span>
                       </div>
                     </td>
@@ -644,27 +836,30 @@ export default function InstructorAnalyticsPage() {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination */}
+          {renderPagination()}
         </div>
 
         {/* Enrollment Trend Chart */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-green-600" />
-            Enrollment Trend
+        <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-green-100 shadow-sm">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            <span className="text-sm sm:text-lg">Enrollment Trend</span>
           </h3>
-          <div className="flex items-end justify-between gap-2 h-64">
+          <div className="flex items-end justify-between gap-1 sm:gap-2 h-48 sm:h-64">
             {analytics.enrollmentTrend.map((item, index) => {
               const maxEnrollment = Math.max(...analytics.enrollmentTrend.map((i) => i.enrollments));
               const height = (item.enrollments / maxEnrollment) * 100;
               return (
-                <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                <div key={index} className="flex-1 flex flex-col items-center gap-1 sm:gap-2">
                   <span className="text-xs font-semibold text-gray-700">{item.enrollments}</span>
                   <div
                     className="w-full bg-gradient-to-t from-green-500 to-teal-400 rounded-t-lg hover:opacity-80 transition-opacity cursor-pointer"
                     style={{ height: `${height}%` }}
                     title={`${item.month}: ${item.enrollments} enrollments`}
                   ></div>
-                  <span className="text-sm font-medium text-gray-600">{item.month}</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">{item.month}</span>
                 </div>
               );
             })}

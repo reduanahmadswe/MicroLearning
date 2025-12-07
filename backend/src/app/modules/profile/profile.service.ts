@@ -221,6 +221,60 @@ class ProfileService {
 
     return users;
   }
+
+  // Change password
+  async changePassword(
+    userId: string,
+    data: { currentPassword: string; newPassword: string }
+  ): Promise<void> {
+    const user = await User.findById(userId).select('+password');
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(data.currentPassword);
+    if (!isPasswordValid) {
+      throw new ApiError(401, 'Current password is incorrect');
+    }
+
+    // Update password
+    user.password = data.newPassword;
+    await user.save();
+  }
+
+  // Update email
+  async updateEmail(
+    userId: string,
+    data: { email: string; password: string }
+  ): Promise<IUserProfileResponse> {
+    const user = await User.findById(userId).select('+password');
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(data.password);
+    if (!isPasswordValid) {
+      throw new ApiError(401, 'Password is incorrect');
+    }
+
+    // Check if new email is already in use
+    const existingUser = await User.findOne({ email: data.email });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      throw new ApiError(409, 'Email is already in use');
+    }
+
+    // Update email
+    user.email = data.email;
+    await user.save();
+
+    const updatedUser = await User.findById(userId).select('-password -refreshToken');
+    const userObj = updatedUser!.toObject();
+    return { ...userObj, _id: userObj._id.toString() } as unknown as IUserProfileResponse;
+  }
 }
 
 export default new ProfileService();

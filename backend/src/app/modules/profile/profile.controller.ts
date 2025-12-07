@@ -97,6 +97,31 @@ class ProfileController {
       data: result,
     });
   });
+
+  // Change password
+  changePassword = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    await profileService.changePassword(userId, req.body);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Password changed successfully',
+    });
+  });
+
+  // Update email
+  updateEmail = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await profileService.updateEmail(userId, req.body);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Email updated successfully',
+      data: result,
+    });
+  });
 }
 
 export default new ProfileController();

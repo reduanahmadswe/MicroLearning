@@ -261,48 +261,48 @@ export default function CreateQuizPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-green-50 px-3 py-2 rounded-lg mb-4 transition-all text-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Back to Quizzes
           </button>
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl">
-              <Sparkles className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl shadow-lg">
+              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Quiz</h1>
-              <p className="text-gray-600 mt-1">Build engaging quizzes for your students</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Create New Quiz</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Build engaging quizzes for your students</p>
             </div>
           </div>
         </div>
 
         {/* Quiz Type Selection */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-purple-100 mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-100 mb-4 sm:mb-6">
+          <label className="block text-sm sm:text-base font-semibold text-gray-900 mb-3">
             Quiz Type
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setQuizType('course')}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
                 quizType === 'course'
-                  ? 'border-purple-500 bg-purple-50 shadow-md'
-                  : 'border-gray-200 hover:border-purple-300'
+                  ? 'border-green-500 bg-green-50 shadow-md'
+                  : 'border-gray-200 hover:border-green-300'
               }`}
             >
-              <div className="flex items-start gap-3">
-                <Award className={`w-6 h-6 mt-1 ${quizType === 'course' ? 'text-purple-600' : 'text-gray-400'}`} />
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Award className={`w-5 h-5 sm:w-6 sm:h-6 mt-1 flex-shrink-0 ${quizType === 'course' ? 'text-green-600' : 'text-gray-400'}`} />
                 <div className="text-left">
-                  <h3 className="font-semibold text-gray-900 mb-1">Course-Level Quiz (Quiz Arena)</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1">Course-Level Quiz (Quiz Arena)</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Create a quiz for the entire course. Students can access it from Quiz Arena.
                   </p>
                 </div>
@@ -312,17 +312,17 @@ export default function CreateQuizPage() {
             <button
               type="button"
               onClick={() => setQuizType('lesson')}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
                 quizType === 'lesson'
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300'
+                  ? 'border-green-500 bg-green-50 shadow-md'
+                  : 'border-gray-200 hover:border-green-300'
               }`}
             >
-              <div className="flex items-start gap-3">
-                <BookOpen className={`w-6 h-6 mt-1 ${quizType === 'lesson' ? 'text-blue-600' : 'text-gray-400'}`} />
+              <div className="flex items-start gap-2 sm:gap-3">
+                <BookOpen className={`w-5 h-5 sm:w-6 sm:h-6 mt-1 flex-shrink-0 ${quizType === 'lesson' ? 'text-green-600' : 'text-gray-400'}`} />
                 <div className="text-left">
-                  <h3 className="font-semibold text-gray-900 mb-1">Lesson-Based Quiz</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1">Lesson-Based Quiz</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Create a quiz tied to a specific lesson. Students take it after the lesson.
                   </p>
                 </div>
@@ -332,48 +332,48 @@ export default function CreateQuizPage() {
         </div>
 
         {/* Basic Info */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-100 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                 Quiz Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 placeholder="e.g., JavaScript Basics Quiz"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 placeholder="Brief description of the quiz..."
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                   Course <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.course}
                   onChange={e => setFormData({ ...formData, course: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 >
                   <option value="">Select a course</option>
                   {courses.map(course => (
@@ -386,14 +386,14 @@ export default function CreateQuizPage() {
 
               {quizType === 'lesson' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                     Lesson <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.lesson}
                     onChange={e => setFormData({ ...formData, lesson: e.target.value })}
                     disabled={!formData.course || loadingLessons}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="">
                       {loadingLessons ? 'Loading lessons...' : 'Select a lesson'}
@@ -408,10 +408,10 @@ export default function CreateQuizPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                  <Target className="w-4 h-4" />
+                <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2 flex items-center gap-1">
+                  <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                   Passing Score (%)
                 </label>
                 <input
@@ -420,13 +420,13 @@ export default function CreateQuizPage() {
                   max="100"
                   value={formData.passingScore}
                   onChange={e => setFormData({ ...formData, passingScore: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
+                <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2 flex items-center gap-1">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                   Time Limit (minutes)
                 </label>
                 <input
@@ -434,19 +434,19 @@ export default function CreateQuizPage() {
                   min="0"
                   value={formData.timeLimit}
                   onChange={e => setFormData({ ...formData, timeLimit: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                   placeholder="0 = No limit"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                   Difficulty
                 </label>
                 <select
                   value={formData.difficulty}
                   onChange={e => setFormData({ ...formData, difficulty: e.target.value as any })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 >
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
@@ -458,87 +458,87 @@ export default function CreateQuizPage() {
         </div>
 
         {/* Questions */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-100 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               Questions ({questions.length})
             </h2>
             <button
               onClick={addQuestion}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               Add Question
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {questions.map((question, qIndex) => (
-              <div key={question.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900">Question {qIndex + 1}</h3>
+              <div key={question.id} className="border-2 border-green-100 rounded-lg p-4 sm:p-6 bg-green-50/30">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900">Question {qIndex + 1}</h3>
                   {questions.length > 1 && (
                     <button
                       onClick={() => removeQuestion(question.id)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   )}
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                       Question Text <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={question.question}
                       onChange={e => updateQuestion(question.id, 'question', e.target.value)}
                       rows={2}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                       placeholder="Enter your question..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                       Options <span className="text-red-500">*</span>
                     </label>
                     <div className="space-y-2">
                       {question.options.map((option, optIndex) => (
-                        <div key={optIndex} className="flex items-center gap-3">
+                        <div key={optIndex} className="flex items-center gap-2 sm:gap-3">
                           <input
                             type="radio"
                             checked={question.correctAnswer === optIndex}
                             onChange={() => updateQuestion(question.id, 'correctAnswer', optIndex)}
-                            className="w-5 h-5 text-purple-600 focus:ring-purple-500"
+                            className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 focus:ring-green-500 flex-shrink-0"
                           />
                           <input
                             type="text"
                             value={option}
                             onChange={e => updateOption(question.id, optIndex, e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="flex-1 px-3 sm:px-4 py-2 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                             placeholder={`Option ${optIndex + 1}`}
                           />
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs sm:text-sm text-gray-600 mt-2">
                       Select the radio button for the correct answer
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm sm:text-base font-medium text-gray-900 mb-2">
                       Explanation (Optional)
                     </label>
                     <textarea
                       value={question.explanation}
                       onChange={e => updateQuestion(question.id, 'explanation', e.target.value)}
                       rows={2}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                       placeholder="Explain why this is the correct answer..."
                     />
                   </div>
@@ -549,39 +549,39 @@ export default function CreateQuizPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-          <div className="flex flex-col sm:flex-row gap-4 justify-end">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-100">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
             <button
               onClick={() => router.back()}
               disabled={loading}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border-2 border-green-200 text-gray-700 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               Cancel
             </button>
             <button
               onClick={() => handleSubmit(false)}
               disabled={loading}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
             >
-              <Save className="w-5 h-5" />
+              <Save className="w-4 h-4 sm:w-5 sm:h-5" />
               Save as Draft
             </button>
             <button
               onClick={() => handleSubmit(true)}
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
             >
-              <Award className="w-5 h-5" />
+              <Award className="w-4 h-4 sm:w-5 sm:h-5" />
               {loading ? 'Creating...' : 'Create & Publish'}
             </button>
           </div>
         </div>
 
         {/* Info Alert */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
+        <div className="mt-4 sm:mt-6 bg-green-50 border-2 border-green-200 rounded-lg p-3 sm:p-4">
+          <div className="flex gap-2 sm:gap-3">
+            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm text-green-800">
               <p className="font-semibold mb-1">
                 {quizType === 'course' ? 'Course-Level Quiz (Quiz Arena)' : 'Lesson-Based Quiz'}
               </p>

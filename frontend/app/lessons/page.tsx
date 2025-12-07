@@ -294,7 +294,7 @@ export default function LessonsPage() {
           </Button>
         </div>
         {/* Filters */}
-        <Card className="mb-4 sm:mb-6 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+        <Card className="mb-4 sm:mb-6 border-0 shadow-xl bg-white">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <form onSubmit={handleSearch} className="mb-4">
               <div className="flex gap-2">
@@ -304,7 +304,7 @@ export default function LessonsPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search lessons..."
-                    className="pl-9 sm:pl-10 rounded-xl border-green-200 focus:border-green-400 focus:ring-green-400 text-sm sm:text-base"
+                    className="pl-9 sm:pl-10 rounded-xl bg-white border-green-200 focus:border-green-400 focus:ring-green-400 text-sm sm:text-base text-gray-900"
                   />
                 </div>
                 <Button 
@@ -320,7 +320,7 @@ export default function LessonsPage() {
             <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center text-black">
                     <Filter className="w-4 h-4 text-green-600" />
                   </div>
                   <span className="text-sm font-bold text-gray-700">Difficulty:</span>
@@ -352,7 +352,7 @@ export default function LessonsPage() {
                           setSelectedDifficulty(diff);
                           setCurrentPage(1);
                         }}
-                        className={selectedDifficulty === diff ? colorMap[diff] : 'border-gray-300 hover:border-green-300 hover:bg-green-50'}
+                        className={selectedDifficulty === diff ? colorMap[diff] : 'bg-white text-gray-900 border-gray-300 hover:border-green-300 hover:bg-green-50'}
                       >
                         {diff.charAt(0).toUpperCase() + diff.slice(1)}
                       </Button>
@@ -374,7 +374,7 @@ export default function LessonsPage() {
                     setSelectedTopic(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-white"
+                  className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm text-gray-900 focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-white"
                 >
                   <option value="all">All Topics</option>
                   {topics.map((topic) => (
@@ -390,14 +390,14 @@ export default function LessonsPage() {
 
         {/* Lessons Grid */}
         {loading ? (
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
               <p className="text-gray-600 font-medium">Loading lessons...</p>
             </CardContent>
           </Card>
         ) : filteredLessons.length === 0 ? (
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+          <Card className="border-0 shadow-xl bg-white overflow-hidden">
             <div className="relative">
               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-green-100 blur-3xl"></div>
               <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-teal-100 blur-3xl"></div>
@@ -420,7 +420,7 @@ export default function LessonsPage() {
             {filteredLessons.map((lesson) => (
               <Card 
                 key={lesson._id} 
-                className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col h-full"
+                className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col h-full"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-3">
@@ -572,7 +572,7 @@ export default function LessonsPage() {
         {/* Pagination Controls */}
         {!loading && filteredLessons.length > 0 && totalPages > 1 && (
           <div className="mt-6 sm:mt-8">
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl bg-white">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   {/* Page Info */}
@@ -686,7 +686,7 @@ export default function LessonsPage() {
                   value={aiForm.topic}
                   onChange={(e) => setAiForm({ ...aiForm, topic: e.target.value })}
                   placeholder="e.g., JavaScript Promises, Photosynthesis..."
-                  className="rounded-xl border-green-200 focus:border-green-400 focus:ring-green-400"
+                  className="rounded-xl bg-white border-green-200 focus:border-green-400 focus:ring-green-400 text-gray-900"
                   disabled={aiGenerating}
                 />
               </div>

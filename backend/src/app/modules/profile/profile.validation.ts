@@ -10,15 +10,18 @@ export const updateProfileValidation = z.object({
     bio: z
       .string()
       .max(500, 'Bio cannot exceed 500 characters')
-      .optional(),
+      .optional()
+      .or(z.literal('')),
     profilePicture: z
       .string()
       .url('Invalid profile picture URL')
-      .optional(),
+      .optional()
+      .or(z.literal('')),
     phone: z
       .string()
       .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 'Invalid phone number format')
-      .optional(),
+      .optional()
+      .or(z.literal('')),
   }),
 });
 
@@ -36,5 +39,38 @@ export const updatePreferencesValidation = z.object({
       .optional(),
     language: z.string().optional(),
     learningStyle: z.enum(['visual', 'auditory', 'kinesthetic']).optional(),
+  }),
+});
+
+export const changePasswordValidation = z.object({
+  body: z.object({
+    currentPassword: z
+      .string()
+      .min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(6, 'New password must be at least 6 characters')
+      .max(100, 'New password cannot exceed 100 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      ),
+    confirmPassword: z
+      .string()
+      .min(1, 'Please confirm your new password'),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  }),
+});
+
+export const updateEmailValidation = z.object({
+  body: z.object({
+    email: z
+      .string()
+      .email('Invalid email address'),
+    password: z
+      .string()
+      .min(1, 'Password is required to change email'),
   }),
 });

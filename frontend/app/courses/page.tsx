@@ -348,7 +348,7 @@ export default function CoursesPage() {
               }>
                 {filteredCourses.map((course) => (
                   <Link key={course._id} href={`/courses/${course._id}`}>
-                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden cursor-pointer ${
+                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer ${
                       viewMode === 'grid' ? '' : 'hover:-translate-y-1'
                     } ${viewMode === 'list' ? 'flex flex-row' : ''}`}>
                       {/* Thumbnail */}
@@ -491,7 +491,7 @@ export default function CoursesPage() {
                   const course = enrollment.course;
                   return (
                     <Link key={enrollment._id} href={`/courses/${course._id}`}>
-                      <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden cursor-pointer">
+                      <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer">
                         {/* Thumbnail with Progress */}
                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100">
                           {course.thumbnail ? (

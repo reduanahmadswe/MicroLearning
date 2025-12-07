@@ -8,6 +8,13 @@ const router = Router();
 
 // ==================== Daily Challenge Routes ====================
 
+// Get today's daily challenge
+router.get(
+  '/today',
+  authGuard(),
+  dailyChallengeController.getActiveDailyChallenges
+);
+
 // Get active daily challenges
 router.get(
   '/daily',

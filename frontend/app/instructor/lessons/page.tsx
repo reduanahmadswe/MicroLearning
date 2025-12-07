@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
-import { ArrowLeft, BookOpen, Edit, Trash2, FileQuestion, Search, Filter } from 'lucide-react';
+import { ArrowLeft, BookOpen, Edit, Trash2, FileQuestion, Search, Filter, Clock, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface Lesson {
   _id: string;
@@ -33,6 +35,10 @@ export default function ManageLessonsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [quizFilter, setQuizFilter] = useState('all');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5); // Show 5 lessons per page
 
   useEffect(() => {
     fetchLessons();
@@ -41,6 +47,29 @@ export default function ManageLessonsPage() {
   useEffect(() => {
     applyFilters();
   }, [lessons, searchTerm, difficultyFilter, quizFilter]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredLessons.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLessons = filteredLessons.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, difficultyFilter, quizFilter]);
+
+  // Reset to page 1 if current page exceeds total pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredLessons.length, currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchLessons = async () => {
     try {
@@ -131,239 +160,340 @@ export default function ManageLessonsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">Loading lessons...</div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-sm sm:text-base text-gray-600">Loading lessons...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.push('/instructor')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft size={20} />
-            Back to Dashboard
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-4 sm:py-6 lg:py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 max-w-7xl">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/instructor')}
+          className="flex items-center gap-2 text-green-600 hover:text-green-700 mb-4 sm:mb-6 text-sm sm:text-base font-medium transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          Back to Dashboard
+        </button>
 
-          <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-500 text-white p-3 rounded-lg">
-                <BookOpen size={28} />
+              <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-2.5 sm:p-3 rounded-lg shadow-md">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Manage Lessons</h1>
-                <p className="text-gray-600">View and edit all your lessons across courses</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Manage Lessons</h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">View and edit all your lessons across courses</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-2xl font-bold text-blue-600">{lessons.length}</div>
-            <div className="text-sm text-gray-600">Total Lessons</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-2xl font-bold text-green-600">
-              {lessons.filter(l => l.hasQuiz).length}
-            </div>
-            <div className="text-sm text-gray-600">With Quiz</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-2xl font-bold text-red-600">
-              {lessons.filter(l => !l.hasQuiz).length}
-            </div>
-            <div className="text-sm text-gray-600">Without Quiz</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-2xl font-bold text-purple-600">
-              {[...new Set(lessons.map(l => l.course._id))].length}
-            </div>
-            <div className="text-sm text-gray-600">Courses</div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <Card className="bg-white border-green-100">
+            <CardContent className="p-3 sm:p-4 lg:p-5">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{lessons.length}</div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">Total Lessons</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-green-100">
+            <CardContent className="p-3 sm:p-4 lg:p-5">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-600">
+                {lessons.filter(l => l.hasQuiz).length}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">With Quiz</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-green-100">
+            <CardContent className="p-3 sm:p-4 lg:p-5">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">
+                {lessons.filter(l => !l.hasQuiz).length}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">Without Quiz</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-green-100">
+            <CardContent className="p-3 sm:p-4 lg:p-5">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600">
+                {[...new Set(lessons.map(l => l.course._id))].length}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">Courses</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter size={20} className="text-gray-600" />
-            <h2 className="text-lg font-semibold">Filters</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Search</label>
-              <div className="relative">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by title, topic, or course..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+        <Card className="bg-white border-green-100 mb-4 sm:mb-6">
+          <CardContent className="p-4 sm:p-5 lg:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Filters</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {/* Search */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by title, topic, or course..."
+                    className="w-full pl-9 pr-3 py-2 text-sm border-2 border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+              </div>
+
+              {/* Difficulty Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Difficulty</label>
+                <select
+                  value={difficultyFilter}
+                  onChange={(e) => setDifficultyFilter(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <option value="all">All Levels</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              {/* Quiz Filter */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Quiz Status</label>
+                <select
+                  value={quizFilter}
+                  onChange={(e) => setQuizFilter(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <option value="all">All Lessons</option>
+                  <option value="with-quiz">With Quiz</option>
+                  <option value="no-quiz">Without Quiz</option>
+                </select>
               </div>
             </div>
 
-            {/* Difficulty Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Difficulty</label>
-              <select
-                value={difficultyFilter}
-                onChange={(e) => setDifficultyFilter(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-
-            {/* Quiz Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Quiz Status</label>
-              <select
-                value={quizFilter}
-                onChange={(e) => setQuizFilter(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Lessons</option>
-                <option value="with-quiz">With Quiz</option>
-                <option value="no-quiz">Without Quiz</option>
-              </select>
-            </div>
-          </div>
-
-          {(searchTerm || difficultyFilter !== 'all' || quizFilter !== 'all') && (
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                Showing {filteredLessons.length} of {lessons.length} lessons
-              </span>
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setDifficultyFilter('all');
-                  setQuizFilter('all');
-                }}
-                className="text-sm text-blue-600 hover:text-blue-700 underline"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
-        </div>
+            {(searchTerm || difficultyFilter !== 'all' || quizFilter !== 'all') && (
+              <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs sm:text-sm text-gray-600">
+                  Showing {filteredLessons.length} of {lessons.length} lessons
+                </span>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setDifficultyFilter('all');
+                    setQuizFilter('all');
+                  }}
+                  className="text-xs sm:text-sm text-green-600 hover:text-green-700 font-medium underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Lessons List */}
-        <div className="bg-white rounded-lg shadow">
+        <Card className="bg-white border-green-100">
           {filteredLessons.length === 0 ? (
-            <div className="p-12 text-center">
-              <BookOpen size={48} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <CardContent className="p-8 sm:p-12 text-center">
+              <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 text-green-600 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                 {lessons.length === 0 ? 'No lessons yet' : 'No lessons found'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">
                 {lessons.length === 0 
                   ? 'Create your first lesson from a course' 
                   : 'Try adjusting your filters'}
               </p>
               {lessons.length === 0 && (
-                <button
+                <Button
                   onClick={() => router.push('/instructor/courses')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm sm:text-base"
                 >
                   Go to My Courses
-                </button>
+                </Button>
               )}
-            </div>
+            </CardContent>
           ) : (
-            <div className="divide-y">
-              {filteredLessons.map((lesson) => (
-                <div key={lesson._id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start gap-4">
-                    {/* Order Badge */}
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                      {lesson.order}
-                    </div>
+            <>
+              <div className="divide-y divide-gray-100">
+                {currentLessons.map((lesson) => (
+                  <div key={lesson._id} className="p-4 sm:p-5 lg:p-6 hover:bg-green-50/30 transition-colors">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                      {/* Order Badge */}
+                      <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-green-600 to-teal-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md">
+                        {lesson.order}
+                      </div>
 
-                    {/* Lesson Info */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-1">{lesson.title}</h3>
-                          <p className="text-gray-600 text-sm mb-2">{lesson.description}</p>
-                          
-                          {/* Course Badge */}
-                          <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium mb-3">
-                            📚 {lesson.course.title}
+                      {/* Lesson Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{lesson.title}</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{lesson.description}</p>
+                            
+                            {/* Course Badge */}
+                            <div className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-200 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium mb-3">
+                              📚 {lesson.course.title}
+                            </div>
+
+                            {/* Tags - Responsive Wrap */}
+                            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 sm:py-1 rounded capitalize">
+                                <Award className="w-3 h-3" />
+                                {lesson.difficulty}
+                              </span>
+                              <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-700 border border-gray-200 px-2 py-0.5 sm:py-1 rounded">
+                                <Clock className="w-3 h-3" />
+                                {lesson.estimatedTime} min
+                              </span>
+                              <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 sm:py-1 rounded">
+                                📖 {lesson.topic}
+                              </span>
+                              {lesson.hasQuiz ? (
+                                <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 sm:py-1 rounded">
+                                  <FileQuestion className="w-3 h-3" />
+                                  Has Quiz
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 sm:py-1 rounded">
+                                  <FileQuestion className="w-3 h-3" />
+                                  No Quiz
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-3 text-sm">
-                            <span className="bg-gray-100 px-2 py-1 rounded capitalize">
-                              {lesson.difficulty}
-                            </span>
-                            <span className="bg-gray-100 px-2 py-1 rounded">
-                              ⏱️ {lesson.estimatedTime} min
-                            </span>
-                            <span className="bg-gray-100 px-2 py-1 rounded">
-                              📖 {lesson.topic}
-                            </span>
-                            {lesson.hasQuiz ? (
-                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded flex items-center gap-1">
-                                <FileQuestion size={14} />
-                                Has Quiz
-                              </span>
-                            ) : (
-                              <span className="bg-red-100 text-red-700 px-2 py-1 rounded flex items-center gap-1">
-                                <FileQuestion size={14} />
-                                No Quiz
-                              </span>
+                          {/* Actions */}
+                          <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                            {!lesson.hasQuiz && (
+                              <Button
+                                onClick={() => router.push(`/instructor/courses/${lesson.course._id}/lessons/${lesson._id}/quiz/create`)}
+                                className="flex-1 sm:flex-none bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-xs sm:text-sm"
+                                size="sm"
+                              >
+                                <FileQuestion className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                                Add Quiz
+                              </Button>
                             )}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-2">
-                          {!lesson.hasQuiz && (
-                            <button
-                              onClick={() => router.push(`/instructor/courses/${lesson.course._id}/lessons/${lesson._id}/quiz/create`)}
-                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm flex items-center gap-2"
-                              title="Create Quiz"
+                            <Button
+                              onClick={() => router.push(`/instructor/lessons/${lesson._id}/edit`)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              title="Edit Lesson"
                             >
-                              <FileQuestion size={16} />
-                              Add Quiz
-                            </button>
-                          )}
-                          <button
-                            onClick={() => router.push(`/instructor/lessons/${lesson._id}/edit`)}
-                            className="text-gray-600 hover:text-blue-600 p-2"
-                            title="Edit Lesson"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLesson(lesson._id, lesson.course._id)}
-                            className="text-gray-600 hover:text-red-600 p-2"
-                            title="Delete Lesson"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                              <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteLesson(lesson._id, lesson.course._id)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Delete Lesson"
+                            >
+                              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="p-4 sm:p-5 lg:p-6 border-t border-green-100 bg-green-50/30">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    {/* Page Info */}
+                    <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                      Page {currentPage} of {totalPages} • Showing {startIndex + 1}-{Math.min(endIndex, filteredLessons.length)} of {filteredLessons.length}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        variant="outline"
+                        size="sm"
+                        className="border-2 border-green-200 text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span className="hidden sm:inline ml-1">Previous</span>
+                      </Button>
+
+                      {/* Page Numbers */}
+                      <div className="flex gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          const showPage = 
+                            page === 1 || 
+                            page === totalPages || 
+                            (page >= currentPage - 1 && page <= currentPage + 1);
+                          
+                          const showEllipsis = 
+                            (page === currentPage - 2 && currentPage > 3) ||
+                            (page === currentPage + 2 && currentPage < totalPages - 2);
+
+                          if (showEllipsis) {
+                            return (
+                              <span key={page} className="px-2 py-1 text-gray-400">
+                                ...
+                              </span>
+                            );
+                          }
+
+                          if (!showPage) return null;
+
+                          return (
+                            <Button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              className={`w-8 h-8 sm:w-9 sm:h-9 p-0 text-xs sm:text-sm ${
+                                currentPage === page
+                                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white border-0'
+                                  : 'border-2 border-green-200 text-green-700 hover:bg-green-50'
+                              }`}
+                            >
+                              {page}
+                            </Button>
+                          );
+                        })}
+                      </div>
+
+                      <Button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        variant="outline"
+                        size="sm"
+                        className="border-2 border-green-200 text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="hidden sm:inline mr-1">Next</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

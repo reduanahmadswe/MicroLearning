@@ -16,6 +16,14 @@ router.post(
 
 // Get user roadmaps
 router.get(
+  '/my-roadmaps',
+  authGuard(),
+  validateRequest(RoadmapValidation.getUserRoadmapsSchema),
+  RoadmapController.getUserRoadmaps
+);
+
+// Also support the root path for backward compatibility
+router.get(
   '/',
   authGuard(),
   validateRequest(RoadmapValidation.getUserRoadmapsSchema),

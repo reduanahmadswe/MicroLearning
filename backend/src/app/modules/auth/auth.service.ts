@@ -181,6 +181,31 @@ class AuthService {
     user.refreshToken = undefined;
     await user.save();
   }
+
+  // Get current user
+  async getMe(userId: string) {
+    const user = await User.findById(userId).select('-password -refreshToken');
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    if (!user.isActive) {
+      throw new ApiError(403, 'Your account has been deactivated');
+    }
+
+    return {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      profilePicture: user.profilePicture,
+      xp: user.xp,
+      level: user.level,
+      streak: user.streak?.current || 0,
+      isActive: user.isActive,
+    };
+  }
 }
 
 export default new AuthService();

@@ -4,6 +4,8 @@ import { validateRequest } from '../../../middleware/validateRequest';
 import {
   updateProfileValidation,
   updatePreferencesValidation,
+  changePasswordValidation,
+  updateEmailValidation,
 } from './profile.validation';
 import { authGuard } from '../../../middleware/authGuard';
 
@@ -26,6 +28,20 @@ router.put(
   authGuard(),
   validateRequest(updatePreferencesValidation),
   profileController.updateMyPreferences
+);
+
+router.put(
+  '/me/password',
+  authGuard(),
+  validateRequest(changePasswordValidation),
+  profileController.changePassword
+);
+
+router.put(
+  '/me/email',
+  authGuard(),
+  validateRequest(updateEmailValidation),
+  profileController.updateEmail
 );
 
 // Public routes

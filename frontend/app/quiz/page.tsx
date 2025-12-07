@@ -15,6 +15,8 @@ import {
   PlayCircle,
   CheckCircle2,
   AlertCircle,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,10 @@ export default function QuizListPage() {
     questionCount: 10,
   });
   const [userStats, setUserStats] = useState<any>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const quizzesPerPage = 6;
 
   const difficulties = ['beginner', 'intermediate', 'advanced'];
 
@@ -108,9 +114,114 @@ export default function QuizListPage() {
     return true;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredQuizzes.length / quizzesPerPage);
+  const startIndex = (currentPage - 1) * quizzesPerPage;
+  const endIndex = startIndex + quizzesPerPage;
+  const paginatedQuizzes = filteredQuizzes.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const showEllipsisStart = currentPage > 3;
+    const showEllipsisEnd = currentPage < totalPages - 2;
+
+    // First page
+    pages.push(
+      <button
+        key={1}
+        onClick={() => goToPage(1)}
+        className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+          currentPage === 1
+            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+            : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+        }`}
+      >
+        1
+      </button>
+    );
+
+    // Ellipsis after first page
+    if (showEllipsisStart) {
+      pages.push(<span key="ellipsis-start" className="px-2 text-gray-400">...</span>);
+    }
+
+    // Pages around current
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => goToPage(i)}
+          className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+            currentPage === i
+              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Ellipsis before last page
+    if (showEllipsisEnd) {
+      pages.push(<span key="ellipsis-end" className="px-2 text-gray-400">...</span>);
+    }
+
+    // Last page
+    if (totalPages > 1) {
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => goToPage(totalPages)}
+          className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${
+            currentPage === totalPages
+              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-green-50 border-2 border-green-100'
+          }`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+        <button
+          onClick={() => goToPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="flex items-center gap-1 px-3 py-2 sm:px-4 text-xs sm:text-sm bg-white text-gray-700 rounded-lg hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-green-100"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Previous</span>
+        </button>
+        
+        {pages}
+        
+        <button
+          onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="flex items-center gap-1 px-3 py-2 sm:px-4 text-xs sm:text-sm bg-white text-gray-700 rounded-lg hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-green-100"
+        >
+          <span className="hidden sm:inline">Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="w-full sm:w-auto">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
@@ -131,7 +242,7 @@ export default function QuizListPage() {
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow bg-white border border-green-100">
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -147,7 +258,7 @@ export default function QuizListPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow bg-white border border-green-100">
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -163,7 +274,7 @@ export default function QuizListPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow bg-white border border-green-100">
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -179,7 +290,7 @@ export default function QuizListPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-sm hover:shadow-md transition-shadow bg-white border border-green-100">
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -205,7 +316,7 @@ export default function QuizListPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search quizzes..."
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm sm:text-base"
+                className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm sm:text-base bg-white text-gray-900"
               />
             </div>
             <Button type="submit" className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white h-10 sm:h-11 text-sm sm:text-base">Search</Button>
@@ -222,7 +333,7 @@ export default function QuizListPage() {
                 size="sm"
                 onClick={() => setSelectedDifficulty('all')}
                 className={`h-8 text-xs sm:text-sm ${
-                  selectedDifficulty === 'all' ? 'bg-green-600 hover:bg-green-700' : ''
+                  selectedDifficulty === 'all' ? 'bg-green-600 hover:bg-green-700' : 'bg-white text-gray-900'
                 }`}
               >
                 All
@@ -234,7 +345,7 @@ export default function QuizListPage() {
                   size="sm"
                   onClick={() => setSelectedDifficulty(diff)}
                   className={`h-8 text-xs sm:text-sm ${
-                    selectedDifficulty === diff ? 'bg-green-600 hover:bg-green-700' : ''
+                    selectedDifficulty === diff ? 'bg-green-600 hover:bg-green-700' : 'bg-white text-gray-900'
                   }`}
                 >
                   {diff.charAt(0).toUpperCase() + diff.slice(1)}
@@ -253,7 +364,7 @@ export default function QuizListPage() {
             </div>
           </div>
         ) : filteredQuizzes.length === 0 ? (
-          <Card className="p-8 sm:p-10 lg:p-12 text-center shadow-md">
+          <Card className="p-8 sm:p-10 lg:p-12 text-center shadow-md bg-white">
             <Brain className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No quizzes found</h3>
             <p className="text-sm sm:text-base text-gray-600 mb-4">Try adjusting your filters or generate a new quiz with AI</p>
@@ -263,9 +374,16 @@ export default function QuizListPage() {
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-            {filteredQuizzes.map((quiz) => (
-              <Card key={quiz._id} className="hover:shadow-xl transition-all hover:-translate-y-1 border-gray-200 shadow-sm">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs sm:text-sm text-gray-600">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredQuizzes.length)} of {filteredQuizzes.length} quizzes
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+            {paginatedQuizzes.map((quiz) => (
+              <Card key={quiz._id} className="hover:shadow-xl transition-all hover:-translate-y-1 border-0 shadow-sm bg-white">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-start justify-between mb-2">
                     <div className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border ${
@@ -280,7 +398,7 @@ export default function QuizListPage() {
                       <span className="text-xs">{quiz.questions?.length || 0} Q</span>
                     </div>
                   </div>
-                  <CardTitle className="text-base sm:text-lg leading-snug line-clamp-2">{quiz.title}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg leading-snug line-clamp-2 text-gray-900">{quiz.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{quiz.description}</p>
@@ -312,6 +430,10 @@ export default function QuizListPage() {
               </Card>
             ))}
           </div>
+          
+          {/* Pagination */}
+          {renderPagination()}
+          </div>
         )}
 
         {/* Recent Results */}
@@ -322,7 +444,7 @@ export default function QuizListPage() {
               <Button variant="ghost" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm">View All</Button>
             </Link>
           </div>
-          <Card className="shadow-sm">
+          <Card className="shadow-sm bg-white">
             <CardContent className="p-4 sm:p-6">
               <p className="text-sm sm:text-base text-gray-500 text-center py-6 sm:py-8">
                 Take a quiz to see your results here
@@ -335,7 +457,7 @@ export default function QuizListPage() {
       {/* AI Generation Modal */}
       {showAIModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
-          <Card className="w-full max-w-md shadow-2xl">
+          <Card className="w-full max-w-md shadow-2xl bg-white">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-600 to-teal-600 rounded-lg flex items-center justify-center">

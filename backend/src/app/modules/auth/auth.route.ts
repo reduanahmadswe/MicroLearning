@@ -21,5 +21,6 @@ router.post(
 
 // Protected routes
 router.post('/logout', authGuard(), authController.logout);
+router.get('/me', authGuard(), authController.getMe);
 
 export default router;

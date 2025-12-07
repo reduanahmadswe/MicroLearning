@@ -52,6 +52,19 @@ class AuthController {
       message: 'Logout successful',
     });
   });
+
+  // Get current user
+  getMe = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId!;
+    const result = await authService.getMe(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'User retrieved successfully',
+      data: result,
+    });
+  });
 }
 
 export default new AuthController();

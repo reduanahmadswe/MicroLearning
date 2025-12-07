@@ -266,7 +266,7 @@ export default function LeaderboardPage() {
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main Leaderboard */}
           <div className="lg:col-span-2">
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-lg border-0 bg-white">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100">
                 <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                   <span className="flex items-center gap-2 text-gray-900">
@@ -529,7 +529,7 @@ export default function LeaderboardPage() {
             )}
 
             {/* Achievement Highlights */}
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-lg border-0 bg-white">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100">
                 <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-gray-900">
                   <Award className="w-5 h-5 text-green-600" />
@@ -615,7 +615,7 @@ export default function LeaderboardPage() {
             </Card>
 
             {/* Quick Tips */}
-            <Card className="shadow-lg border-0 hidden lg:block">
+            <Card className="shadow-lg border-0 bg-white hidden lg:block">
               <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 border-b border-gray-100">
                 <CardTitle className="text-base flex items-center gap-2 text-gray-900">
                   <Brain className="w-5 h-5 text-green-600" />

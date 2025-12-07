@@ -23,6 +23,10 @@ export const profileAPI = {
   getPublicProfile: (userId: string) => api.get(`/profile/${userId}`),
   updateProfile: (data: any) => api.put('/profile/me', data),
   updatePreferences: (data: any) => api.put('/profile/me/preferences', data),
+  changePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => 
+    api.put('/profile/me/password', data),
+  updateEmail: (data: { email: string; password: string }) => 
+    api.put('/profile/me/email', data),
   getMyBadges: () => api.get('/profile/me/badges'),
   getMyStatistics: () => api.get('/profile/me/statistics'),
   searchUsers: (query: string, limit?: number) => 
@@ -177,11 +181,11 @@ export const dailyChallengeAPI = {
 
 // Quiz Battle APIs
 export const quizBattleAPI = {
-  getBattles: () => api.get('/quiz-battles'),
-  createBattle: (data: any) => api.post('/quiz-battles', data),
-  getBattleById: (id: string) => api.get(`/quiz-battles/${id}`),
-  joinBattle: (id: string) => api.post(`/quiz-battles/${id}/join`),
-  submitAnswer: (battleId: string, data: any) => api.post(`/quiz-battles/${battleId}/answer`, data),
+  getBattles: () => api.get('/challenges/quiz-battles'),
+  createBattle: (data: any) => api.post('/challenges/quiz-battles', data),
+  getBattleById: (id: string) => api.get(`/challenges/quiz-battles/${id}`),
+  joinBattle: (id: string) => api.post(`/challenges/quiz-battles/${id}/join`),
+  submitAnswer: (battleId: string, data: any) => api.post(`/challenges/quiz-battles/${battleId}/answer`, data),
 };
 
 export const challengeAPI = challengesAPI;
@@ -229,8 +233,8 @@ export const forumAPI = {
 
 // Analytics APIs
 export const analyticsAPI = {
-  getMyAnalytics: () => api.get('/analytics'),
-  getAnalytics: (params?: any) => api.get('/analytics', { params }),
+  getMyAnalytics: () => api.get('/analytics/me'),
+  getAnalytics: (params?: any) => api.get('/analytics/me', { params }),
   getLearningInsights: () => api.get('/analytics/insights'),
   getSystemAnalytics: () => api.get('/analytics/system'),
 };
@@ -347,7 +351,12 @@ export const feedAPI = postAPI;
 
 // Roadmap APIs
 export const roadmapAPI = {
-  generateRoadmap: (data: { goal: string; currentLevel?: string; timeframe?: string }) => 
+  generateRoadmap: (data: { 
+    goal: string; 
+    currentLevel?: string; 
+    timeCommitment?: number; // hours per week
+    targetDuration?: number; // weeks
+  }) => 
     api.post('/roadmap/generate', data),
   getMyRoadmaps: () => api.get('/roadmap/my-roadmaps'),
   getRoadmaps: () => api.get('/roadmap/my-roadmaps'),
