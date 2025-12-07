@@ -150,98 +150,111 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50">
-      {/* Header */}
-      <header className="bg-white border-b-2 border-red-100 shadow-md">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-red-600 to-orange-600 rounded-xl flex items-center justify-center shadow-md">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
-                </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl">Admin Panel</span>
-              </h1>
-              <p className="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base">Manage platform content and users</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
-              <div className="text-left sm:text-right order-last sm:order-first w-full sm:w-auto">
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">Administrator</p>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Header Section */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Shield className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
               </div>
-              <Link href="/admin/content" className="flex-1 sm:flex-initial">
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-xs sm:text-sm h-9 sm:h-10">
-                  <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Manage </span>Content
-                </Button>
-              </Link>
-              <Link href="/admin/marketplace" className="flex-1 sm:flex-initial">
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-xs sm:text-sm h-9 sm:h-10">
-                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  Marketplace
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm h-9 sm:h-10"
-              >
-                <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Logout
-              </Button>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Admin Panel</h1>
+                <p className="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base">Manage platform content and users</p>
+              </div>
+            </div>
+            
+            {/* Admin Profile Card */}
+            <div className="bg-white border-2 border-red-100 rounded-xl px-4 py-3 shadow-md hover:shadow-lg transition-all">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-600 to-orange-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                  <span className="text-white font-bold text-sm sm:text-base">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{user?.name}</p>
+                  <p className="text-xs text-red-600 font-semibold flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Administrator
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Quick Actions */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
+            <Link href="/admin/content" className="flex-1 sm:flex-initial">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-xs sm:text-sm h-9 sm:h-10 shadow-md hover:shadow-lg transition-all">
+                <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                Manage Content
+              </Button>
+            </Link>
+            <Link href="/admin/marketplace" className="flex-1 sm:flex-initial">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-xs sm:text-sm h-9 sm:h-10 shadow-md hover:shadow-lg transition-all">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                Marketplace
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-2 border-red-200 text-xs sm:text-sm h-9 sm:h-10 hover:shadow-md transition-all"
+            >
+              <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+
           {/* Tabs */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4 mt-4 sm:mt-5 lg:mt-6">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-3 sm:px-4 lg:px-6 py-2 font-medium rounded-lg transition-all text-xs sm:text-sm ${
+              className={`px-4 sm:px-5 lg:px-6 py-2.5 font-medium rounded-xl transition-all text-xs sm:text-sm ${
                 activeTab === 'overview'
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100'
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100 hover:border-red-200'
               }`}
             >
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
               Overview
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-3 sm:px-4 lg:px-6 py-2 font-medium rounded-lg transition-all text-xs sm:text-sm ${
+              className={`px-4 sm:px-5 lg:px-6 py-2.5 font-medium rounded-xl transition-all text-xs sm:text-sm ${
                 activeTab === 'users'
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100'
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100 hover:border-red-200'
               }`}
             >
-              <Users className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
               Users
             </button>
             <button
               onClick={() => setActiveTab('content')}
-              className={`px-3 sm:px-4 lg:px-6 py-2 font-medium rounded-lg transition-all text-xs sm:text-sm ${
+              className={`px-4 sm:px-5 lg:px-6 py-2.5 font-medium rounded-xl transition-all text-xs sm:text-sm ${
                 activeTab === 'content'
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100'
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100 hover:border-red-200'
               }`}
             >
-              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
               Content
             </button>
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`px-3 sm:px-4 lg:px-6 py-2 font-medium rounded-lg transition-all text-xs sm:text-sm ${
+              className={`px-4 sm:px-5 lg:px-6 py-2.5 font-medium rounded-xl transition-all text-xs sm:text-sm ${
                 activeTab === 'analytics'
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100'
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-600 hover:bg-red-50 border-2 border-red-100 hover:border-red-200'
               }`}
             >
-              <Activity className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+              <Activity className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />
               Analytics
             </button>
           </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {loading ? (
           <div className="flex justify-center items-center py-12 sm:py-16 lg:py-20">
             <div className="text-center">
