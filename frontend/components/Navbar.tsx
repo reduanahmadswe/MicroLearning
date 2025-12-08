@@ -71,7 +71,6 @@ const roleBasedNavItems = {
     { name: 'Content', path: '/admin/content', icon: BookOpen },
     { name: 'Users', path: '/admin/users', icon: Users },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
-    { name: 'System', path: '/admin/system', icon: Settings },
   ],
 };
 
@@ -84,17 +83,14 @@ const additionalMenuItems = {
     { name: 'Badges', path: '/badges', icon: Award },
     { name: 'Friends', path: '/friends', icon: Users },
     { name: 'Challenges', path: '/challenges', icon: Trophy },
-    { name: 'Marketplace', path: '/marketplace', icon: ShoppingBag },
     { name: 'Analytics', path: '/analytics', icon: Target },
     { name: 'Roadmap', path: '/roadmap', icon: Map },
   ],
   instructor: [
     { name: 'Quizzes', path: '/instructor/quizzes', icon: CreditCard },
     { name: 'Forum', path: '/forum', icon: MessageSquare },
-    { name: 'Marketplace', path: '/marketplace', icon: ShoppingBag },
   ],
   admin: [
-    { name: 'Marketplace', path: '/admin/marketplace', icon: DollarSign },
     { name: 'Badges', path: '/admin/badges', icon: Award },
     { name: 'Challenges', path: '/admin/challenges', icon: Trophy },
   ],

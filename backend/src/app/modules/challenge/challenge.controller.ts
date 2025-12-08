@@ -123,6 +123,21 @@ const getChallengeStats = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Join a challenge
+const joinChallenge = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { challengeId } = req.params;
+
+  const result = await ChallengeService.joinChallenge(userId, challengeId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: 'Successfully joined the challenge',
+    data: result,
+  });
+});
+
 // Admin: Get all challenges
 const getAllChallengesAdmin = catchAsync(async (req: Request, res: Response) => {
   const { page, limit, status, type } = req.query;
@@ -169,7 +184,8 @@ const deleteChallenge = catchAsync(async (req: Request, res: Response) => {
 
 // Admin: Create quiz battle
 const createQuizBattle = catchAsync(async (req: Request, res: Response) => {
-  const result = await ChallengeService.createQuizBattle(req.body);
+  const userId = req.user?.userId || '000000000000000000000000';
+  const result = await ChallengeService.createQuizBattle(req.body, userId);
 
   sendResponse(res, {
     success: true,
@@ -195,19 +211,87 @@ const getQuizBattles = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Get single quiz battle by ID
+const getQuizBattleById = catchAsync(async (req: Request, res: Response) => {
+  const { battleId } = req.params;
+  const result = await ChallengeService.getQuizBattleById(battleId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Quiz battle retrieved successfully',
+    data: result,
+  });
+});
+
+// Submit activity completion
+const submitActivityCompletion = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { challengeId, activityIndex } = req.params;
+  const data = req.body;
+
+  const result = await ChallengeService.submitActivityCompletion(
+    userId,
+    challengeId,
+    parseInt(activityIndex),
+    data
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Activity completed successfully',
+    data: result,
+  });
+});
+
+// Get challenge details with activities
+const getChallengeDetails = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { challengeId } = req.params;
+
+  const result = await ChallengeService.getChallengeDetails(userId, challengeId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Challenge details retrieved successfully',
+    data: result,
+  });
+});
+
+// Respond to friend challenge
+const respondToFriendChallenge = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { challengeId, response } = req.body;
+
+  const result = await ChallengeService.respondToFriendChallenge(userId, challengeId, response);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Challenge response submitted successfully',
+    data: result,
+  });
+});
+
 export const ChallengeController = {
   createChallenge,
   getDailyChallenge,
   getActiveChallenges,
   updateChallengeProgress,
   challengeFriend,
-  respondToChallenge,
+  respondToFriendChallenge,
   getMyChallenges,
   getChallengeStats,
-  // Admin methods
+  joinChallenge,
+  submitActivityCompletion,
+  getChallengeDetails,
+  // Admin controllers
   getAllChallengesAdmin,
   updateChallenge,
   deleteChallenge,
   createQuizBattle,
   getQuizBattles,
+  getQuizBattleById,
 };

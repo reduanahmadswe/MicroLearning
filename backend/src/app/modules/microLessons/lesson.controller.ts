@@ -66,7 +66,8 @@ class LessonController {
   updateLesson = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId as string;
-    const result = await lessonService.updateLesson(id, userId, req.body);
+    const userRole = req.user?.role as string;
+    const result = await lessonService.updateLesson(id, userId, req.body, userRole);
 
     sendResponse(res, {
       statusCode: 200,

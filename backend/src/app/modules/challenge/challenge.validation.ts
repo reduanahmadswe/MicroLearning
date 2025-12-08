@@ -4,7 +4,7 @@ export const createChallengeSchema = z.object({
   body: z.object({
     title: z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title must be at most 100 characters'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    type: z.enum(['lesson', 'quiz', 'flashcard', 'streak', 'custom']),
+    type: z.enum(['lesson', 'quiz', 'flashcard', 'streak', 'custom', 'multiplayer', 'daily', 'weekly', 'special']),
     difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
     xpReward: z.number().min(1, 'XP reward must be positive'),
     coinsReward: z.number().min(0).optional(),
@@ -34,5 +34,22 @@ export const respondToChallengeSchema = z.object({
   body: z.object({
     userChallengeId: z.string().min(1, 'User challenge ID is required'),
     action: z.enum(['accept', 'reject']),
+  }),
+});
+
+export const createQuizBattleSchema = z.object({
+  body: z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title must be at most 100 characters'),
+    description: z.string().min(10, 'Description must be at least 10 characters'),
+    type: z.string().optional(),
+    difficulty: z.enum(['easy', 'medium', 'hard']),
+    xpReward: z.number().min(1, 'XP reward must be positive'),
+    coinsReward: z.number().min(0, 'Coins reward must be non-negative'),
+    startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid start date',
+    }),
+    endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid end date',
+    }),
   }),
 });

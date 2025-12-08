@@ -280,15 +280,15 @@ class LessonService {
   }
 
   // Update lesson
-  async updateLesson(lessonId: string, userId: string, updateData: Partial<ICreateLessonRequest>) {
+  async updateLesson(lessonId: string, userId: string, updateData: Partial<ICreateLessonRequest>, userRole?: string) {
     const lesson = await Lesson.findById(lessonId);
 
     if (!lesson) {
       throw new ApiError(404, 'Lesson not found');
     }
 
-    // Check if user is the author
-    if (lesson.author.toString() !== userId) {
+    // Check if user is the author or admin
+    if (lesson.author.toString() !== userId && userRole !== 'admin') {
       throw new ApiError(403, 'You are not authorized to update this lesson');
     }
 

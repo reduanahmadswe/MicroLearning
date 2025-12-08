@@ -13,7 +13,8 @@
     "seed:instructor": "ts-node src/scripts/seedInstructor.ts",
     "seed:demo": "ts-node src/scripts/seedDemoData.ts",
     "seed:users": "ts-node src/scripts/seedDemoUsers.ts",
-    "publish:lessons": "ts-node src/scripts/publishAllLessons.ts"
+    "publish:lessons": "ts-node src/scripts/publishAllLessons.ts",
+    "remove:badge": "ts-node src/scripts/removeBadgeFromUser.ts"
   },
   "keywords": [
     "microlearning",

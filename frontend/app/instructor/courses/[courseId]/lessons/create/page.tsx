@@ -121,51 +121,56 @@ export default function CreateLessonForCoursePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">Loading course...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mx-auto mb-4"></div>
+          <div className="text-xl font-semibold text-gray-700">Loading course...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
           <button
             onClick={() => router.push(`/instructor/courses/${courseId}/lessons`)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-green-600 hover:text-green-700 mb-4 font-medium transition-colors"
           >
             <ArrowLeft size={20} />
             Back to Course Lessons
           </button>
           
-          <div className="bg-white rounded-lg shadow p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <BookOpen className="text-blue-500" size={32} />
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-green-100 p-6 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-green-600 to-teal-600 text-white p-4 rounded-2xl">
+                <BookOpen size={32} />
+              </div>
               <div>
-                <p className="text-sm text-gray-500">Creating lesson for:</p>
-                <h1 className="text-2xl font-bold">{course?.title}</h1>
+                <p className="text-sm text-gray-500 font-medium">Creating lesson for:</p>
+                <h1 className="text-2xl font-bold text-gray-900">{course?.title}</h1>
               </div>
             </div>
           </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow">
-          <div className="p-6 space-y-6">
-            <h2 className="text-xl font-semibold mb-4">Create New Lesson</h2>
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border-2 border-green-100">
+          <div className="p-8 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Lesson</h2>
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Lesson Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={lessonData.title}
                 onChange={(e) => setLessonData({ ...lessonData, title: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="e.g., Introduction to Variables"
                 required
               />
@@ -176,14 +181,14 @@ export default function CreateLessonForCoursePage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={lessonData.description}
                 onChange={(e) => setLessonData({ ...lessonData, description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="Brief description of what students will learn"
                 required
               />
@@ -194,7 +199,7 @@ export default function CreateLessonForCoursePage() {
 
             {/* Content */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Lesson Content <span className="text-red-500">*</span>
               </label>
               <RichTextEditor
@@ -209,14 +214,14 @@ export default function CreateLessonForCoursePage() {
 
             {/* Topic */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Topic <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={lessonData.topic}
                 onChange={(e) => setLessonData({ ...lessonData, topic: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="e.g., JavaScript Fundamentals"
                 required
               />
@@ -225,28 +230,28 @@ export default function CreateLessonForCoursePage() {
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Tags (comma-separated)
               </label>
               <input
                 type="text"
                 value={lessonData.tags}
                 onChange={(e) => setLessonData({ ...lessonData, tags: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="e.g., javascript, variables, programming"
               />
             </div>
 
             {/* Row: Difficulty & Estimated Time */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Difficulty <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={lessonData.difficulty}
                   onChange={(e) => setLessonData({ ...lessonData, difficulty: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   required
                 >
                   <option value="beginner">Beginner</option>
@@ -256,7 +261,7 @@ export default function CreateLessonForCoursePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Estimated Time (minutes) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -265,7 +270,7 @@ export default function CreateLessonForCoursePage() {
                   max="60"
                   value={lessonData.estimatedTime}
                   onChange={(e) => setLessonData({ ...lessonData, estimatedTime: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">1-60 minutes</p>
@@ -274,46 +279,46 @@ export default function CreateLessonForCoursePage() {
 
             {/* Thumbnail URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Thumbnail URL (optional)
               </label>
               <input
                 type="url"
                 value={lessonData.thumbnailUrl}
                 onChange={(e) => setLessonData({ ...lessonData, thumbnailUrl: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
 
             {/* Video URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Video URL (optional)
               </label>
               <input
                 type="url"
                 value={lessonData.videoUrl}
                 onChange={(e) => setLessonData({ ...lessonData, videoUrl: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="https://youtube.com/watch?v=..."
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex items-center justify-between border-t">
+          <div className="bg-gradient-to-r from-green-50 to-teal-50 px-8 py-5 rounded-b-2xl flex items-center justify-between border-t-2 border-green-100">
             <button
               type="button"
               onClick={() => router.push(`/instructor/courses/${courseId}/lessons`)}
-              className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+              className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-white font-semibold transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 disabled:from-gray-400 disabled:to-gray-500 font-semibold shadow-lg transition-all"
             >
               {submitting ? 'Creating...' : 'Create Lesson'}
             </button>

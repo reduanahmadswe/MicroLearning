@@ -6,6 +6,7 @@ import {
   createChallengeSchema,
   challengeFriendSchema,
   respondToChallengeSchema,
+  createQuizBattleSchema,
 } from './challenge.validation';
 
 const router = express.Router();
@@ -29,6 +30,15 @@ router.get('/me', ChallengeController.getMyChallenges);
 router.get('/stats', ChallengeController.getChallengeStats);
 router.get('/stats/me', ChallengeController.getChallengeStats); // Alias for frontend
 
+// Join a challenge
+router.post('/:challengeId/join', ChallengeController.joinChallenge);
+
+// Get challenge details with activities
+router.get('/:challengeId/details', ChallengeController.getChallengeDetails);
+
+// Submit activity completion
+router.post('/:challengeId/activities/:activityIndex/complete', ChallengeController.submitActivityCompletion);
+
 // Update challenge progress
 router.post('/progress/:challengeId', ChallengeController.updateChallengeProgress);
 
@@ -36,10 +46,11 @@ router.post('/progress/:challengeId', ChallengeController.updateChallengeProgres
 router.post('/friend', validateRequest(challengeFriendSchema), ChallengeController.challengeFriend);
 
 // Respond to friend challenge
-router.post('/respond', validateRequest(respondToChallengeSchema), ChallengeController.respondToChallenge);
+router.post('/respond', validateRequest(respondToChallengeSchema), ChallengeController.respondToFriendChallenge);
 
 // Quiz Battle routes (public)
 router.get('/quiz-battles', ChallengeController.getQuizBattles);
+router.get('/quiz-battles/:battleId', ChallengeController.getQuizBattleById);
 router.post('/quiz-battles', ChallengeController.createQuizBattle);
 
 // Create challenge (admin/instructor only)
@@ -54,7 +65,7 @@ router.post(
 router.get('/admin/all', authGuard('admin'), ChallengeController.getAllChallengesAdmin);
 router.patch('/admin/:challengeId', authGuard('admin'), ChallengeController.updateChallenge);
 router.delete('/admin/:challengeId', authGuard('admin'), ChallengeController.deleteChallenge);
-router.post('/admin/quiz-battle', authGuard('admin'), ChallengeController.createQuizBattle);
+router.post('/admin/quiz-battle', authGuard('admin'), validateRequest(createQuizBattleSchema), ChallengeController.createQuizBattle);
 router.get('/admin/quiz-battles', authGuard('admin'), ChallengeController.getQuizBattles);
 
 export const ChallengeRoutes = router;

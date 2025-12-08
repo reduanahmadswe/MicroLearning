@@ -109,7 +109,7 @@ class AdminService {
     page?: number;
     limit?: number;
   }) {
-    const { role, search, page = 1, limit = 20 } = filters;
+    const { role, search, page = 1, limit = 100 } = filters;
 
     const query: any = {};
 
@@ -125,13 +125,16 @@ class AdminService {
     }
 
     const skip = (page - 1) * limit;
+    
+    // Cap the limit at 1000 to prevent performance issues
+    const effectiveLimit = Math.min(limit, 1000);
 
     const [users, total] = await Promise.all([
       User.find(query)
         .select('-password')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit)
+        .limit(effectiveLimit)
         .lean(),
       User.countDocuments(query),
     ]);
@@ -140,9 +143,9 @@ class AdminService {
       users,
       pagination: {
         page,
-        limit,
+        limit: effectiveLimit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / effectiveLimit),
       },
     };
   }
@@ -422,16 +425,8 @@ class AdminService {
 
   // Helper: Get total revenue
   private async getTotalRevenue() {
-    try {
-      const Purchase = (await import('../marketplace/marketplace.model')).Purchase;
-      const result = await Purchase.aggregate([
-        { $match: { paymentStatus: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
-      ]);
-      return result[0]?.total || 0;
-    } catch {
-      return 0;
-    }
+    // Marketplace removed - return 0
+    return 0;
   }
 
   // Helper: Get API calls count (mock for now)

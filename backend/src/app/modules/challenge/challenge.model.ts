@@ -15,7 +15,7 @@ const challengeSchema = new Schema<IChallenge>(
     },
     type: {
       type: String,
-      enum: ['lesson', 'quiz', 'flashcard', 'streak', 'custom'],
+      enum: ['lesson', 'quiz', 'flashcard', 'streak', 'custom', 'multiplayer', 'daily', 'weekly', 'special'],
       required: true,
     },
     difficulty: {
@@ -69,6 +69,110 @@ const challengeSchema = new Schema<IChallenge>(
       ref: 'User',
       required: true,
     },
+    activities: [
+      {
+        type: {
+          type: String,
+          enum: ['quiz', 'lesson', 'flashcard'],
+          required: true,
+        },
+        title: {
+          type: String,
+          required: true,
+        },
+        description: String,
+        points: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        target: {
+          type: Schema.Types.ObjectId,
+          refPath: 'activities.type',
+        },
+        targetQuiz: {
+          type: Schema.Types.ObjectId,
+          ref: 'Quiz',
+        },
+        targetLesson: {
+          type: Schema.Types.ObjectId,
+          ref: 'Lesson',
+        },
+        targetFlashcard: {
+          type: Schema.Types.ObjectId,
+          ref: 'Flashcard',
+        },
+        requiredScore: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
+    totalPoints: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    completionThreshold: {
+      type: Number,
+      default: 100,
+      min: 0,
+      max: 100,
+    },
+    // Quiz Battle specific fields
+    questions: [
+      {
+        question: {
+          type: String,
+          required: function(this: any) {
+            return this.type === 'multiplayer';
+          },
+        },
+        options: {
+          type: [String],
+          required: function(this: any) {
+            return this.type === 'multiplayer';
+          },
+          validate: {
+            validator: function(v: string[]) {
+              return v && v.length >= 2 && v.length <= 6;
+            },
+            message: 'Options must have 2-6 choices',
+          },
+        },
+        correctAnswer: {
+          type: Number,
+          required: function(this: any) {
+            return this.type === 'multiplayer';
+          },
+          min: 0,
+        },
+        points: {
+          type: Number,
+          default: 10,
+          min: 1,
+        },
+        timeLimit: {
+          type: Number,
+          default: 30,
+        },
+      },
+    ],
+    maxPlayers: {
+      type: Number,
+      default: 4,
+      min: 2,
+      max: 10,
+    },
+    minPlayers: {
+      type: Number,
+      default: 2,
+      min: 2,
+    },
+    timeLimit: {
+      type: Number,
+      default: 300,
+    },
   },
   {
     timestamps: true,
@@ -99,6 +203,33 @@ const challengeProgressSchema = new Schema<IChallengeProgress>(
       min: 0,
       max: 100,
     },
+    pointsEarned: {
+      type: Number,
+      default: 0,
+    },
+    activityCompletions: [
+      {
+        activityIndex: {
+          type: Number,
+          required: true,
+        },
+        activityType: {
+          type: String,
+          enum: ['quiz', 'lesson', 'flashcard'],
+          required: true,
+        },
+        pointsEarned: {
+          type: Number,
+          required: true,
+        },
+        score: Number,
+        completedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        targetId: Schema.Types.ObjectId,
+      },
+    ],
     status: {
       type: String,
       enum: ['not_started', 'in_progress', 'completed', 'failed'],

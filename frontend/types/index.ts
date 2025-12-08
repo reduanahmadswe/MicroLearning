@@ -139,18 +139,20 @@ export interface Badge {
   name: string;
   description: string;
   icon: string;
-  category: string;
-  requirement: string;
+  category?: string;
+  requirement?: string;
   xpReward: number;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  unlockedBy: number;
+  unlockedBy?: number;
   color?: string;
-  criteria?: {
-    xpRequired?: number;
-    lessonsCompleted?: number;
-    streakDays?: number;
-    quizzesCompleted?: number;
+  isActive?: boolean;
+  criteria: {
+    type: 'streak' | 'lessons_completed' | 'quiz_perfect' | 'xp_milestone' | 'flashcard_mastered' | 'topic_mastered';
+    threshold: number;
+    topic?: string;
   };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserBadge {
@@ -252,21 +254,6 @@ export interface Certificate {
   issueDate: string;
   verificationUrl: string;
   pdfUrl?: string;
-}
-
-// Marketplace Types
-export interface MarketplaceItem {
-  _id: string;
-  title: string;
-  description: string;
-  price: number;
-  seller: User;
-  type: 'course' | 'ebook' | 'template' | 'resource';
-  thumbnail?: string;
-  rating: number;
-  salesCount: number;
-  isActive: boolean;
-  createdAt: string;
 }
 
 // Analytics Types

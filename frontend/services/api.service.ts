@@ -165,9 +165,12 @@ export const challengesAPI = {
   getDailyChallenges: () => api.get('/daily-challenges'),
   getActiveChallenges: () => api.get('/challenges/active'),
   getChallenges: () => api.get('/challenges'),
+  getChallengeDetails: (id: string) => api.get(`/challenges/${id}/details`),
   acceptChallenge: (id: string) => api.post(`/challenges/${id}/accept`),
   joinChallenge: (id: string) => api.post(`/challenges/${id}/join`),
   completeChal: (id: string) => api.post(`/challenges/${id}/complete`),
+  submitActivityCompletion: (challengeId: string, activityIndex: number, data: any) => 
+    api.post(`/challenges/${challengeId}/activities/${activityIndex}/complete`, data),
   createChallenge: (data: any) => api.post('/challenges', data),
   getUserStats: () => api.get('/challenges/stats/me'),
 };
@@ -245,29 +248,6 @@ export const certificatesAPI = {
   getCertificateById: (id: string) => api.get(`/certificates/view/${id}`),
   generateCertificate: (courseId: string) => api.post('/certificates/generate', { courseId }),
   verifyCertificate: (certificateId: string) => api.get(`/certificates/verify/${certificateId}`),
-};
-
-// Marketplace APIs
-export const marketplaceAPI = {
-  getAllItems: (params?: any) => api.get('/marketplace', { params }),
-  getItems: (params?: any) => api.get('/marketplace', { params }),
-  getItemById: (id: string) => api.get(`/marketplace/${id}`),
-  purchaseItem: (id: string) => api.post(`/marketplace/${id}/purchase`),
-  getMyPurchases: () => api.get('/marketplace/my-purchases'),
-  getPurchases: () => api.get('/marketplace/my-purchases'),
-  getMyItems: () => api.get('/marketplace/my-items'),
-  createItem: (data: any) => api.post('/marketplace', data),
-  deleteItem: (id: string) => api.delete(`/marketplace/${id}`),
-  
-  // Admin Moderation APIs
-  getItemsByStatus: (status: string) => api.get(`/marketplace/admin/items?status=${status}`),
-  moderateItem: (id: string, data: { status: string; reason?: string }) => 
-    api.patch(`/marketplace/${id}/moderate`, data),
-  getModerationStats: () => api.get('/marketplace/admin/stats'),
-  getAllSellers: () => api.get('/marketplace/admin/sellers'),
-  verifySeller: (sellerId: string) => api.patch(`/marketplace/sellers/${sellerId}/verify`),
-  suspendSeller: (sellerId: string, data: { reason: string }) => 
-    api.patch(`/marketplace/sellers/${sellerId}/suspend`, data),
 };
 
 // TTS (Text-to-Speech) APIs
@@ -495,7 +475,6 @@ export default {
   forum: forumAPI,
   analytics: analyticsAPI,
   certificates: certificatesAPI,
-  marketplace: marketplaceAPI,
   tts: ttsAPI,
   asr: asrAPI,
   roadmap: roadmapAPI,

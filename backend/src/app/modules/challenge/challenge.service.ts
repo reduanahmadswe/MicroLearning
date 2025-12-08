@@ -1,5 +1,5 @@
 import { Challenge, ChallengeProgress, UserChallenge } from './challenge.model';
-import { ICreateChallengeRequest, IChallengeStats, IDailyChallengeResponse } from './challenge.types';
+import { ICreateChallengeRequest, IChallengeStats, IDailyChallengeResponse, IActivityCompletion } from './challenge.types';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
 import User from '../auth/auth.model';
@@ -375,6 +375,50 @@ const getChallengeStats = async (userId: string): Promise<IChallengeStats> => {
   };
 };
 
+// Join a challenge
+const joinChallenge = async (userId: string, challengeId: string) => {
+  // Check if challenge exists and is active
+  const challenge = await Challenge.findById(challengeId);
+  if (!challenge) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Challenge not found');
+  }
+
+  if (!challenge.isActive) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This challenge is not active');
+  }
+
+  // Check if challenge has not expired
+  const now = new Date();
+  if (now > challenge.endDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This challenge has expired');
+  }
+
+  if (now < challenge.startDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This challenge has not started yet');
+  }
+
+  // Check if user already joined this challenge
+  const existingProgress = await ChallengeProgress.findOne({
+    user: userId,
+    challenge: challengeId,
+  });
+
+  if (existingProgress) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You have already joined this challenge');
+  }
+
+  // Create challenge progress for the user
+  const progress = await ChallengeProgress.create({
+    user: userId,
+    challenge: challengeId,
+    progress: 0,
+    isCompleted: false,
+    startedAt: new Date(),
+  });
+
+  return progress;
+};
+
 // Admin: Get all challenges
 const getAllChallengesAdmin = async (filters: { page: number; limit: number; status?: string; type?: string }) => {
   const { page, limit, status, type } = filters;
@@ -424,11 +468,32 @@ const deleteChallenge = async (challengeId: string) => {
 };
 
 // Admin: Create quiz battle event
-const createQuizBattle = async (data: any) => {
-  const battle = await Challenge.create({
-    ...data,
+const createQuizBattle = async (data: any, userId?: string) => {
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+
+  if (endDate <= startDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'End date must be after start date');
+  }
+
+  // Create requirements object for multiplayer challenge
+  const requirements = {
     type: 'multiplayer',
+    target: 1, // Default target for multiplayer
+  };
+
+  const battle = await Challenge.create({
+    title: data.title,
+    description: data.description,
+    type: 'multiplayer',
+    difficulty: data.difficulty,
+    xpReward: data.xpReward,
+    coinsReward: data.coinsReward || 0,
+    startDate,
+    endDate,
+    requirements,
     isActive: true,
+    createdBy: userId || '000000000000000000000000', // System/Admin created
   });
 
   return battle;
@@ -454,6 +519,274 @@ const getQuizBattles = async (filters: { page: number; limit: number }) => {
   };
 };
 
+// Get single quiz battle by ID
+const getQuizBattleById = async (battleId: string) => {
+  const battle = await Challenge.findById(battleId).populate('createdBy', 'name email');
+
+  if (!battle) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Quiz battle not found');
+  }
+
+  // Get participants/progress
+  const participants = await ChallengeProgress.find({ challenge: battleId })
+    .populate('user', 'name email')
+    .sort({ createdAt: 1 });
+
+  return {
+    ...battle.toObject(),
+    players: participants.map(p => p.user),
+    participantCount: participants.length,
+  };
+};
+
+// Submit activity completion for multi-activity challenge
+const submitActivityCompletion = async (
+  userId: string,
+  challengeId: string,
+  activityIndex: number,
+  data: {
+    score?: number;
+    targetId?: string;
+  }
+) => {
+  // Get challenge
+  const challenge = await Challenge.findById(challengeId);
+  if (!challenge) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Challenge not found');
+  }
+
+  // Check if challenge has activities
+  if (!challenge.activities || challenge.activities.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This challenge does not have activities');
+  }
+
+  // Validate activity index
+  if (activityIndex < 0 || activityIndex >= challenge.activities.length) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid activity index');
+  }
+
+  const activity = challenge.activities[activityIndex];
+
+  // Get or create progress
+  let progress = await ChallengeProgress.findOne({
+    user: userId,
+    challenge: challengeId,
+  });
+
+  if (!progress) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You must join this challenge first');
+  }
+
+  // Check if activity already completed
+  const existingCompletion = progress.activityCompletions?.find(
+    (ac) => ac.activityIndex === activityIndex
+  );
+
+  if (existingCompletion) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This activity has already been completed');
+  }
+
+  // Validate based on activity type
+  let pointsEarned = 0;
+  let isValid = false;
+
+  switch (activity.type) {
+    case 'quiz':
+      // Verify quiz completion
+      if (!data.targetId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Quiz ID is required');
+      }
+      const quizAttempt = await QuizAttempt.findOne({
+        user: userId,
+        quiz: data.targetId,
+      }).sort({ createdAt: -1 });
+
+      if (!quizAttempt) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'No quiz attempt found');
+      }
+
+      // Check if score meets requirement
+      if (activity.requiredScore && quizAttempt.score < activity.requiredScore) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          `Quiz score (${quizAttempt.score}) is below required score (${activity.requiredScore})`
+        );
+      }
+
+      isValid = true;
+      pointsEarned = activity.points;
+      break;
+
+    case 'lesson':
+      // Verify lesson completion
+      if (!data.targetId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Lesson ID is required');
+      }
+      const lessonProgress = await UserProgress.findOne({
+        user: userId,
+        lesson: data.targetId,
+        status: 'completed',
+      });
+
+      if (!lessonProgress) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Lesson not completed');
+      }
+
+      isValid = true;
+      pointsEarned = activity.points;
+      break;
+
+    case 'flashcard':
+      // Verify flashcard review
+      if (!data.targetId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Flashcard set ID is required');
+      }
+      // Add flashcard completion verification logic here
+      isValid = true;
+      pointsEarned = activity.points;
+      break;
+
+    default:
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid activity type');
+  }
+
+  if (!isValid) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Activity validation failed');
+  }
+
+  // Add activity completion
+  if (!progress.activityCompletions) {
+    progress.activityCompletions = [];
+  }
+
+  progress.activityCompletions.push({
+    activityIndex,
+    activityType: activity.type,
+    pointsEarned,
+    score: data.score,
+    completedAt: new Date(),
+    targetId: data.targetId ? data.targetId as any : undefined,
+  });
+
+  // Update points and progress
+  progress.pointsEarned = (progress.pointsEarned || 0) + pointsEarned;
+  
+  // Calculate progress percentage
+  const totalPoints = challenge.totalPoints || challenge.activities.reduce((sum, act) => sum + act.points, 0);
+  progress.progress = Math.min((progress.pointsEarned / totalPoints) * 100, 100);
+
+  // Check if challenge is completed
+  const completionThreshold = challenge.completionThreshold || 100;
+  if (progress.progress >= completionThreshold && progress.status !== 'completed') {
+    progress.status = 'completed';
+    progress.completedAt = new Date();
+
+    // Award XP and coins
+    const user = await User.findById(userId);
+    if (user) {
+      user.xp += challenge.xpReward;
+      if (challenge.coinsReward) {
+        user.coins = (user.coins || 0) + challenge.coinsReward;
+      }
+      user.level = Math.floor(user.xp / 100) + 1;
+      await user.save();
+
+      // Create notification
+      await Notification.create({
+        user: userId,
+        type: 'system_announcement',
+        title: 'Challenge Completed! 🎉',
+        message: `Congratulations! You completed "${challenge.title}" and earned ${challenge.xpReward} XP${challenge.coinsReward ? ` and ${challenge.coinsReward} coins` : ''}!`,
+        metadata: {
+          challengeId: challenge._id.toString(),
+          xpEarned: challenge.xpReward,
+          coinsEarned: challenge.coinsReward || 0,
+          pointsEarned: progress.pointsEarned,
+        },
+      });
+    }
+  } else if (progress.status === 'not_started') {
+    progress.status = 'in_progress';
+  }
+
+  await progress.save();
+
+  return {
+    progress,
+    activity: {
+      ...activity,
+      completed: true,
+      pointsEarned,
+    },
+    totalProgress: progress.progress,
+    challengeCompleted: progress.status === 'completed',
+  };
+};
+
+// Get challenge details with activities and user progress
+const getChallengeDetails = async (userId: string, challengeId: string) => {
+  const challenge = await Challenge.findById(challengeId)
+    .populate('createdBy', 'name email')
+    .populate('activities.targetQuiz', 'title description')
+    .populate('activities.targetLesson', 'title description')
+    .populate('activities.targetFlashcard', 'title description');
+
+  if (!challenge) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Challenge not found');
+  }
+
+  // Get user's progress
+  const progress = await ChallengeProgress.findOne({
+    user: userId,
+    challenge: challengeId,
+  });
+
+  // Calculate total points if not set
+  if (challenge.activities && challenge.activities.length > 0) {
+    const calculatedTotalPoints = challenge.activities.reduce((sum, act) => sum + act.points, 0);
+    if (!challenge.totalPoints) {
+      challenge.totalPoints = calculatedTotalPoints;
+    }
+  }
+
+  // Mark which activities are completed
+  const activitiesWithStatus = challenge.activities?.map((activity: any, index) => {
+    const completion = progress?.activityCompletions?.find(
+      (ac) => ac.activityIndex === index
+    );
+
+    const activityObj = activity.toObject ? activity.toObject() : activity;
+
+    return {
+      ...activityObj,
+      index,
+      completed: !!completion,
+      pointsEarned: completion?.pointsEarned || 0,
+      completedAt: completion?.completedAt,
+    };
+  });
+
+  return {
+    challenge: {
+      ...challenge.toObject(),
+      activities: activitiesWithStatus,
+    },
+    progress: progress || {
+      progress: 0,
+      pointsEarned: 0,
+      status: 'not_started',
+      activityCompletions: [],
+    },
+    stats: {
+      totalActivities: challenge.activities?.length || 0,
+      completedActivities: progress?.activityCompletions?.length || 0,
+      totalPoints: challenge.totalPoints || 0,
+      earnedPoints: progress?.pointsEarned || 0,
+      completionPercentage: progress?.progress || 0,
+    },
+  };
+};
+
 export const ChallengeService = {
   createChallenge,
   getDailyChallenge,
@@ -463,10 +796,14 @@ export const ChallengeService = {
   respondToFriendChallenge,
   getMyChallenges,
   getChallengeStats,
+  joinChallenge,
+  submitActivityCompletion,
+  getChallengeDetails,
   // Admin methods
   getAllChallengesAdmin,
   updateChallenge,
   deleteChallenge,
   createQuizBattle,
   getQuizBattles,
+  getQuizBattleById,
 };

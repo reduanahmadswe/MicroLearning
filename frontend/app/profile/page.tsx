@@ -524,9 +524,20 @@ export default function MyProfilePage() {
                       {profile.badges.map((badge, index) => (
                         <div
                           key={index}
-                          className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-3 text-center border border-green-100"
+                          className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-3 text-center border border-green-100 hover:shadow-lg transition-all"
                         >
-                          <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                          {badge.icon && badge.icon.startsWith('http') ? (
+                            <img 
+                              src={badge.icon} 
+                              alt={badge.name}
+                              className="w-12 h-12 mx-auto mb-2 object-contain"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          <Award className={`w-8 h-8 text-green-600 mx-auto mb-2 ${badge.icon && badge.icon.startsWith('http') ? 'hidden' : ''}`} />
                           <p className="text-xs font-semibold text-gray-700 line-clamp-2">{badge.name || 'Badge'}</p>
                         </div>
                       ))}

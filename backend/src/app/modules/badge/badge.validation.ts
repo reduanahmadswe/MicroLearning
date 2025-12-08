@@ -15,4 +15,13 @@ export const createBadgeValidation = z.object({
   }),
 });
 
+export const awardBadgeValidation = z.object({
+  body: z.object({
+    userId: z.string().min(1, 'User ID is required'),
+    badgeId: z.string().min(1, 'Badge ID is required'),
+    reason: z.string().optional(),
+  }),
+});
+
 export type CreateBadgeInput = z.infer<typeof createBadgeValidation>['body'];
+export type AwardBadgeInput = z.infer<typeof awardBadgeValidation>['body'];

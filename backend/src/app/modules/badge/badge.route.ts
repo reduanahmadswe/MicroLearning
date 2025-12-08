@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import badgeController from './badge.controller';
 import { validateRequest } from '../../../middleware/validateRequest';
-import { createBadgeValidation } from './badge.validation';
+import { createBadgeValidation, awardBadgeValidation } from './badge.validation';
 import { authGuard } from '../../../middleware/authGuard';
 
 const router = Router();
@@ -26,7 +26,12 @@ router.post(
 router.post('/initialize', authGuard('admin'), badgeController.initializeDefaultBadges);
 router.patch('/admin/:badgeId', authGuard('admin'), badgeController.updateBadge);
 router.delete('/admin/:badgeId', authGuard('admin'), badgeController.deleteBadge);
-router.post('/admin/award', authGuard('admin'), badgeController.manuallyAwardBadge);
+router.post(
+  '/admin/award',
+  authGuard('admin'),
+  validateRequest(awardBadgeValidation),
+  badgeController.manuallyAwardBadge
+);
 router.get('/admin/all', authGuard('admin'), badgeController.getAllBadgesAdmin);
 
 export default router;

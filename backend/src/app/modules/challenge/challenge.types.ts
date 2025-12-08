@@ -1,10 +1,29 @@
 import { Types } from 'mongoose';
 
+export interface IChallengeActivity {
+  type: 'quiz' | 'lesson' | 'flashcard';
+  title: string;
+  description?: string;
+  points: number;
+  targetQuiz?: Types.ObjectId;
+  targetLesson?: Types.ObjectId;
+  targetFlashcard?: Types.ObjectId;
+  requiredScore?: number;
+}
+
+export interface IQuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  points: number;
+  timeLimit?: number;
+}
+
 export interface IChallenge {
   _id: Types.ObjectId;
   title: string;
   description: string;
-  type: 'lesson' | 'quiz' | 'flashcard' | 'streak' | 'custom';
+  type: 'lesson' | 'quiz' | 'flashcard' | 'streak' | 'custom' | 'multiplayer' | 'daily' | 'weekly' | 'special';
   difficulty: 'easy' | 'medium' | 'hard';
   xpReward: number;
   coinsReward?: number;
@@ -19,8 +38,25 @@ export interface IChallenge {
   targetLesson?: Types.ObjectId;
   targetQuiz?: Types.ObjectId;
   createdBy: Types.ObjectId;
+  activities?: IChallengeActivity[];
+  totalPoints?: number;
+  completionThreshold?: number;
+  // Quiz Battle specific fields
+  questions?: IQuizQuestion[];
+  maxPlayers?: number;
+  minPlayers?: number;
+  timeLimit?: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IActivityCompletion {
+  activityIndex: number;
+  activityType: 'quiz' | 'lesson' | 'flashcard';
+  pointsEarned: number;
+  score?: number;
+  completedAt: Date;
+  targetId?: Types.ObjectId;
 }
 
 export interface IChallengeProgress {
@@ -28,6 +64,8 @@ export interface IChallengeProgress {
   user: Types.ObjectId;
   challenge: Types.ObjectId;
   progress: number; // 0-100
+  pointsEarned?: number;
+  activityCompletions?: IActivityCompletion[];
   status: 'not_started' | 'in_progress' | 'completed' | 'failed';
   startedAt?: Date;
   completedAt?: Date;
