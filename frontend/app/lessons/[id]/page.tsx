@@ -185,33 +185,56 @@ export default function LessonDetailPage() {
     try {
       setCompleting(true);
       await lessonsAPI.completeLesson(lessonId);
-      toast.success('🎉 Lesson completed!');
-
+      
       // Find next lesson
       if (courseData?.lessons && lesson) {
         const currentLessonOrder = lesson.order || 1;
         const nextLesson = courseData.lessons.find((l: any) => l.order === currentLessonOrder + 1);
 
         if (nextLesson) {
-          // Redirect to next lesson after a short delay
+          // Show success message with next lesson info
+          toast.success(
+            <div className="flex flex-col gap-2">
+              <div className="font-bold">🎉 Lesson Completed!</div>
+              <div className="text-sm">Redirecting to: {nextLesson.title}</div>
+            </div>,
+            {
+              duration: 2000,
+            }
+          );
+          
+          // Redirect to next lesson after 2 seconds
           setTimeout(() => {
             router.push(`/lessons/${nextLesson._id}`);
-          }, 1000);
+          }, 2000);
         } else {
-          // Last lesson - redirect back to course page
+          // Last lesson - show completion message
+          toast.success(
+            <div className="flex flex-col gap-2">
+              <div className="font-bold">🎉 Course Completed!</div>
+              <div className="text-sm">Congratulations! You finished all lessons.</div>
+            </div>,
+            {
+              duration: 2000,
+            }
+          );
+          
+          // Redirect back to course page
           setTimeout(() => {
             if (lesson.course) {
-              router.push(`/courses/${lesson.course}?refresh=true`);
+              router.push(`/courses/${lesson.course}?completed=true`);
             }
-          }, 1000);
+          }, 2000);
         }
       } else {
-        // Fallback - redirect to course page
+        // Fallback - simple success message
+        toast.success('🎉 Lesson completed!', { duration: 1500 });
+        
         setTimeout(() => {
           if (lesson?.course) {
             router.push(`/courses/${lesson.course}?refresh=true`);
           }
-        }, 1000);
+        }, 1500);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to complete lesson');
