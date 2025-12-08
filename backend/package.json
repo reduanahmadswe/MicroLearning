@@ -13,6 +13,7 @@
     "seed:instructor": "ts-node src/scripts/seedInstructor.ts",
     "seed:demo": "ts-node src/scripts/seedDemoData.ts",
     "seed:users": "ts-node src/scripts/seedDemoUsers.ts",
+    "seed:all": "ts-node src/scripts/seedComprehensiveData.ts",
     "publish:lessons": "ts-node src/scripts/publishAllLessons.ts",
     "remove:badge": "ts-node src/scripts/removeBadgeFromUser.ts"
   },
