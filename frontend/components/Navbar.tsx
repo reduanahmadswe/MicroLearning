@@ -82,7 +82,6 @@ const additionalMenuItems = {
     { name: 'Leaderboard', path: '/leaderboard', icon: TrendingUp },
     { name: 'Badges', path: '/badges', icon: Award },
     { name: 'Friends', path: '/friends', icon: Users },
-    { name: 'Challenges', path: '/challenges', icon: Trophy },
     { name: 'Analytics', path: '/analytics', icon: Target },
     { name: 'Roadmap', path: '/roadmap', icon: Map },
   ],
@@ -92,7 +91,6 @@ const additionalMenuItems = {
   ],
   admin: [
     { name: 'Badges', path: '/admin/badges', icon: Award },
-    { name: 'Challenges', path: '/admin/challenges', icon: Trophy },
   ],
 };
 

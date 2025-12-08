@@ -214,7 +214,7 @@ export default function BookmarksPage() {
                     </div>
                   </div>
                   <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white mb-1">
-                    {bookmarks.reduce((sum, b) => sum + (b.lesson.duration || 0), 0)}
+                    {bookmarks.reduce((sum, b) => sum + (b.lesson?.duration || 0), 0)}
                   </p>
                   <p className="text-xs text-emerald-100 font-medium">Total Minutes</p>
                 </div>
@@ -357,7 +357,7 @@ export default function BookmarksPage() {
               ? 'grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6' 
               : 'space-y-4'
           }>
-            {filteredBookmarks.map((bookmark) => (
+            {filteredBookmarks.filter(bookmark => bookmark.lesson).map((bookmark) => (
               <Card 
                 key={bookmark._id} 
                 className="border-0 shadow-lg hover:shadow-2xl bg-white/90 backdrop-blur-sm transition-all duration-300 overflow-hidden group"

@@ -160,39 +160,6 @@ export const friendsAPI = {
   getSuggestions: (page = 1, limit = 10) => api.get(`/friends/recommendations?page=${page}&limit=${limit}`),
 };
 
-// Challenges APIs
-export const challengesAPI = {
-  getDailyChallenges: () => api.get('/daily-challenges'),
-  getActiveChallenges: () => api.get('/challenges/active'),
-  getChallenges: () => api.get('/challenges'),
-  getChallengeDetails: (id: string) => api.get(`/challenges/${id}/details`),
-  acceptChallenge: (id: string) => api.post(`/challenges/${id}/accept`),
-  joinChallenge: (id: string) => api.post(`/challenges/${id}/join`),
-  completeChal: (id: string) => api.post(`/challenges/${id}/complete`),
-  submitActivityCompletion: (challengeId: string, activityIndex: number, data: any) => 
-    api.post(`/challenges/${challengeId}/activities/${activityIndex}/complete`, data),
-  createChallenge: (data: any) => api.post('/challenges', data),
-  getUserStats: () => api.get('/challenges/stats/me'),
-};
-
-// Daily Challenge APIs
-export const dailyChallengeAPI = {
-  getTodayChallenge: () => api.get('/daily-challenges/today'),
-  completeChallenge: (id: string) => api.post(`/daily-challenges/${id}/complete`),
-  getChallenges: () => api.get('/daily-challenges'),
-};
-
-// Quiz Battle APIs
-export const quizBattleAPI = {
-  getBattles: () => api.get('/challenges/quiz-battles'),
-  createBattle: (data: any) => api.post('/challenges/quiz-battles', data),
-  getBattleById: (id: string) => api.get(`/challenges/quiz-battles/${id}`),
-  joinBattle: (id: string) => api.post(`/challenges/quiz-battles/${id}/join`),
-  submitAnswer: (battleId: string, data: any) => api.post(`/challenges/quiz-battles/${battleId}/answer`, data),
-};
-
-export const challengeAPI = challengesAPI;
-
 // Notifications APIs
 export const notificationsAPI = {
   getNotifications: (params?: any) => api.get('/notifications', { params }),
@@ -416,15 +383,6 @@ export const adminAPI = {
   deleteContent: (contentId: string) => api.delete(`/admin/content/${contentId}`),
 };
 
-// Challenge Admin APIs
-export const challengeAdminAPI = {
-  getAllChallenges: (params?: any) => api.get('/challenges/admin/all', { params }),
-  updateChallenge: (challengeId: string, data: any) => api.patch(`/challenges/admin/${challengeId}`, data),
-  deleteChallenge: (challengeId: string) => api.delete(`/challenges/admin/${challengeId}`),
-  createQuizBattle: (data: any) => api.post('/challenges/admin/quiz-battle', data),
-  getQuizBattles: (params?: any) => api.get('/challenges/admin/quiz-battles', { params }),
-};
-
 // Leaderboard Admin APIs
 export const leaderboardAdminAPI = {
   resetLeaderboard: (data: { type: string; topic?: string }) => api.post('/leaderboard/admin/reset', data),
@@ -469,7 +427,6 @@ export default {
   leaderboard: leaderboardAPI,
   badges: badgesAPI,
   friends: friendsAPI,
-  challenges: challengesAPI,
   notifications: notificationsAPI,
   comments: commentsAPI,
   forum: forumAPI,
@@ -482,7 +439,6 @@ export default {
   bookmarks: bookmarksAPI,
   upload: uploadAPI,
   admin: adminAPI,
-  challengeAdmin: challengeAdminAPI,
   leaderboardAdmin: leaderboardAdminAPI,
   badgeAdmin: badgeAdminAPI,
   analyticsAdmin: analyticsAdminAPI,

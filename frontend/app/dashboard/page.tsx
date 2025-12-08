@@ -34,7 +34,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { progressAPI, badgesAPI, leaderboardAPI, challengesAPI } from '@/services/api.service';
+import { progressAPI, badgesAPI, leaderboardAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 
 export default function DashboardPage() {
@@ -42,7 +42,6 @@ export default function DashboardPage() {
   const { user, logout } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
-  const [challenges, setChallenges] = useState<any[]>([]);
   const [badges, setBadges] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
@@ -64,7 +63,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       console.log('Loading dashboard data...');
-      const [progressRes, badgesRes, leaderboardRes, challengesRes] = await Promise.all([
+      const [progressRes, badgesRes, leaderboardRes] = await Promise.all([
         progressAPI.getProgress().catch((err) => { 
           console.error('Progress API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: null } };
@@ -77,17 +76,12 @@ export default function DashboardPage() {
           console.error('Leaderboard API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
           return { data: { data: [] } };
         }),
-        challengesAPI.getActiveChallenges().catch((err) => { 
-          console.error('Challenges API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error'); 
-          return { data: { data: [] } };
-        }),
       ]);
 
       console.log('Dashboard data loaded:', { 
         progressRes: progressRes.data, 
         badgesRes: badgesRes.data,
-        leaderboardRes: leaderboardRes.data,
-        challengesRes: challengesRes.data
+        leaderboardRes: leaderboardRes.data
       });
       
       const statsData = progressRes.data.data || { totalXP: user?.xp || 0, level: user?.level || 1, currentStreak: user?.streak || 0 };
@@ -97,10 +91,6 @@ export default function DashboardPage() {
       setStats(statsData);
       setBadges(badgesRes.data.data?.slice(0, 6) || []);
       setLeaderboard(leaderboardRes.data.data || []);
-      
-      // Handle challenges response - could be array or object
-      const challengesData = challengesRes.data.data || challengesRes.data || [];
-      setChallenges(Array.isArray(challengesData) ? challengesData.slice(0, 4) : []);
     } catch (error: any) {
       console.error('Dashboard loading error:', error?.message || error);
     } finally {
@@ -126,7 +116,6 @@ export default function DashboardPage() {
     { icon: Trophy, label: 'Leaderboard', href: '/leaderboard', color: 'text-yellow-600', bg: 'bg-yellow-50' },
     { icon: Award, label: 'Badges', href: '/badges', color: 'text-orange-600', bg: 'bg-orange-50' },
     { icon: Users, label: 'Friends', href: '/friends', color: 'text-teal-600', bg: 'bg-teal-50' },
-    { icon: Target, label: 'Challenges', href: '/challenges', color: 'text-rose-600', bg: 'bg-rose-50' },
     { icon: MessageSquare, label: 'Forum', href: '/forum', color: 'text-green-600', bg: 'bg-green-50' },
     { icon: BarChart3, label: 'Analytics', href: '/analytics', color: 'text-teal-700', bg: 'bg-teal-50' },
     { icon: Map, label: 'Roadmap', href: '/roadmap', color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -206,142 +195,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Active Challenges */}
-            {challenges.length > 0 && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                    Active Challenges
-                  </h3>
-                  <Link href="/challenges">
-                    <Button variant="ghost" size="sm" className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
-                      View All →
-                    </Button>
-                  </Link>
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {challenges.map((challenge) => {
-                    const progressPercentage = challenge.currentProgress && challenge.targetValue 
-                      ? Math.min(100, (challenge.currentProgress / challenge.targetValue) * 100)
-                      : 0;
-                    
-                    const isCompleted = progressPercentage >= 100;
-                    
-                    const challengeIcons: any = {
-                      'daily': '📅',
-                      'weekly': '📆', 
-                      'streak': '🔥',
-                      'xp': '⭐',
-                      'lessons': '📚',
-                      'quiz': '🧠',
-                      'perfect_score': '💯',
-                    };
-                    
-                    const icon = challengeIcons[challenge.type] || '🎯';
-                    
-                    return (
-                      <Card key={challenge._id} className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden ${
-                        isCompleted ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 'bg-white'
-                      }`}>
-                        {/* Header with Icon */}
-                        <div className={`relative p-6 pb-4 ${
-                          isCompleted 
-                            ? 'bg-gradient-to-r from-green-600 to-teal-600' 
-                            : 'bg-gradient-to-r from-teal-500 to-cyan-500'
-                        }`}>
-                          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl"></div>
-                          <div className="relative z-10 flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <div className="text-4xl">{icon}</div>
-                                <div>
-                                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                                    isCompleted 
-                                      ? 'bg-white/30 text-white backdrop-blur-sm' 
-                                      : 'bg-white/20 text-white backdrop-blur-sm'
-                                  }`}>
-                                    {challenge.type?.toUpperCase() || 'CHALLENGE'}
-                                  </span>
-                                </div>
-                              </div>
-                              <h4 className="font-bold text-white text-lg mb-1 line-clamp-1">
-                                {challenge.title || challenge.name}
-                              </h4>
-                              <p className="text-white/90 text-sm line-clamp-2">
-                                {challenge.description}
-                              </p>
-                            </div>
-                            {isCompleted && (
-                              <div className="ml-3">
-                                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                  <Trophy className="w-6 h-6 text-white" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Progress Section */}
-                        <CardContent className="p-6">
-                          {/* Progress Bar */}
-                          <div className="mb-4">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-gray-700">Progress</span>
-                              <span className={`text-sm font-bold ${
-                                isCompleted ? 'text-green-600' : 'text-teal-600'
-                              }`}>
-                                {challenge.currentProgress || 0} / {challenge.targetValue || 100}
-                              </span>
-                            </div>
-                            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full transition-all duration-500 ${
-                                  isCompleted
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                                    : 'bg-gradient-to-r from-teal-500 to-cyan-500'
-                                }`}
-                                style={{ width: `${progressPercentage}%` }}
-                              />
-                            </div>
-                          </div>
-                          
-                          {/* Meta Info */}
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <span className="flex items-center space-x-1">
-                                <Star className="w-3.5 h-3.5 text-yellow-500" />
-                                <span className="font-bold text-yellow-600">{challenge.xpReward || challenge.reward || 50} XP</span>
-                              </span>
-                              {challenge.deadline && (
-                                <span className="flex items-center space-x-1">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  <span className="font-medium">
-                                    {new Date(challenge.deadline).toLocaleDateString()}
-                                  </span>
-                                </span>
-                              )}
-                            </div>
-                            
-                            <Link href={`/challenges`}>
-                              <Button 
-                                size="sm" 
-                                className={`shadow-md transition-all ${
-                                  isCompleted
-                                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
-                                    : 'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700'
-                                } text-white`}
-                              >
-                                {isCompleted ? 'Completed ✓' : 'Start →'}
-                              </Button>
-                            </Link>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+
           </div>
 
           {/* Sidebar */}
