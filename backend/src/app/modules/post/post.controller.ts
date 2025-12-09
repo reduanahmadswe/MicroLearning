@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { Types } from 'mongoose';
 import catchAsync from '../../../utils/catchAsync';
 import sendResponse from '../../../utils/sendResponse';
 import { postService } from './post.service';
@@ -29,8 +28,8 @@ export const getFeedPosts = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     success: true,
     message: 'Feed posts retrieved successfully',
-    data: result.posts,
-    meta: result.pagination,
+    data: (result as any).posts,
+    meta: (result as any).pagination,
   });
 });
 
@@ -47,8 +46,8 @@ export const getUserPosts = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     success: true,
     message: 'User posts retrieved successfully',
-    data: result.posts,
-    meta: result.pagination,
+    data: (result as any).posts,
+    meta: (result as any).pagination,
   });
 });
 

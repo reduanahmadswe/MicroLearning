@@ -3,7 +3,7 @@ import { Friend } from './friend.model';
 import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
-import { IFriendRecommendation, IFriendStats } from './friend.types';
+import { IFriendStats } from './friend.types';
 import Notification from '../notification/notification.model';
 
 // Send friend request

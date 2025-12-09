@@ -33,7 +33,7 @@ class QuizService {
       if (!lesson) {
         throw new ApiError(404, 'Lesson not found');
       }
-      
+
       if (lesson.course?.toString() !== (quizData as any).course) {
         throw new ApiError(400, 'Lesson does not belong to the selected course');
       }
@@ -79,13 +79,13 @@ class QuizService {
     const { topic, difficulty, questionCount = 5, lessonId } = generateData;
 
     // Fetch lesson content if lessonId provided
-    let lessonContent = '';
-    if (lessonId) {
-      const lesson = await Lesson.findById(lessonId);
-      if (lesson) {
-        lessonContent = lesson.content;
-      }
-    }
+    // let lessonContent = '';
+    // if (lessonId) {
+    //   const lesson = await Lesson.findById(lessonId);
+    //   if (lesson) {
+    //     lessonContent = lesson.content;
+    //   }
+    // }
 
     // TODO: Integrate with OpenAI/Claude to generate questions based on topic/lesson
     // For now, creating template questions
@@ -197,9 +197,9 @@ class QuizService {
 
   // Get quiz attempts for a specific quiz
   async getQuizAttempts(quizId: string, userId: string) {
-    const attempts = await QuizAttempt.find({ 
-      quiz: quizId, 
-      user: userId 
+    const attempts = await QuizAttempt.find({
+      quiz: quizId,
+      user: userId
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -219,7 +219,7 @@ class QuizService {
     // Calculate score
     let earnedPoints = 0;
     const totalPoints = quiz.questions.reduce((sum, q) => sum + q.points, 0);
-    
+
     const gradedAnswers = answers.map((answer) => {
       const question = quiz.questions[answer.questionIndex];
       if (!question) {
@@ -261,7 +261,7 @@ class QuizService {
     // Update quiz statistics
     const allAttempts = await QuizAttempt.find({ quiz: quizId });
     const averageScore = allAttempts.reduce((sum, a) => sum + a.score, 0) / allAttempts.length;
-    
+
     quiz.attempts = allAttempts.length;
     quiz.averageScore = Math.round(averageScore);
     await quiz.save();
@@ -269,7 +269,7 @@ class QuizService {
     // Award XP if passed
     if (passed) {
       await this.awardQuizXP(userId, earnedPoints);
-      
+
       // Unlock next lesson if this quiz is linked to a lesson
       if (quiz.lesson) {
         await this.unlockNextLesson(userId, quiz.lesson.toString());
@@ -339,9 +339,9 @@ class QuizService {
       if (!Array.isArray(userAnswer)) return false;
       return JSON.stringify(userAnswer.sort()) === JSON.stringify(correctAnswer.sort());
     }
-    
+
     if (Array.isArray(userAnswer)) return false;
-    
+
     return userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
   }
 
@@ -353,7 +353,7 @@ class QuizService {
     const xpToAward = points * 10; // 10 XP per point
     user.xp += xpToAward;
     user.level = Math.floor(user.xp / 100) + 1;
-    
+
     await user.save();
   }
 
@@ -361,7 +361,7 @@ class QuizService {
   private async unlockNextLesson(userId: string, lessonId: string) {
     const lesson = await Lesson.findById(lessonId);
     if (!lesson || !lesson.course) return;
-    
+
     // Find enrollment
     const enrollment = await Enrollment.findOne({
       user: userId,
@@ -373,18 +373,18 @@ class QuizService {
     // Add current lesson to completed if not already there
     if (!enrollment.completedLessons.some((id: any) => id.toString() === lessonId)) {
       enrollment.completedLessons.push(lessonId as any);
-      
+
       // Update progress
       const course = await Course.findById(lesson.course);
       if (course) {
         const totalLessons = course.lessons.length;
         const completedCount = enrollment.completedLessons.length;
         enrollment.progress = Math.round((completedCount / totalLessons) * 100);
-        
+
         // Mark course as completed if 100%
         if (enrollment.progress === 100 && !enrollment.completedAt) {
           enrollment.completedAt = new Date();
-          
+
           // Award completion XP
           const user = await User.findById(userId);
           if (user) {
@@ -394,7 +394,7 @@ class QuizService {
           }
         }
       }
-      
+
       await enrollment.save();
     }
   }
@@ -402,7 +402,7 @@ class QuizService {
   // Get instructor's quizzes
   async getInstructorQuizzes(instructorId: string) {
     console.log('🔍 Fetching quizzes for instructor:', instructorId);
-    
+
     const quizzes = await Quiz.find({ author: instructorId })
       .populate('course', 'title thumbnail')
       .populate('lesson', 'title')
@@ -476,7 +476,7 @@ class QuizService {
 
     // Delete all attempts for this quiz
     await QuizAttempt.deleteMany({ quiz: quizId });
-    
+
     // Delete the quiz
     await Quiz.findByIdAndDelete(quizId);
   }
@@ -497,7 +497,7 @@ class QuizService {
     }
 
     // Create duplicate with (Copy) suffix
-    const duplicateData = quiz.toObject();
+    const duplicateData: any = quiz.toObject();
     delete duplicateData._id;
     delete duplicateData.createdAt;
     delete duplicateData.updatedAt;
@@ -551,14 +551,14 @@ class QuizService {
     }
 
     // Get only enrolled students for this course
-    const enrolledStudents = await Enrollment.find({ 
-      course: quiz.course 
+    const enrolledStudents = await Enrollment.find({
+      course: quiz.course
     }).select('user');
-    
+
     const enrolledUserIds = enrolledStudents.map(e => e.user.toString());
 
     // Filter attempts to only show enrolled students
-    const attempts = await QuizAttempt.find({ 
+    const attempts = await QuizAttempt.find({
       quiz: quizId,
       user: { $in: enrolledUserIds }
     })

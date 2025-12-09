@@ -1,5 +1,5 @@
 import Queue from 'bull';
-import Redis from 'ioredis';
+
 
 // Redis client configuration
 const redisConfig = {
@@ -50,12 +50,12 @@ try {
   console.log('📊 Payment and Enrollment Queues initialized with Redis');
 } catch (error) {
   console.warn('⚠️ Redis not available, queues may not persist across restarts');
-  
+
   // Fallback: Still create queues (Bull will work without Redis but won't persist)
   paymentProcessingQueue = new Queue('payment-processing', {
     redis: { host: 'localhost', port: 6379 },
   });
-  
+
   enrollmentQueue = new Queue('enrollment-processing', {
     redis: { host: 'localhost', port: 6379 },
   });

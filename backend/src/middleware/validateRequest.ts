@@ -3,7 +3,7 @@ import { AnyZodObject } from 'zod';
 import catchAsync from '../utils/catchAsync';
 
 export const validateRequest = (schema: AnyZodObject) => {
-  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  return catchAsync(async (req: Request, _res: Response, next: NextFunction) => {
     console.log('🔍 [Validation] Incoming request:', {
       body: req.body,
       query: req.query,

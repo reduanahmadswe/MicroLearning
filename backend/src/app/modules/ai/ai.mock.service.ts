@@ -20,7 +20,7 @@ import {
  * Generate Mock Lesson
  */
 export const generateMockLesson = async (
-  userId: Types.ObjectId,
+  _userId: Types.ObjectId,
   data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
   const { topic, difficulty = 'beginner', duration = 10 } = data;
@@ -64,15 +64,15 @@ As you progress, you'll discover that ${topic} connects to many other areas. Thi
 ## Conclusion
 
 ${topic} is a valuable skill that opens many doors. Keep practicing, stay curious, and don't be afraid to experiment!`,
-    
+
     summary: `This lesson covers the fundamentals of ${topic}, including basic concepts, practical applications, and how to apply this knowledge effectively. Perfect for ${difficulty} level learners.`,
-    
+
     examples: [
       `**Example 1**: Basic Implementation\nLet's say you want to use ${topic} in a real project. Start by identifying your goal, then break it down into smaller steps.`,
       `**Example 2**: Advanced Usage\nOnce you're comfortable with basics, you can combine ${topic} with other techniques to create powerful solutions.`,
       `**Example 3**: Real-World Scenario\nMany companies use ${topic} to improve their products. Here's how you can apply the same principles.`
     ],
-    
+
     keyPoints: [
       `${topic} is fundamental to understanding this domain`,
       'Start with basics before moving to advanced concepts',
@@ -82,10 +82,10 @@ ${topic} is a valuable skill that opens many doors. Keep practicing, stay curiou
       'Teaching others helps solidify your own understanding',
       'Continuous learning keeps you updated with best practices'
     ],
-    
+
     estimatedDuration: duration,
     difficulty: difficulty,
-    
+
     metadata: {
       topic: topic,
       generatedBy: 'openai' as AIProvider,
@@ -101,13 +101,13 @@ ${topic} is a valuable skill that opens many doors. Keep practicing, stay curiou
  * Generate Mock Quiz
  */
 export const generateMockQuiz = async (
-  userId: Types.ObjectId,
+  _userId: Types.ObjectId,
   data: IGenerateQuizRequest
 ): Promise<IGeneratedQuiz> => {
   const { topic, numberOfQuestions = 5, difficulty = 'beginner' } = data;
 
   const questions = [];
-  
+
   for (let i = 1; i <= numberOfQuestions; i++) {
     questions.push({
       question: `Question ${i}: What is the most important aspect of ${topic}?`,
@@ -146,13 +146,13 @@ export const generateMockQuiz = async (
  * Generate Mock Flashcards
  */
 export const generateMockFlashcards = async (
-  userId: Types.ObjectId,
+  _userId: Types.ObjectId,
   data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
   const { topic, numberOfCards = 10 } = data;
 
   const cards = [];
-  
+
   for (let i = 1; i <= numberOfCards; i++) {
     cards.push({
       front: `Key Concept ${i} of ${topic}`,
@@ -181,18 +181,18 @@ export const generateMockFlashcards = async (
  * Mock Chat Response
  */
 export const generateMockChat = async (
-  userId: Types.ObjectId,
+  _userId: Types.ObjectId,
   data: IChatRequest
 ): Promise<IChatResponse> => {
   const { message, context } = data;
 
   const responses = [
     `That's a great question about "${message}"! Let me help you understand this better. ${context?.topic ? `Based on the context you provided about ${context.topic}..., ` : ''}The key thing to remember is that learning is a journey, not a destination.`,
-    
+
     `I understand you're asking about "${message}". Here's what you need to know: This is a fundamental concept that builds upon previous knowledge. Try breaking it down into smaller parts and practice each one separately.`,
-    
+
     `Excellent question! Regarding "${message}" - think of it this way: Every expert was once a beginner. The important thing is to keep practicing and don't be afraid to make mistakes. ${context ? 'Looking at your context, ' : ''}I'd recommend starting with the basics and gradually building up complexity.`,
-    
+
     `Thanks for asking about "${message}"! This is actually a common question. The best approach is to: 1) Understand the fundamentals, 2) Practice with real examples, 3) Review regularly. ${context ? 'In your specific case, ' : ''}Focus on one concept at a time for best results.`,
   ];
 

@@ -21,9 +21,9 @@ interface EnrollmentJob {
  */
 paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValidationJob>) => {
   const { paymentId, transactionId, validationData } = job.data;
-  
+
   console.log(`🔄 Processing payment validation for payment: ${paymentId}`);
-  
+
   try {
     // Find payment record
     const payment = await CoursePayment.findById(paymentId);
@@ -41,7 +41,7 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
     const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
     const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
     const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
-    
+
     const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
     const validation = await sslcz.validate({ val_id: transactionId });
 
@@ -75,7 +75,7 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
     }
   } catch (error: any) {
     console.error(`❌ Payment validation error for ${paymentId}:`, error.message);
-    
+
     // Update payment status to failed after all retries
     if (job.attemptsMade >= (job.opts.attempts || 3)) {
       try {
@@ -86,7 +86,7 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
         console.error('Failed to update payment status:', dbError);
       }
     }
-    
+
     throw error; // Re-throw to trigger retry
   }
 });
@@ -96,10 +96,10 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
  * Separate from payment validation for better fault tolerance
  */
 enrollmentQueue.process('create-enrollment', async (job: Job<EnrollmentJob>) => {
-  const { userId, courseId, paymentId } = job.data;
-  
+  const { userId, courseId, paymentId: _paymentId } = job.data;
+
   console.log(`🔄 Creating enrollment for user ${userId}, course ${courseId}`);
-  
+
   try {
     // Check if already enrolled
     const existingEnrollment = await Enrollment.findOne({

@@ -42,7 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Health check route
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
@@ -83,7 +83,7 @@ app.use('/api/v1/ai-tutor', AITutorRoutes);
 app.use('/api/v1/posts', PostRoutes);
 
 // Root route
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'AI-Powered Micro-Learning Platform API',

@@ -58,7 +58,7 @@ export const notifyPostLike = (
 export const notifyPostComment = (
   postAuthorId: string,
   postId: string,
-  postTitle: string,
+  _postTitle: string,
   commentedByUserId: string,
   commentedByUserName: string,
   commentContent: string,

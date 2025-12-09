@@ -652,7 +652,7 @@ class LessonService {
 
     // Import models
     const { Course, Enrollment } = require('../course/course.model');
-    const { QuizAttempt } = require('../quiz/quiz.model');
+    // const { QuizAttempt } = require('../quiz/quiz.model');
 
     // Get course
     const course = await Course.findById(lesson.course).lean();

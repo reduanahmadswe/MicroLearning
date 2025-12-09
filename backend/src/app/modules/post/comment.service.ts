@@ -1,4 +1,4 @@
-import PostComment, { IComment } from './comment.model';
+import PostComment from './comment.model';
 import { Post } from './post.model';
 import ApiError from '../../../utils/ApiError';
 

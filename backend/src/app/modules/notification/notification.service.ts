@@ -1,5 +1,5 @@
 import Notification from './notification.model';
-import User from '../auth/auth.model';
+
 import ApiError from '../../../utils/ApiError';
 import { ICreateNotificationRequest } from './notification.types';
 import { io } from '../../../server';

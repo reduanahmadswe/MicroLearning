@@ -15,7 +15,6 @@ import {
   SessionType,
 } from './careerMentor.types';
 import { CareerMentorSession } from './careerMentor.model';
-import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
 
 /**
@@ -77,7 +76,7 @@ export const getCareerAdvice = async (
       throw new ApiError(404, 'Career mentor session not found');
     }
   } else {
-    const _user = await User.findById(userId).select('name');
+    // const _user = await User.findById(userId).select('name');
     session = await CareerMentorSession.create({
       user: userId,
       title: data.message.substring(0, 60) + (data.message.length > 60 ? '...' : ''),
@@ -124,7 +123,7 @@ Session Type: ${sessionType}`;
 
   // Build conversation history
   const messages: any[] = [{ role: 'system', content: systemPrompt }];
-  
+
   // Add recent messages (last 10)
   const recentMessages = session.messages.slice(-10);
   recentMessages.forEach((msg) => {
@@ -519,7 +518,7 @@ export const getCareerMentorStats = async (userId: Types.ObjectId): Promise<ICar
   sessions.forEach((session) => {
     bySessionType[session.sessionType] = (bySessionType[session.sessionType] || 0) + 1;
     totalMessages += session.messages.length;
-    
+
     session.messages.forEach((msg) => {
       if (msg.actionItems) {
         totalActionItems += msg.actionItems.length;

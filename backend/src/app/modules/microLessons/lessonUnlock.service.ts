@@ -1,6 +1,6 @@
 import Lesson from '../microLessons/lesson.model';
 import { QuizAttempt } from '../quiz/quiz.model';
-import { Course, Enrollment } from '../course/course.model';
+import { Enrollment } from '../course/course.model';
 import ApiError from '../../../utils/ApiError';
 
 class LessonUnlockService {
@@ -97,7 +97,7 @@ class LessonUnlockService {
   /**
    * Check if next lesson should be unlocked after quiz pass
    */
-  async unlockNextLesson(userId: string, currentLessonId: string): Promise<boolean> {
+  async unlockNextLesson(_userId: string, currentLessonId: string): Promise<boolean> {
     const currentLesson = await Lesson.findById(currentLessonId);
     if (!currentLesson || !currentLesson.course) {
       return false;

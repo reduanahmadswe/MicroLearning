@@ -97,7 +97,7 @@ class LeaderboardController {
   // Get user's rank and position
   getMyRank = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
-    const result = await leaderboardService.getMyRank(userId);
+    const result = await leaderboardService.getMyRank(userId!);
 
     sendResponse(res, {
       statusCode: 200,
@@ -122,7 +122,7 @@ class LeaderboardController {
   });
 
   // Admin: Get leaderboard statistics
-  getLeaderboardStats = catchAsync(async (req: Request, res: Response) => {
+  getLeaderboardStats = catchAsync(async (_req: Request, res: Response) => {
     const result = await leaderboardService.getLeaderboardStats();
 
     sendResponse(res, {

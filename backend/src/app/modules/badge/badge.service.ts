@@ -90,11 +90,11 @@ class BadgeService {
       if (progress >= badge.criteria.threshold) {
         achievement.isCompleted = true;
         achievement.earnedAt = new Date();
-        
+
         // Award XP
         user.xp += badge.xpReward;
         user.level = Math.floor(user.xp / 100) + 1;
-        
+
         // Add badge to user's badges array
         if (!user.badges.includes(badge._id as any)) {
           user.badges.push(badge._id as any);
@@ -113,7 +113,7 @@ class BadgeService {
 
   // Calculate progress for badge criteria
   private async calculateProgress(userId: string, criteria: any): Promise<number> {
-    const { type, threshold, topic } = criteria;
+    const { type, topic } = criteria;
 
     switch (type) {
       case 'streak':
@@ -216,7 +216,7 @@ class BadgeService {
         rarity: 'legendary',
         xpReward: 1000,
       },
-      
+
       // Lesson completion badges
       {
         name: 'First Steps',
@@ -242,7 +242,7 @@ class BadgeService {
         rarity: 'epic',
         xpReward: 500,
       },
-      
+
       // Quiz badges
       {
         name: 'Quiz Novice',
@@ -268,7 +268,7 @@ class BadgeService {
         rarity: 'legendary',
         xpReward: 800,
       },
-      
+
       // XP badges
       {
         name: 'Rising Star',
@@ -294,7 +294,7 @@ class BadgeService {
         rarity: 'legendary',
         xpReward: 2000,
       },
-      
+
       // Flashcard badges
       {
         name: 'Memory Maker',

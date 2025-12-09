@@ -14,7 +14,7 @@ declare global {
 }
 
 export const authGuard = (...allowedRoles: string[]) => {
-  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  return catchAsync(async (req: Request, _res: Response, next: NextFunction) => {
     // Get token from header
     const authHeader = req.headers.authorization;
 
@@ -55,7 +55,7 @@ export const authGuard = (...allowedRoles: string[]) => {
 
 // Optional auth - doesn't throw error if no token, just attaches user if token is valid
 export const optionalAuth = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
 
@@ -66,7 +66,7 @@ export const optionalAuth = () => {
 
       const token = authHeader.split(' ')[1];
       const secret = process.env.JWT_ACCESS_SECRET;
-      
+
       if (!secret) {
         return next(); // Continue without auth if secret not configured
       }
@@ -78,7 +78,7 @@ export const optionalAuth = () => {
         // Invalid/expired token, continue without user
         console.log('Optional auth: Invalid token, continuing without user');
       }
-      
+
       next();
     } catch (error) {
       // Any other error, just continue

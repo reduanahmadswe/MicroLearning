@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import ApiError from '../utils/ApiError';
 
 interface IErrorResponse {
   statusCode: number;
@@ -12,9 +11,9 @@ interface IErrorResponse {
 
 const globalErrorHandler = (
   error: any,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   let statusCode = error.statusCode || 500;
   let message = error.message || 'Internal Server Error';

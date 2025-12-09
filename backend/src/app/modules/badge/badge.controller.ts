@@ -17,7 +17,7 @@ class BadgeController {
   });
 
   // Get all badges
-  getAllBadges = catchAsync(async (req: Request, res: Response) => {
+  getAllBadges = catchAsync(async (_req: Request, res: Response) => {
     const result = await badgeService.getAllBadges();
 
     sendResponse(res, {
@@ -94,7 +94,7 @@ class BadgeController {
   });
 
   // Initialize default badges
-  initializeDefaultBadges = catchAsync(async (req: Request, res: Response) => {
+  initializeDefaultBadges = catchAsync(async (_req: Request, res: Response) => {
     const result = await badgeService.initializeDefaultBadges();
 
     sendResponse(res, {
@@ -135,7 +135,7 @@ class BadgeController {
   manuallyAwardBadge = catchAsync(async (req: Request, res: Response) => {
     console.log('🎯 [Award Badge] Request body:', JSON.stringify(req.body, null, 2));
     const { userId, badgeId, reason } = req.body;
-    
+
     try {
       const result = await badgeService.manuallyAwardBadge(userId, badgeId, reason);
       console.log('✅ [Award Badge] Success');
@@ -154,7 +154,7 @@ class BadgeController {
   });
 
   // Admin: Get all badges with statistics
-  getAllBadgesAdmin = catchAsync(async (req: Request, res: Response) => {
+  getAllBadgesAdmin = catchAsync(async (_req: Request, res: Response) => {
     const result = await badgeService.getAllBadgesWithStats();
 
     sendResponse(res, {
