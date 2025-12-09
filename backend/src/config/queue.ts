@@ -1,96 +1,118 @@
-import Queue from 'bull';
-
-
-// Redis client configuration
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  retryStrategy: (times: number) => {
-    if (times > 3) {
-      console.warn('⚠️ Redis connection failed. Using in-memory queue fallback.');
-      return null; // Stop retrying
-    }
-    return Math.min(times * 1000, 3000);
-  },
-};
-
-// Create Bull queues with Redis (with fallback)
-let paymentProcessingQueue: Queue.Queue;
-let enrollmentQueue: Queue.Queue;
-
-try {
-  paymentProcessingQueue = new Queue('payment-processing', {
-    redis: redisConfig,
-    defaultJobOptions: {
-      attempts: 5, // Retry 5 times if failed
-      backoff: {
-        type: 'exponential',
-        delay: 2000, // Start with 2 seconds, then exponential backoff
-      },
-      removeOnComplete: false, // Keep completed jobs for 7 days
-      removeOnFail: false, // Keep failed jobs for debugging
-    },
-  });
-
-  enrollmentQueue = new Queue('enrollment-processing', {
-    redis: redisConfig,
-    defaultJobOptions: {
-      attempts: 5,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
-      },
-      removeOnComplete: true,
-      removeOnFail: false,
-    },
-  });
-
-  console.log('📊 Payment and Enrollment Queues initialized with Redis');
-} catch (error) {
-  console.warn('⚠️ Redis not available, queues may not persist across restarts');
-
-  // Fallback: Still create queues (Bull will work without Redis but won't persist)
-  paymentProcessingQueue = new Queue('payment-processing', {
-    redis: { host: 'localhost', port: 6379 },
-  });
-
-  enrollmentQueue = new Queue('enrollment-processing', {
-    redis: { host: 'localhost', port: 6379 },
-  });
+// Simple in-memory queue implementation (no Redis required)
+interface QueueJob {
+  id: string;
+  data: any;
+  attempts: number;
+  status: 'waiting' | 'active' | 'completed' | 'failed';
+  error?: string;
 }
+
+class SimpleQueue {
+  private jobs: Map<string, QueueJob> = new Map();
+  private handlers: Map<string, Function> = new Map();
+  private jobIdCounter = 0;
+
+  constructor(private name: string) {
+    console.log(`📊 ${name} queue initialized (in-memory)`);
+  }
+
+  async add(data: any, options?: any): Promise<QueueJob> {
+    const job: QueueJob = {
+      id: `${this.name}-${++this.jobIdCounter}`,
+      data,
+      attempts: 0,
+      status: 'waiting',
+    };
+
+    this.jobs.set(job.id, job);
+
+    // Process immediately in background
+    setImmediate(() => this.processJob(job.id));
+
+    return job;
+  }
+
+  process(handler: Function) {
+    this.handlers.set('default', handler);
+  }
+
+  private async processJob(jobId: string) {
+    const job = this.jobs.get(jobId);
+    if (!job) return;
+
+    const handler = this.handlers.get('default');
+    if (!handler) return;
+
+    job.status = 'active';
+    job.attempts++;
+
+    try {
+      await handler(job);
+      job.status = 'completed';
+      this.emit('completed', job);
+
+      // Clean up completed jobs after 1 hour
+      setTimeout(() => this.jobs.delete(jobId), 60 * 60 * 1000);
+    } catch (error: any) {
+      job.status = 'failed';
+      job.error = error.message;
+      this.emit('failed', job, error);
+
+      // Retry logic (max 3 attempts)
+      if (job.attempts < 3) {
+        job.status = 'waiting';
+        setTimeout(() => this.processJob(jobId), 5000 * job.attempts);
+      }
+    }
+  }
+
+  on(event: string, callback: Function) {
+    this.handlers.set(event, callback);
+  }
+
+  private emit(event: string, ...args: any[]) {
+    const handler = this.handlers.get(event);
+    if (handler) {
+      handler(...args);
+    }
+  }
+
+  async clean() {
+    // Clean old jobs
+    const now = Date.now();
+    for (const [id, job] of this.jobs.entries()) {
+      if (job.status === 'completed' || job.status === 'failed') {
+        this.jobs.delete(id);
+      }
+    }
+  }
+}
+
+// Create simple in-memory queues
+const paymentProcessingQueue = new SimpleQueue('payment-processing');
+const enrollmentQueue = new SimpleQueue('enrollment-processing');
 
 export { paymentProcessingQueue, enrollmentQueue };
 
-// Cleanup old jobs (older than 7 days)
-const cleanupOldJobs = async () => {
-  try {
-    await paymentProcessingQueue.clean(7 * 24 * 60 * 60 * 1000, 'completed');
-    await paymentProcessingQueue.clean(7 * 24 * 60 * 60 * 1000, 'failed');
-    await enrollmentQueue.clean(7 * 24 * 60 * 60 * 1000, 'completed');
-    await enrollmentQueue.clean(7 * 24 * 60 * 60 * 1000, 'failed');
-  } catch (error) {
-    console.error('Queue cleanup error:', error);
-  }
-};
+// Cleanup old jobs every hour
+setInterval(() => {
+  paymentProcessingQueue.clean();
+  enrollmentQueue.clean();
+}, 60 * 60 * 1000);
 
-// Run cleanup every 6 hours
-setInterval(cleanupOldJobs, 6 * 60 * 60 * 1000);
-
-// Log queue status
-paymentProcessingQueue.on('completed', (job) => {
+// Log queue events
+paymentProcessingQueue.on('completed', (job: QueueJob) => {
   console.log(`✅ Payment job ${job.id} completed`);
 });
 
-paymentProcessingQueue.on('failed', (job, err) => {
-  console.error(`❌ Payment job ${job?.id} failed:`, err.message);
+paymentProcessingQueue.on('failed', (job: QueueJob, err: Error) => {
+  console.error(`❌ Payment job ${job.id} failed:`, err.message);
 });
 
-enrollmentQueue.on('completed', (job) => {
+enrollmentQueue.on('completed', (job: QueueJob) => {
   console.log(`✅ Enrollment job ${job.id} completed`);
 });
 
-enrollmentQueue.on('failed', (job, err) => {
-  console.error(`❌ Enrollment job ${job?.id} failed:`, err.message);
+enrollmentQueue.on('failed', (job: QueueJob, err: Error) => {
+  console.error(`❌ Enrollment job ${job.id} failed:`, err.message);
 });

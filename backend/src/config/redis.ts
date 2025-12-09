@@ -1,42 +1,21 @@
-import Redis from 'ioredis';
+// Redis is disabled - using in-memory caching instead
+// This file exists for compatibility but does nothing
 
-const redisUrl = process.env.REDIS_URL || process.env.REDIS_HOST
-    ? `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`
-    : 'redis://localhost:6379';
-
-const redisClient = new Redis(redisUrl, {
-    maxRetriesPerRequest: 3,
-    retryStrategy(times) {
-        // Stop retrying after 10 attempts in production if Redis is unavailable
-        if (process.env.NODE_ENV === 'production' && times > 10) {
-            console.warn('⚠️ Redis unavailable - running without cache');
-            return null; // Stop retrying
-        }
-        const delay = Math.min(times * 50, 2000);
-        return delay;
+const mockRedisClient = {
+    get: async () => null,
+    set: async () => 'OK',
+    del: async () => 1,
+    exists: async () => 0,
+    expire: async () => 1,
+    ttl: async () => -1,
+    keys: async () => [],
+    flushall: async () => 'OK',
+    on: () => { },
+    connect: async () => {
+        console.log('⚠️ Redis disabled - using in-memory cache');
     },
-    reconnectOnError(err) {
-        const targetError = 'READONLY';
-        if (err.message.includes(targetError)) {
-            return true;
-        }
-        return false;
-    },
-    lazyConnect: true, // Don't connect immediately
-});
+    disconnect: async () => { },
+    quit: async () => { },
+};
 
-redisClient.on('connect', () => {
-    console.log('✅ Redis connected successfully');
-});
-
-redisClient.on('error', (err) => {
-    console.error('❌ Redis connection error:', err.message);
-    // Don't crash the app, just log the error
-});
-
-// Try to connect, but don't crash if it fails
-redisClient.connect().catch((err) => {
-    console.warn('⚠️ Redis unavailable, continuing without cache:', err.message);
-});
-
-export default redisClient;
+export default mockRedisClient;
