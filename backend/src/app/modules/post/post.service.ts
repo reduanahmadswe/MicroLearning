@@ -3,6 +3,7 @@ import { Post as FeedPost } from './post.model';
 import { Friend } from '../friend/friend.model';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
+import { CacheService } from '../../../utils/cache.service';
 
 // Create post
 const createPost = async (userId: string, postData: any) => {
@@ -25,13 +26,20 @@ const createPost = async (userId: string, postData: any) => {
   try {
     const post = await FeedPost.create(postToCreate);
 
-    return await FeedPost.findById(post._id)
+    const populatedPost = await FeedPost.findById(post._id)
       .populate('user', 'name email profilePicture level xp')
       .populate('sharedPost')
       .populate({
         path: 'sharedPost',
         populate: { path: 'user', select: 'name email profilePicture level' },
       });
+
+    // Invalidate feed cache after new post
+    if (postToCreate.visibility === 'public') {
+      await CacheService.invalidatePattern('feed:public:*');
+    }
+
+    return populatedPost;
   } catch (error: any) {
     console.error('❌ Post creation failed!');
     console.error('Error name:', error.name);
@@ -45,6 +53,14 @@ const createPost = async (userId: string, postData: any) => {
 
 // Get feed posts (public posts + friends' posts + own posts)
 const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
+  const cacheKey = `feed:${userId}:${page}:${limit}`;
+
+  // Try to fetch from cache first
+  const cachedFeed = await CacheService.get(cacheKey);
+  if (cachedFeed) {
+    return cachedFeed;
+  }
+
   const skip = (page - 1) * limit;
 
   // Get user's friends to determine "friends" visibility eligibility
@@ -55,11 +71,6 @@ const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
 
   const friendIds = friends.map((f) => f.friend);
 
-  // Query explanation:
-  // 1. { visibility: 'public' } -> Show ALL public posts from anyone.
-  // 2. { visibility: 'friends', user: { $in: friendIds } } -> Show 'friends' posts ONLY from accepted friends.
-  // 3. { user: userId } -> Show ALL my own posts (including private).
-
   const query = {
     $or: [
       { visibility: 'public' },
@@ -68,6 +79,7 @@ const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
     ],
   };
 
+  // Performance Optimization: Use lean() for read-only query
   const posts = await FeedPost.find(query)
     .populate('user', 'name email profilePicture level xp streak')
     .populate('sharedPost')
@@ -78,11 +90,12 @@ const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
     .populate('comments.user', 'name email profilePicture')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   const total = await FeedPost.countDocuments(query);
 
-  return {
+  const result = {
     posts,
     pagination: {
       total,
@@ -91,6 +104,11 @@ const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
       totalPages: Math.ceil(total / limit),
     },
   };
+
+  // Cache the result for 1 minute (feed updates frequently)
+  await CacheService.set(cacheKey, result, 60);
+
+  return result;
 };
 
 // Get user posts
@@ -203,6 +221,9 @@ const deletePost = async (userId: string, postId: string) => {
   }
 
   await FeedPost.deleteOne({ _id: postId });
+
+  // Invalidate feed caches
+  await CacheService.invalidatePattern('feed:*');
 
   return { message: 'Post deleted successfully' };
 };

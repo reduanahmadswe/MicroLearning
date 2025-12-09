@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Shield,
   Users,
@@ -43,6 +52,11 @@ export default function AdminPage() {
   const [content, setContent] = useState<any>({ recentLessons: [], recentQuizzes: [], recentCourses: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [banUserId, setBanUserId] = useState<string | null>(null);
+  const [unbanUserId, setUnbanUserId] = useState<string | null>(null);
+  const [promoteUserId, setPromoteUserId] = useState<string | null>(null);
+  const [demoteUserId, setDemoteUserId] = useState<string | null>(null);
 
   // Pagination state for users
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,63 +110,73 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone and will delete all user data.')) return;
+  const confirmDeleteUser = async () => {
+    if (!deleteUserId) return;
 
     try {
-      await adminAPI.deleteUser(userId);
+      await adminAPI.deleteUser(deleteUserId);
       toast.success('User deleted successfully');
       loadDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setDeleteUserId(null);
     }
   };
 
-  const handleBanUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to ban this user?')) return;
+  const confirmBanUser = async () => {
+    if (!banUserId) return;
 
     try {
-      await adminAPI.banUser(userId);
+      await adminAPI.banUser(banUserId);
       toast.success('User banned successfully');
       loadDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to ban user');
+    } finally {
+      setBanUserId(null);
     }
   };
 
-  const handleUnbanUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to unban this user?')) return;
+  const confirmUnbanUser = async () => {
+    if (!unbanUserId) return;
 
     try {
-      await adminAPI.unbanUser(userId);
+      await adminAPI.unbanUser(unbanUserId);
       toast.success('User unbanned successfully');
       loadDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to unban user');
+    } finally {
+      setUnbanUserId(null);
     }
   };
 
-  const handlePromoteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to promote this user to Instructor?')) return;
+  const confirmPromoteUser = async () => {
+    if (!promoteUserId) return;
 
     try {
-      await adminAPI.promoteToInstructor(userId);
+      await adminAPI.promoteToInstructor(promoteUserId);
       toast.success('User promoted to Instructor');
       loadDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to promote user');
+    } finally {
+      setPromoteUserId(null);
     }
   };
 
-  const handleDemoteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to demote this user to Learner?')) return;
+  const confirmDemoteUser = async () => {
+    if (!demoteUserId) return;
 
     try {
-      await adminAPI.demoteToLearner(userId);
+      await adminAPI.demoteToLearner(demoteUserId);
       toast.success('User demoted to Learner');
       loadDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to demote user');
+    } finally {
+      setDemoteUserId(null);
     }
   };
 
@@ -498,7 +522,7 @@ export default function AdminPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleBanUser(user._id)}
+                                    onClick={() => setBanUserId(user._id)}
                                     className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-xs h-8"
                                   >
                                     <AlertCircle className="w-3.5 h-3.5 mr-1.5" />
@@ -508,7 +532,7 @@ export default function AdminPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleUnbanUser(user._id)}
+                                    onClick={() => setUnbanUserId(user._id)}
                                     className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 dark:border-green-800 text-xs h-8"
                                   >
                                     <Shield className="w-3.5 h-3.5 mr-1.5" />
@@ -520,7 +544,7 @@ export default function AdminPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handlePromoteUser(user._id)}
+                                  onClick={() => setPromoteUserId(user._id)}
                                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-xs h-8"
                                 >
                                   <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
@@ -531,7 +555,7 @@ export default function AdminPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleDemoteUser(user._id)}
+                                  onClick={() => setDemoteUserId(user._id)}
                                   className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-xs h-8"
                                 >
                                   <Activity className="w-3.5 h-3.5 mr-1.5" />
@@ -542,7 +566,7 @@ export default function AdminPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleDeleteUser(user._id)}
+                                  onClick={() => setDeleteUserId(user._id)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800 text-xs h-8"
                                 >
                                   <Trash2 className="w-3.5 h-3.5 mr-1.5" />
@@ -645,7 +669,7 @@ export default function AdminPage() {
                                         <Button
                                           size="sm"
                                           variant="ghost"
-                                          onClick={() => handleBanUser(user._id)}
+                                          onClick={() => setBanUserId(user._id)}
                                           className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 h-8 w-8 p-0"
                                           title="Ban User"
                                         >
@@ -655,7 +679,7 @@ export default function AdminPage() {
                                         <Button
                                           size="sm"
                                           variant="ghost"
-                                          onClick={() => handleUnbanUser(user._id)}
+                                          onClick={() => setUnbanUserId(user._id)}
                                           className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 h-8 w-8 p-0"
                                           title="Unban User"
                                         >
@@ -668,7 +692,7 @@ export default function AdminPage() {
                                       <Button
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => handlePromoteUser(user._id)}
+                                        onClick={() => setPromoteUserId(user._id)}
                                         className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8 p-0"
                                         title="Promote to Instructor"
                                       >
@@ -680,7 +704,7 @@ export default function AdminPage() {
                                       <Button
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => handleDemoteUser(user._id)}
+                                        onClick={() => setDemoteUserId(user._id)}
                                         className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 h-8 w-8 p-0"
                                         title="Demote to Learner"
                                       >
@@ -692,7 +716,7 @@ export default function AdminPage() {
                                       <Button
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => handleDeleteUser(user._id)}
+                                        onClick={() => setDeleteUserId(user._id)}
                                         className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0"
                                         title="Delete User"
                                       >
@@ -800,6 +824,107 @@ export default function AdminPage() {
                     );
                   })()}
                 </div>
+
+                {/* Confirm Dialogs */}
+                <AlertDialog open={!!deleteUserId} onOpenChange={(open) => !open && setDeleteUserId(null)}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete User</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this user? This action cannot be undone and will permanently remove their account and data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmDeleteUser}
+                        className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600"
+                      >
+                        Delete User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={!!banUserId} onOpenChange={(open) => !open && setBanUserId(null)}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Ban User</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to ban this user? They will no longer be able to log in or access the platform.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmBanUser}
+                        className="bg-orange-600 hover:bg-orange-700 text-white focus:ring-orange-600"
+                      >
+                        Ban User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={!!unbanUserId} onOpenChange={(open) => !open && setUnbanUserId(null)}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Unban User</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to unban this user? They will regain access to all platform features.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmUnbanUser}
+                        className="bg-green-600 hover:bg-green-700 text-white focus:ring-green-600"
+                      >
+                        Unban User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={!!promoteUserId} onOpenChange={(open) => !open && setPromoteUserId(null)}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Promote to Instructor</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to promote this user to Instructor? They will gain access to course creation tools.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmPromoteUser}
+                        className="bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-600"
+                      >
+                        Promote User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={!!demoteUserId} onOpenChange={(open) => !open && setDemoteUserId(null)}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Demote to Learner</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to demote this instructor to Learner? They will lose access to instructor tools.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmDemoteUser}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-600"
+                      >
+                        Demote User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
 

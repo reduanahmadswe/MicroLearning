@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, MoreVertical, Trash2, Edit2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,

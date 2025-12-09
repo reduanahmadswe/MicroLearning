@@ -20,6 +20,16 @@ import { Input } from '@/components/ui/input';
 import { adminAPI } from '@/services/api.service';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function UserManagementPage() {
   const router = useRouter();
@@ -28,6 +38,10 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [banUserId, setBanUserId] = useState<string | null>(null);
+  const [promoteUserId, setPromoteUserId] = useState<string | null>(null);
+  const [demoteUserId, setDemoteUserId] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,45 +93,55 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleBanUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to ban this user?')) return;
+  const confirmBanUser = async () => {
+    if (!banUserId) return;
     try {
-      await adminAPI.banUser(userId);
+      await adminAPI.banUser(banUserId);
       toast.success('User banned successfully');
       loadUsers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to ban user');
+    } finally {
+      setBanUserId(null);
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+  const confirmDeleteUser = async () => {
+    if (!deleteUserId) return;
     try {
-      await adminAPI.deleteUser(userId);
+      await adminAPI.deleteUser(deleteUserId);
       toast.success('User deleted successfully');
       loadUsers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setDeleteUserId(null);
     }
   };
 
-  const handlePromoteToInstructor = async (userId: string) => {
+  const confirmPromoteUser = async () => {
+    if (!promoteUserId) return;
     try {
-      await adminAPI.promoteToInstructor(userId);
+      await adminAPI.promoteToInstructor(promoteUserId);
       toast.success('User promoted to Instructor');
       loadUsers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to promote user');
+    } finally {
+      setPromoteUserId(null);
     }
   };
 
-  const handleDemoteToLearner = async (userId: string) => {
+  const confirmDemoteUser = async () => {
+    if (!demoteUserId) return;
     try {
-      await adminAPI.demoteToLearner(userId);
+      await adminAPI.demoteToLearner(demoteUserId);
       toast.success('User demoted to Learner');
       loadUsers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to demote user');
+    } finally {
+      setDemoteUserId(null);
     }
   };
 
@@ -161,8 +185,8 @@ export default function UserManagementPage() {
           key={i}
           onClick={() => paginate(i)}
           className={`px-3 py-1 text-sm rounded-lg ${currentPage === i
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'border border-input hover:bg-muted'
+            ? 'bg-primary text-primary-foreground font-medium'
+            : 'border border-input hover:bg-muted'
             }`}
         >
           {i}
@@ -312,8 +336,8 @@ export default function UserManagementPage() {
                         </td>
                         <td className="px-4 py-4">
                           <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${user.isActive
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
                             }`}>
                             {user.isActive ? 'Active' : 'Banned'}
                           </span>
@@ -332,7 +356,7 @@ export default function UserManagementPage() {
                             </button>
                             {user.role === 'learner' && (
                               <button
-                                onClick={() => handlePromoteToInstructor(user._id)}
+                                onClick={() => setPromoteUserId(user._id)}
                                 className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                 title="Promote to Instructor"
                               >
@@ -341,7 +365,7 @@ export default function UserManagementPage() {
                             )}
                             {user.role === 'instructor' && (
                               <button
-                                onClick={() => handleDemoteToLearner(user._id)}
+                                onClick={() => setDemoteUserId(user._id)}
                                 className="p-2 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
                                 title="Demote to Learner"
                               >
@@ -349,11 +373,18 @@ export default function UserManagementPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDeleteUser(user._id)}
+                              onClick={() => setDeleteUserId(user._id)}
                               className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                               title="Delete User"
                             >
                               <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setBanUserId(user._id)}
+                              className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                              title={user.isActive ? "Ban User" : "Unban User"}
+                            >
+                              <Shield className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
@@ -396,6 +427,90 @@ export default function UserManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete User Dialog */}
+      <AlertDialog open={!!deleteUserId} onOpenChange={(open) => !open && setDeleteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this user? This action cannot be undone and will permanently remove their account and data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteUser}
+              className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ban User Dialog */}
+      <AlertDialog open={!!banUserId} onOpenChange={(open) => !open && setBanUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to ban this user? They will no longer be able to log in or access the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBanUser}
+              className="bg-purple-600 hover:bg-purple-700 text-white focus:ring-purple-600"
+            >
+              Ban User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Promote User Dialog */}
+      <AlertDialog open={!!promoteUserId} onOpenChange={(open) => !open && setPromoteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Promote to Instructor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to promote this user to Instructor? They will gain access to course creation and management tools.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmPromoteUser}
+              className="bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-600"
+            >
+              Promote User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Demote User Dialog */}
+      <AlertDialog open={!!demoteUserId} onOpenChange={(open) => !open && setDemoteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Demote to Learner</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to demote this user to Learner? They will lose access to instructor dashboards and tools.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDemoteUser}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-600"
+            >
+              Demote User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
