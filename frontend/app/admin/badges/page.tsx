@@ -79,7 +79,7 @@ export default function AdminBadgesPage() {
 
       console.log('Searching users with query:', query);
 
-      const res = await axios.get(`http://localhost:5000/api/v1/admin/users`, {
+      const res = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/admin/users`, {
         params: { search: query, limit: 20 },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -429,8 +429,8 @@ export default function AdminBadgesPage() {
                         type="button"
                         onClick={() => setFormData({ ...formData, icon: iconUrl })}
                         className={`p-1.5 sm:p-2 rounded-lg border-2 transition-all hover:scale-110 ${formData.icon === iconUrl
-                            ? 'border-primary bg-primary/10 shadow-lg'
-                            : 'border-transparent hover:border-primary/50 bg-card'
+                          ? 'border-primary bg-primary/10 shadow-lg'
+                          : 'border-transparent hover:border-primary/50 bg-card'
                           }`}
                         title={`Icon ${idx + 1}`}
                       >

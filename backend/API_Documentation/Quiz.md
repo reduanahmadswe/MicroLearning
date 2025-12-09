@@ -545,7 +545,7 @@ if (quiz.timeLimit) {
 
 ### Environment Variables
 ```
-base_url=http://localhost:5000
+base_url=https://microlearnignbackend.vercel.app/
 access_token={{your_jwt_token}}
 quiz_id={{quiz_id}}
 attempt_id={{attempt_id}}

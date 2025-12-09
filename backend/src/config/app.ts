@@ -35,8 +35,19 @@ import PostRoutes from '../app/modules/post/post.route';
 
 const app: Application = express();
 
-// Middleware
-app.use(cors());
+// CORS Middleware - MUST be first
+app.use(cors({
+  origin: true, // Allow all origins (reflects the request origin)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Request-Id'],
+  maxAge: 86400, // 24 hours
+}));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

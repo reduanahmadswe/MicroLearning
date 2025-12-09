@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:5000/api/v1/progress
+https://microlearnignbackend.vercel.app/api/v1/progress
 ```
 
 ---

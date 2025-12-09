@@ -44,15 +44,15 @@ export default function CourseLessonsPage() {
       console.log('🔑 Token:', token ? 'Present' : 'Missing');
 
       // Fetch course
-      const courseRes = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
+      const courseRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('✅ Course response:', courseRes.data);
       setCourse(courseRes.data.data || courseRes.data);
 
       // Fetch lessons for this course
-      console.log('🔍 Fetching lessons with URL:', `http://localhost:5000/api/v1/lessons?course=${courseId}`);
-      const lessonsRes = await axios.get(`http://localhost:5000/api/v1/lessons?course=${courseId}`, {
+      console.log('🔍 Fetching lessons with URL:', `https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}`);
+      const lessonsRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

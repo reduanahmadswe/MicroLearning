@@ -514,7 +514,7 @@ Add notes like "Review on Friday" or "Difficult - practice more".
 
 ### Environment Variables
 ```
-base_url=http://localhost:5000
+base_url=https://microlearnignbackend.vercel.app/
 access_token={{your_jwt_token}}
 lesson_id={{lesson_id}}
 bookmark_id={{bookmark_id}}

@@ -46,14 +46,14 @@ export default function CreateQuizForCourseLessonPage() {
   const fetchData = async () => {
     try {
       // Fetch lesson
-      const lessonRes = await axios.get(`http://localhost:5000/api/v1/lessons/${lessonId}`, {
+      const lessonRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/lessons/${lessonId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const lessonData = lessonRes.data.data;
       setLesson(lessonData);
 
       // Fetch course
-      const courseRes = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
+      const courseRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCourse(courseRes.data.data);

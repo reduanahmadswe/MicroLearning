@@ -51,7 +51,7 @@ npm run dev
 
 Postman/Thunder Client দিয়ে test করুন:
 
-**POST** `http://localhost:5000/api/email/test`
+**POST** `https://microlearnignbackend.vercel.app/api/email/test`
 
 Body (JSON):
 ```json
@@ -64,7 +64,7 @@ Body (JSON):
 
 #### Step 1: Templates Initialize করুন
 
-**POST** `http://localhost:5000/api/email/admin/initialize-templates`
+**POST** `https://microlearnignbackend.vercel.app/api/email/admin/initialize-templates`
 
 Headers:
 ```
@@ -73,7 +73,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 #### Step 2: Email পাঠান
 
-**POST** `http://localhost:5000/api/email/send`
+**POST** `https://microlearnignbackend.vercel.app/api/email/send`
 
 Headers:
 ```

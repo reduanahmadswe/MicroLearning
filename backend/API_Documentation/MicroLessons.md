@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:5000/api/v1/lessons
+https://microlearnignbackend.vercel.app/api/v1/lessons
 ```
 
 ---
@@ -425,7 +425,7 @@ Authorization: Bearer <access_token>
 
 ### Environment Variables
 ```
-baseUrl: http://localhost:5000/api/v1
+baseUrl: https://microlearnignbackend.vercel.app/api/v1
 accessToken: (auto-populated after login)
 ```
 

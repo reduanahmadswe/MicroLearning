@@ -469,7 +469,7 @@ sessionCards.data.forEach(card => {
 
 ### Environment Variables
 ```
-base_url=http://localhost:5000
+base_url=https://microlearnignbackend.vercel.app/
 access_token={{your_jwt_token}}
 flashcard_id={{flashcard_id}}
 lesson_id={{lesson_id}}

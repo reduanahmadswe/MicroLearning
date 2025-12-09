@@ -53,62 +53,79 @@ const createPost = async (userId: string, postData: any) => {
 
 // Get feed posts (public posts + friends' posts + own posts)
 const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
-  const cacheKey = `feed:${userId}:${page}:${limit}`;
+  try {
+    const cacheKey = `feed:${userId}:${page}:${limit}`;
 
-  // Try to fetch from cache first
-  const cachedFeed = await CacheService.get(cacheKey);
-  if (cachedFeed) {
-    return cachedFeed;
+    // Try to fetch from cache first
+    try {
+      const cachedFeed = await CacheService.get(cacheKey);
+      if (cachedFeed) {
+        return cachedFeed;
+      }
+    } catch (cacheError) {
+      console.warn('Cache fetch failed, continuing without cache:', cacheError);
+    }
+
+    const skip = (page - 1) * limit;
+
+    // Get user's friends to determine "friends" visibility eligibility
+    let friendIds: any[] = [];
+    try {
+      const friends = await Friend.find({
+        user: userId,
+        status: 'accepted',
+      }).select('friend');
+      friendIds = friends.map((f) => f.friend);
+    } catch (friendError) {
+      console.warn('Friend lookup failed, showing only public posts:', friendError);
+    }
+
+    const query = {
+      $or: [
+        { visibility: 'public' },
+        { visibility: 'friends', user: { $in: friendIds } },
+        { user: userId },
+      ],
+    };
+
+    // Performance Optimization: Use lean() for read-only query
+    const posts = await FeedPost.find(query)
+      .populate('user', 'name email profilePicture level xp streak')
+      .populate('sharedPost')
+      .populate({
+        path: 'sharedPost',
+        populate: { path: 'user', select: 'name email profilePicture level' },
+      })
+      .populate('comments.user', 'name email profilePicture')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await FeedPost.countDocuments(query);
+
+    const result = {
+      posts,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+
+    // Cache the result for 1 minute (feed updates frequently)
+    try {
+      await CacheService.set(cacheKey, result, 60);
+    } catch (cacheError) {
+      console.warn('Cache set failed:', cacheError);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('getFeedPosts error:', error);
+    throw error;
   }
-
-  const skip = (page - 1) * limit;
-
-  // Get user's friends to determine "friends" visibility eligibility
-  const friends = await Friend.find({
-    user: userId,
-    status: 'accepted',
-  }).select('friend');
-
-  const friendIds = friends.map((f) => f.friend);
-
-  const query = {
-    $or: [
-      { visibility: 'public' },
-      { visibility: 'friends', user: { $in: friendIds } },
-      { user: userId },
-    ],
-  };
-
-  // Performance Optimization: Use lean() for read-only query
-  const posts = await FeedPost.find(query)
-    .populate('user', 'name email profilePicture level xp streak')
-    .populate('sharedPost')
-    .populate({
-      path: 'sharedPost',
-      populate: { path: 'user', select: 'name email profilePicture level' },
-    })
-    .populate('comments.user', 'name email profilePicture')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
-
-  const total = await FeedPost.countDocuments(query);
-
-  const result = {
-    posts,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-
-  // Cache the result for 1 minute (feed updates frequently)
-  await CacheService.set(cacheKey, result, 60);
-
-  return result;
 };
 
 // Get user posts

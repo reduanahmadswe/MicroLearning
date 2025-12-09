@@ -35,7 +35,7 @@ export default function EditLessonPage() {
   const fetchLesson = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/v1/lessons/${lessonId}`, {
+      const res = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/lessons/${lessonId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -73,7 +73,7 @@ export default function EditLessonPage() {
       setSaving(true);
 
       await axios.put(
-        `http://localhost:5000/api/v1/lessons/${lessonId}`,
+        `https://microlearnignbackend.vercel.app/api/v1/lessons/${lessonId}`,
         lessonData,
         {
           headers: { Authorization: `Bearer ${token}` },

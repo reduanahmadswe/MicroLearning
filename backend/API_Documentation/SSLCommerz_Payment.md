@@ -24,7 +24,7 @@
 SSLCOMMERZ_STORE_ID=your_store_id_here
 SSLCOMMERZ_STORE_PASSWORD=your_store_password_here
 SSLCOMMERZ_IS_LIVE=false
-BACKEND_URL=http://localhost:5000
+BACKEND_URL=https://microlearnignbackend.vercel.app/
 FRONTEND_URL=http://localhost:3000
 ```
 

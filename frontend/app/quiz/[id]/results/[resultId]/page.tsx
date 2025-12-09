@@ -47,7 +47,7 @@ export default function QuizResultsPage() {
   // Auto redirect to next lesson after 3 seconds if passed
   useEffect(() => {
     console.log('🔍 Redirect check - Passed:', result?.passed, '| Next Lesson:', nextLesson);
-    
+
     if (result?.passed && nextLesson) {
       console.log('✅ Quiz passed! Setting 3-second timer for redirect to:', nextLesson.title);
       const timer = setTimeout(() => {
@@ -89,35 +89,35 @@ export default function QuizResultsPage() {
 
       console.log('📚 Loading next lesson for:', result.quiz.lesson);
       const token = localStorage.getItem('token');
-      
+
       // Get current lesson details
-      const lessonResponse = await fetch(`http://localhost:5000/api/v1/lessons/${result.quiz.lesson}`, {
+      const lessonResponse = await fetch(`https://microlearnignbackend.vercel.app/api/v1/lessons/${result.quiz.lesson}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (!lessonResponse.ok) {
         console.log('❌ Failed to fetch current lesson');
         return;
       }
-      
+
       const lessonData = await lessonResponse.json();
       const currentLesson = lessonData.data;
       console.log('📖 Current lesson:', currentLesson.title, '| Order:', currentLesson.order);
-      
+
       if (!currentLesson.course) {
         console.log('⚠️ Current lesson has no course');
         return;
       }
-      
+
       const courseId = typeof currentLesson.course === 'string' ? currentLesson.course : currentLesson.course._id;
       console.log('🎓 Course ID:', courseId, '| Looking for order:', (currentLesson.order || 0) + 1);
-      
+
       // Get next lesson
       const nextResponse = await fetch(
-        `http://localhost:5000/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
+        `https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       if (nextResponse.ok) {
         const nextData = await nextResponse.json();
         console.log('📦 Next lesson response:', nextData);
@@ -137,15 +137,15 @@ export default function QuizResultsPage() {
 
   const handleShare = () => {
     if (!result) return;
-    
+
     const text = `I scored ${result.percentage}% on "${result.quiz.title}" quiz! 🎉`;
-    
+
     if (navigator.share) {
       navigator.share({
         title: 'Quiz Results',
         text: text,
         url: window.location.href,
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       navigator.clipboard.writeText(text + '\n' + window.location.href);
       toast.success('Results copied to clipboard!');
@@ -212,16 +212,15 @@ export default function QuizResultsPage() {
         {/* Result Card */}
         <Card className={`mb-4 sm:mb-6 lg:mb-8 shadow-lg ${result.passed ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50' : 'bg-gradient-to-br from-red-50 via-orange-50 to-pink-50'}`}>
           <CardContent className="p-4 sm:p-6 lg:p-8 text-center">
-            <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full mb-3 sm:mb-4 shadow-md ${
-              result.passed ? 'bg-gradient-to-br from-green-100 to-teal-100' : 'bg-gradient-to-br from-red-100 to-orange-100'
-            }`}>
+            <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full mb-3 sm:mb-4 shadow-md ${result.passed ? 'bg-gradient-to-br from-green-100 to-teal-100' : 'bg-gradient-to-br from-red-100 to-orange-100'
+              }`}>
               {result.passed ? (
                 <Trophy className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-green-600" />
               ) : (
                 <XCircle className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-red-600" />
               )}
             </div>
-            
+
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
               {result.passed ? 'Congratulations! 🎉' : 'Keep Trying! 💪'}
             </h2>
@@ -342,7 +341,7 @@ export default function QuizResultsPage() {
                     Congratulations! You scored {result.percentage}% and completed all lessons in this course!
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => router.push('/dashboard')}
                   className="bg-white text-green-600 hover:bg-gray-100 font-semibold w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
                 >
@@ -370,7 +369,7 @@ export default function QuizResultsPage() {
                     💡 Review the lesson content and retake the quiz to continue.
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={handleRetake}
                   className="bg-white text-red-600 hover:bg-gray-100 font-semibold w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
                 >
@@ -441,13 +440,12 @@ export default function QuizResultsPage() {
                           return (
                             <div
                               key={optIndex}
-                              className={`p-2.5 sm:p-3 rounded-lg border-2 ${
-                                isCorrectAnswer
+                              className={`p-2.5 sm:p-3 rounded-lg border-2 ${isCorrectAnswer
                                   ? 'border-green-500 bg-green-50 shadow-sm'
                                   : isUserAnswer
-                                  ? 'border-red-500 bg-red-50 shadow-sm'
-                                  : 'border-gray-200'
-                              }`}
+                                    ? 'border-red-500 bg-red-50 shadow-sm'
+                                    : 'border-gray-200'
+                                }`}
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <span className="text-xs sm:text-sm text-gray-900">{option}</span>
