@@ -1,4 +1,3 @@
-import { Job } from 'bull';
 import { paymentProcessingQueue, enrollmentQueue } from '../config/queue';
 import { CoursePayment, Course, Enrollment } from '../app/modules/course/course.model';
 import SSLCommerzPayment from 'sslcommerz-lts';
@@ -19,8 +18,8 @@ interface EnrollmentJob {
  * Process payment validation in background queue
  * This ensures payment validation continues even if request times out
  */
-paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValidationJob>) => {
-  const { paymentId, transactionId, validationData } = job.data;
+paymentProcessingQueue.process(async (job: any) => {
+  const { paymentId, transactionId, validationData } = job.data as PaymentValidationJob;
 
   console.log(`🔄 Processing payment validation for payment: ${paymentId}`);
 
@@ -56,16 +55,10 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
       await payment.save();
 
       // Add enrollment job to queue
-      await enrollmentQueue.add('create-enrollment', {
+      await enrollmentQueue.add({
         userId: payment.user.toString(),
         courseId: payment.course.toString(),
         paymentId: payment._id.toString(),
-      }, {
-        attempts: 5,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
       });
 
       console.log(`✅ Payment ${paymentId} validated successfully`);
@@ -77,7 +70,7 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
     console.error(`❌ Payment validation error for ${paymentId}:`, error.message);
 
     // Update payment status to failed after all retries
-    if (job.attemptsMade >= (job.opts.attempts || 3)) {
+    if (job.attempts >= 3) {
       try {
         await CoursePayment.findByIdAndUpdate(paymentId, {
           paymentStatus: 'failed',
@@ -95,8 +88,8 @@ paymentProcessingQueue.process('validate-payment', async (job: Job<PaymentValida
  * Process enrollment creation in background queue
  * Separate from payment validation for better fault tolerance
  */
-enrollmentQueue.process('create-enrollment', async (job: Job<EnrollmentJob>) => {
-  const { userId, courseId, paymentId: _paymentId } = job.data;
+enrollmentQueue.process(async (job: any) => {
+  const { userId, courseId } = job.data as EnrollmentJob;
 
   console.log(`🔄 Creating enrollment for user ${userId}, course ${courseId}`);
 

@@ -16,7 +16,7 @@ class SimpleQueue {
     console.log(`📊 ${name} queue initialized (in-memory)`);
   }
 
-  async add(data: any, options?: any): Promise<QueueJob> {
+  async add(data: any): Promise<QueueJob> {
     const job: QueueJob = {
       id: `${this.name}-${++this.jobIdCounter}`,
       data,
@@ -79,7 +79,6 @@ class SimpleQueue {
 
   async clean() {
     // Clean old jobs
-    const now = Date.now();
     for (const [id, job] of this.jobs.entries()) {
       if (job.status === 'completed' || job.status === 'failed') {
         this.jobs.delete(id);

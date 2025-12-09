@@ -1,4 +1,5 @@
-import redisClient from '../config/redis';
+// Simple in-memory cache (no Redis)
+const cache = new Map<string, { data: any; expires: number }>();
 
 export class CacheService {
     /**
@@ -7,14 +8,19 @@ export class CacheService {
      */
     static async get<T>(key: string): Promise<T | null> {
         try {
-            const data = await redisClient.get(key);
-            if (data) {
-                return JSON.parse(data) as T;
+            const item = cache.get(key);
+            if (!item) return null;
+
+            // Check if expired
+            if (Date.now() > item.expires) {
+                cache.delete(key);
+                return null;
             }
-            return null;
+
+            return item.data as T;
         } catch (error) {
             console.error('Cache Get Error:', error);
-            return null; // Fail silently, return null to fetch from DB
+            return null;
         }
     }
 
@@ -26,8 +32,10 @@ export class CacheService {
      */
     static async set(key: string, data: any, ttl: number = 3600): Promise<void> {
         try {
-            const serializedData = JSON.stringify(data);
-            await redisClient.setex(key, ttl, serializedData);
+            cache.set(key, {
+                data,
+                expires: Date.now() + (ttl * 1000),
+            });
         } catch (error) {
             console.error('Cache Set Error:', error);
         }
@@ -39,7 +47,7 @@ export class CacheService {
      */
     static async del(key: string): Promise<void> {
         try {
-            await redisClient.del(key);
+            cache.delete(key);
         } catch (error) {
             console.error('Cache Delete Error:', error);
         }
@@ -51,24 +59,28 @@ export class CacheService {
      */
     static async invalidatePattern(pattern: string): Promise<void> {
         try {
-            const stream = redisClient.scanStream({
-                match: pattern,
-                count: 100,
-            });
+            const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+            const keysToDelete: string[] = [];
 
-            stream.on('data', async (keys: string[]) => {
-                if (keys.length) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key) => pipeline.del(key));
-                    await pipeline.exec();
+            for (const key of cache.keys()) {
+                if (regex.test(key)) {
+                    keysToDelete.push(key);
                 }
-            });
+            }
 
-            stream.on('end', () => {
-                // console.log(`Invalidated keys matching: ${pattern}`);
-            });
+            keysToDelete.forEach(key => cache.delete(key));
         } catch (error) {
             console.error('Cache Invalidate Pattern Error:', error);
         }
     }
 }
+
+// Clean up expired cache entries every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, item] of cache.entries()) {
+        if (now > item.expires) {
+            cache.delete(key);
+        }
+    }
+}, 5 * 60 * 1000);
