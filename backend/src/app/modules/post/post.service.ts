@@ -24,7 +24,7 @@ const createPost = async (userId: string, postData: any) => {
 
   try {
     const post = await FeedPost.create(postToCreate);
-    
+
     return await FeedPost.findById(post._id)
       .populate('user', 'name email profilePicture level xp')
       .populate('sharedPost')
@@ -43,23 +43,32 @@ const createPost = async (userId: string, postData: any) => {
   }
 };
 
-// Get feed posts (friends + own posts)
+// Get feed posts (public posts + friends' posts + own posts)
 const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
   const skip = (page - 1) * limit;
 
-  // Get user's friends
+  // Get user's friends to determine "friends" visibility eligibility
   const friends = await Friend.find({
     user: userId,
     status: 'accepted',
   }).select('friend');
 
   const friendIds = friends.map((f) => f.friend);
-  const userIdsToShow = [...friendIds, new Types.ObjectId(userId)];
 
-  const posts = await FeedPost.find({
-    user: { $in: userIdsToShow },
-    visibility: { $in: ['public', 'friends'] },
-  })
+  // Query explanation:
+  // 1. { visibility: 'public' } -> Show ALL public posts from anyone.
+  // 2. { visibility: 'friends', user: { $in: friendIds } } -> Show 'friends' posts ONLY from accepted friends.
+  // 3. { user: userId } -> Show ALL my own posts (including private).
+
+  const query = {
+    $or: [
+      { visibility: 'public' },
+      { visibility: 'friends', user: { $in: friendIds } },
+      { user: userId },
+    ],
+  };
+
+  const posts = await FeedPost.find(query)
     .populate('user', 'name email profilePicture level xp streak')
     .populate('sharedPost')
     .populate({
@@ -71,10 +80,7 @@ const getFeedPosts = async (userId: string, page = 1, limit = 10) => {
     .skip(skip)
     .limit(limit);
 
-  const total = await FeedPost.countDocuments({
-    user: { $in: userIdsToShow },
-    visibility: { $in: ['public', 'friends'] },
-  });
+  const total = await FeedPost.countDocuments(query);
 
   return {
     posts,

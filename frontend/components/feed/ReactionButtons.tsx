@@ -36,31 +36,53 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
   const [showReactions, setShowReactions] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Find user's current reaction
-  const userReaction = post.reactions.find((r) => r.user === user?._id);
+  // Helper to reliably get user ID string
+  const getUserId = (u: any) => {
+    if (!u) return null;
+    return typeof u === 'string' ? u : u._id;
+  };
+
+  // Find user's current reaction (robust check)
+  const userReaction = post.reactions.find((r) => getUserId(r.user) === user?._id);
 
   const handleReaction = async (type: 'like' | 'love' | 'celebrate' | 'insightful' | 'curious') => {
     if (isUpdating) return;
 
+    // Optimistic Update Data
+    const isRemoving = userReaction?.type === type;
+    const newReactions = isRemoving
+      ? post.reactions.filter((r) => getUserId(r.user) !== user?._id)
+      : [
+        ...post.reactions.filter((r) => getUserId(r.user) !== user?._id),
+        { user: user!._id, type, createdAt: new Date() }, // Optimistically add as string ID
+      ];
+
+    const newReactionCount = isRemoving ? post.reactionCount - 1 : (userReaction ? post.reactionCount : post.reactionCount + 1);
+
+    // Apply Optimistic Update
+    const optimisticPost = {
+      ...post,
+      reactions: newReactions,
+      reactionCount: newReactionCount,
+    };
+    onUpdate(optimisticPost);
+    setShowReactions(false);
+
     try {
       setIsUpdating(true);
-      setShowReactions(false);
 
-      // If user already has this reaction, remove it
-      if (userReaction?.type === type) {
+      if (isRemoving) {
         await postAPI.removeReaction(post._id);
-        onUpdate({
-          ...post,
-          reactions: post.reactions.filter((r) => r.user !== user?._id),
-          reactionCount: post.reactionCount - 1,
-        });
+        // No further action needed if successful, as optimistic update is already applied
       } else {
-        // Add or change reaction
         const response = await postAPI.addReaction(post._id, type);
+        // Ensure server state is synced (optional, but good for consistency)
         onUpdate(response.data.data);
       }
     } catch (error) {
       toast.error('Failed to update reaction');
+      // Revert Optimistic Update on Failure
+      onUpdate(post);
     } finally {
       setIsUpdating(false);
     }
@@ -83,11 +105,10 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
       {/* Main Button */}
       <button
         onClick={() => setShowReactions(!showReactions)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-          userReaction
-            ? `${reactionIcons[userReaction.type].bgColor} ${reactionIcons[userReaction.type].color} font-medium`
-            : 'hover:bg-gray-100 text-gray-700'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${userReaction
+          ? `${reactionIcons[userReaction.type].bgColor} ${reactionIcons[userReaction.type].color} font-medium`
+          : 'hover:bg-gray-100 text-gray-700'
+          }`}
         disabled={isUpdating}
       >
         {getCurrentReactionIcon() || <ThumbsUp className="w-5 h-5" />}
@@ -105,9 +126,8 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
               <button
                 key={type}
                 onClick={() => handleReaction(type as any)}
-                className={`p-2 rounded-full transition-all hover:scale-125 ${
-                  isActive ? `${config.bgColor} scale-110` : 'hover:bg-gray-100'
-                }`}
+                className={`p-2 rounded-full transition-all hover:scale-125 ${isActive ? `${config.bgColor} scale-110` : 'hover:bg-gray-100'
+                  }`}
                 title={config.label}
               >
                 <Icon className={`w-6 h-6 ${config.color}`} />

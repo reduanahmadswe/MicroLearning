@@ -161,7 +161,7 @@ export default function FeedPage() {
                 Stay connected with your learning community
               </p>
             </div>
-            
+
             {/* User Stats Badge */}
             <div className="flex items-center space-x-2 sm:space-x-3 bg-white rounded-xl px-4 py-3 shadow-lg border border-green-100">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
@@ -183,11 +183,10 @@ export default function FeedPage() {
           <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
               onClick={() => setActiveFilter('all')}
-              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                activeFilter === 'all'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
-              }`}
+              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'all'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                }`}
             >
               <span className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4" />
@@ -196,11 +195,10 @@ export default function FeedPage() {
             </button>
             <button
               onClick={() => setActiveFilter('achievements')}
-              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                activeFilter === 'achievements'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
-              }`}
+              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'achievements'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                }`}
             >
               <span className="flex items-center space-x-2">
                 <TrendingUp className="w-4 h-4" />
@@ -209,11 +207,10 @@ export default function FeedPage() {
             </button>
             <button
               onClick={() => setActiveFilter('milestones')}
-              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                activeFilter === 'milestones'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
-              }`}
+              className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'milestones'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                }`}
             >
               <span className="flex items-center space-x-2">
                 <Users className="w-4 h-4" />
@@ -249,7 +246,7 @@ export default function FeedPage() {
                       </div>
                       <p className="text-gray-900 text-lg sm:text-xl font-bold mb-2">No posts yet</p>
                       <p className="text-gray-600 text-sm sm:text-base">
-                        {activeFilter === 'all' 
+                        {activeFilter === 'all'
                           ? "Create your first post or add some friends to see their posts!"
                           : `No ${activeFilter} to show. Try selecting a different filter!`}
                       </p>
@@ -260,7 +257,7 @@ export default function FeedPage() {
                 <>
                   {filteredPosts.map((post) => (
                     <PostCard
-                      key={post._id}
+                      key={`${post._id}-${post.reactionCount}`} // Force re-render on meaningful updates
                       post={post}
                       onDelete={handlePostDeleted}
                       onUpdate={handlePostUpdated}
@@ -311,11 +308,10 @@ export default function FeedPage() {
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                        index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
                         index === 1 ? 'bg-gradient-to-r from-green-400 to-teal-500 text-white' :
-                        'bg-gradient-to-r from-green-100 to-teal-100 text-green-700'
-                      }`}>
+                          'bg-gradient-to-r from-green-100 to-teal-100 text-green-700'
+                        }`}>
                         {index + 1}
                       </div>
                       <span className="text-sm font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
