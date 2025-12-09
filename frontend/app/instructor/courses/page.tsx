@@ -7,10 +7,21 @@ import { Plus, Edit, Trash2, Eye, Users, DollarSign, BookOpen, Lock } from 'luci
 import Link from 'next/link';
 import { coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function InstructorCoursesPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteCourseId, setDeleteCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCourses();
@@ -32,16 +43,18 @@ export default function InstructorCoursesPage() {
     }
   };
 
-  const handleDelete = async (courseId: string) => {
-    if (!confirm('Are you sure you want to delete this course?')) return;
+  const confirmDelete = async () => {
+    if (!deleteCourseId) return;
 
     try {
-      await coursesAPI.deleteCourse(courseId);
+      await coursesAPI.deleteCourse(deleteCourseId);
       toast.success('Course deleted successfully');
       fetchCourses();
     } catch (error) {
       console.error('Error deleting course:', error);
       toast.error('Failed to delete course');
+    } finally {
+      setDeleteCourseId(null);
     }
   };
 
@@ -196,7 +209,7 @@ export default function InstructorCoursesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(course._id)}
+                        onClick={() => setDeleteCourseId(course._id)}
                         className="text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -226,6 +239,25 @@ export default function InstructorCoursesPage() {
           </div>
         )}
       </div>
+      <AlertDialog open={!!deleteCourseId} onOpenChange={(open) => !open && setDeleteCourseId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Course</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this course? This action cannot be undone and will remove all lessons and student enrollments associated with this course.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600"
+            >
+              Delete Course
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
