@@ -83,11 +83,11 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
     fail_url: `${process.env.BACKEND_URL}/api/v1/courses/payment/fail`,
     cancel_url: `${process.env.BACKEND_URL}/api/v1/courses/payment/cancel`,
     ipn_url: `${process.env.BACKEND_URL}/api/v1/courses/payment/ipn`,
-    
+
     product_name: course.title.substring(0, 100), // Max 100 chars
     product_category: (course.topic || 'Course').substring(0, 50),
     product_profile: 'digital-goods',
-    
+
     cus_name: user.name.substring(0, 50),
     cus_email: user.email,
     cus_phone: user.phone || '01700000000',
@@ -96,10 +96,10 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
     cus_state: 'Dhaka',
     cus_postcode: '1000',
     cus_country: 'Bangladesh',
-    
+
     shipping_method: 'NO',
     num_of_item: 1,
-    
+
     // Custom fields to track our data
     value_a: userId, // User ID
     value_b: courseId, // Course ID
@@ -114,14 +114,14 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
 
   try {
     const apiResponse = await sslcz.init(paymentData);
-    
+
     console.log('✅ SSLCommerz Response:', apiResponse);
-    
+
     if (apiResponse.status === 'SUCCESS') {
       // Update payment with session ID
       payment.sslSessionId = apiResponse.sessionkey;
       await payment.save();
-      
+
       return {
         paymentUrl: apiResponse.GatewayPageURL,
         paymentId: payment._id,
@@ -139,7 +139,7 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
       stack: error.stack,
     });
     throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR, 
+      httpStatus.INTERNAL_SERVER_ERROR,
       `Payment initialization failed: ${error.message || 'SSLCommerz API error'}`
     );
   }
@@ -177,27 +177,15 @@ export const handlePaymentSuccess = async (paymentData: any) => {
   try {
     // Add to queue for background processing
     // This ensures payment is processed even if connection drops
-    const job = await paymentProcessingQueue.add(
-      'validate-payment',
-      {
-        paymentId: payment._id.toString(),
-        transactionId: val_id,
-        validationData: {
-          card_type,
-          card_brand,
-          bank_tran_id,
-        },
+    const job = await paymentProcessingQueue.add({
+      paymentId: payment._id.toString(),
+      transactionId: val_id,
+      validationData: {
+        card_type,
+        card_brand,
+        bank_tran_id,
       },
-      {
-        attempts: 5,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-        removeOnComplete: false,
-        removeOnFail: false,
-      }
-    );
+    });
 
     console.log(`📤 Payment validation queued with job ID: ${job.id}`);
 
@@ -207,7 +195,7 @@ export const handlePaymentSuccess = async (paymentData: any) => {
       const store_id = process.env.SSLCOMMERZ_STORE_ID || '';
       const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
       const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
-      
+
       const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
       const validation = await sslcz.validate({ val_id });
 
