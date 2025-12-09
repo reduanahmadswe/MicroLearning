@@ -171,9 +171,8 @@ export default function VideoPlayer({
 
       {/* Custom Controls */}
       <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity ${showControls ? 'opacity-100' : 'opacity-0'
+          }`}
       >
         {/* Progress Bar */}
         <input
@@ -182,7 +181,7 @@ export default function VideoPlayer({
           max={duration || 0}
           value={currentTime}
           onChange={handleSeek}
-          className="w-full h-1 mb-4 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          className="w-full h-1 mb-4 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
 
         <div className="flex items-center justify-between text-white">
@@ -231,7 +230,7 @@ export default function VideoPlayer({
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                className="w-20 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
 
@@ -266,7 +265,7 @@ export default function VideoPlayer({
           onClick={togglePlay}
         >
           <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:scale-110 transition">
-            <Play className="w-10 h-10 text-gray-900 ml-1" />
+            <Play className="w-10 h-10 text-black ml-1" />
           </div>
         </div>
       )}

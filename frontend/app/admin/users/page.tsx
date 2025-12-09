@@ -28,7 +28,7 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
@@ -52,22 +52,22 @@ export default function UserManagementPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const params: any = { 
+      const params: any = {
         limit: 1000
       };
-      
+
       if (searchQuery) {
         params.search = searchQuery;
       }
-      
+
       if (roleFilter && roleFilter !== 'all') {
         params.role = roleFilter;
       }
-      
+
       console.log('Loading users with params:', params);
       const response = await adminAPI.getUsers(params);
       console.log('Users response:', response.data);
-      
+
       // Backend returns: data: result.users
       setUsers(response.data.data || []);
       setCurrentPage(1); // Reset to first page when filters change
@@ -145,7 +145,7 @@ export default function UserManagementPage() {
         <button
           key={1}
           onClick={() => paginate(1)}
-          className="px-3 py-1 text-sm rounded-lg border border-gray-300 hover:bg-gray-50"
+          className="px-3 py-1 text-sm rounded-lg border border-input hover:bg-muted"
         >
           1
         </button>
@@ -160,11 +160,10 @@ export default function UserManagementPage() {
         <button
           key={i}
           onClick={() => paginate(i)}
-          className={`px-3 py-1 text-sm rounded-lg ${
-            currentPage === i
-              ? 'bg-green-600 text-white font-medium'
-              : 'border border-gray-300 hover:bg-gray-50'
-          }`}
+          className={`px-3 py-1 text-sm rounded-lg ${currentPage === i
+              ? 'bg-primary text-primary-foreground font-medium'
+              : 'border border-input hover:bg-muted'
+            }`}
         >
           {i}
         </button>
@@ -179,7 +178,7 @@ export default function UserManagementPage() {
         <button
           key={totalPages}
           onClick={() => paginate(totalPages)}
-          className="px-3 py-1 text-sm rounded-lg border border-gray-300 hover:bg-gray-50"
+          className="px-3 py-1 text-sm rounded-lg border border-input hover:bg-muted"
         >
           {totalPages}
         </button>
@@ -192,26 +191,26 @@ export default function UserManagementPage() {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800';
       case 'instructor':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
       case 'learner':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border/50';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-6">
@@ -224,15 +223,15 @@ export default function UserManagementPage() {
               <Users className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management</h1>
-              <p className="text-gray-600 text-sm">{filteredUsers.length} total users</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">User Management</h1>
+              <p className="text-muted-foreground text-sm">{filteredUsers.length} total users</p>
             </div>
           </div>
 
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search users..."
@@ -240,7 +239,7 @@ export default function UserManagementPage() {
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                 }}
-                className="pl-10 w-full border-2 border-green-100 focus:border-green-300 rounded-xl"
+                className="pl-10 w-full border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
               />
             </div>
             <select
@@ -248,7 +247,7 @@ export default function UserManagementPage() {
               onChange={(e) => {
                 setRoleFilter(e.target.value);
               }}
-              className="px-4 py-2 border-2 border-green-100 rounded-xl focus:outline-none focus:border-green-300 bg-white text-sm"
+              className="px-4 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground text-sm"
             >
               <option value="all">All Roles</option>
               <option value="learner">Learner</option>
@@ -265,31 +264,31 @@ export default function UserManagementPage() {
         </div>
 
         {/* Users Table */}
-        <Card className="border-2 border-green-100 shadow-sm">
+        <Card className="border border-border/50 bg-card shadow-sm">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-green-50 to-teal-50 border-b-2 border-green-100">
+                <thead className="bg-muted/50 border-b border-border/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Role</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-border/50">
                   {currentUsers.map((user: any) => {
                     const profileImage = user.profilePicture || user.avatar;
                     return (
-                      <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={user._id} className="hover:bg-muted/50 transition-colors">
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
                             {profileImage ? (
-                              <img 
-                                src={profileImage} 
+                              <img
+                                src={profileImage}
                                 alt={user.name || 'User'}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-green-200"
+                                className="w-10 h-10 rounded-full object-cover border border-border/50"
                                 onError={(e) => {
                                   // Fallback to gradient avatar if image fails to load
                                   e.currentTarget.style.display = 'none';
@@ -301,8 +300,8 @@ export default function UserManagementPage() {
                               {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{user.name || 'Unknown'}</p>
-                              <p className="text-sm text-gray-500">{user.email}</p>
+                              <p className="font-medium text-foreground">{user.name || 'Unknown'}</p>
+                              <p className="text-sm text-muted-foreground">{user.email}</p>
                             </div>
                           </div>
                         </td>
@@ -312,22 +311,21 @@ export default function UserManagementPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                            user.isActive 
-                              ? 'bg-green-100 text-green-700 border border-green-200' 
-                              : 'bg-red-100 text-red-700 border border-red-200'
-                          }`}>
+                          <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${user.isActive
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+                            }`}>
                             {user.isActive ? 'Active' : 'Banned'}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-600">
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
                           {new Date(user.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => router.push(`/profile/${user._id}`)}
-                              className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                              className="p-2 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors"
                               title="View Profile"
                             >
                               <Eye className="w-4 h-4" />
@@ -335,7 +333,7 @@ export default function UserManagementPage() {
                             {user.role === 'learner' && (
                               <button
                                 onClick={() => handlePromoteToInstructor(user._id)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                 title="Promote to Instructor"
                               >
                                 <TrendingUp className="w-4 h-4" />
@@ -344,7 +342,7 @@ export default function UserManagementPage() {
                             {user.role === 'instructor' && (
                               <button
                                 onClick={() => handleDemoteToLearner(user._id)}
-                                className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                className="p-2 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
                                 title="Demote to Learner"
                               >
                                 <TrendingUp className="w-4 h-4 rotate-180" />
@@ -352,7 +350,7 @@ export default function UserManagementPage() {
                             )}
                             <button
                               onClick={() => handleDeleteUser(user._id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                               title="Delete User"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -368,16 +366,16 @@ export default function UserManagementPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-4 py-4 border-t border-gray-200">
+              <div className="px-4 py-4 border-t border-border/50">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
                   </p>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                      className="px-3 py-1 text-sm rounded-lg border border-input hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Previous
@@ -386,7 +384,7 @@ export default function UserManagementPage() {
                     <button
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                      className="px-3 py-1 text-sm rounded-lg border border-input hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
                       Next
                       <ChevronRight className="w-4 h-4" />

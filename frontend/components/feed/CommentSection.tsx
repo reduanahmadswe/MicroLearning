@@ -130,7 +130,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   if (!user) return null;
 
   return (
-    <div className="p-4 bg-gray-50 border-t">
+    <div className="p-4 bg-muted/30 border-t border-border">
       {/* Add Comment Input */}
       <div className="mb-4">
         <div className="flex gap-3">
@@ -150,7 +150,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Write a comment..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full p-3 border border-input bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
               rows={2}
               maxLength={2000}
               onKeyDown={(e) => {
@@ -161,13 +161,13 @@ export default function CommentSection({ postId }: CommentSectionProps) {
               }}
             />
             <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {commentText.length}/2000
               </span>
               <button
                 onClick={handleAddComment}
                 disabled={isSubmitting || !commentText.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
               >
                 <Send className="w-4 h-4" />
                 {isSubmitting ? 'Posting...' : 'Comment'}
@@ -181,10 +181,10 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       <div className="space-y-2">
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-center text-gray-500 text-sm py-8">
+          <p className="text-center text-muted-foreground text-sm py-8">
             No comments yet. Be the first to comment!
           </p>
         ) : (

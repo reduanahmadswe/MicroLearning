@@ -148,7 +148,7 @@ export default function FeedPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header Section */}
         <div className="mb-6 sm:mb-8">
@@ -157,19 +157,19 @@ export default function FeedPage() {
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
                 Community Feed
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Stay connected with your learning community
               </p>
             </div>
 
             {/* User Stats Badge */}
-            <div className="flex items-center space-x-2 sm:space-x-3 bg-white rounded-xl px-4 py-3 shadow-lg border border-green-100">
+            <div className="flex items-center space-x-2 sm:space-x-3 bg-card rounded-xl px-4 py-3 shadow-lg border border-border">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
                 {user.level || 1}
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Your Level</p>
-                <p className="text-sm font-bold text-gray-900">{user.xp || 0} XP</p>
+                <p className="text-xs text-muted-foreground font-medium">Your Level</p>
+                <p className="text-sm font-bold text-foreground">{user.xp || 0} XP</p>
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function FeedPage() {
               onClick={() => setActiveFilter('all')}
               className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'all'
                 ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                : 'bg-card text-muted-foreground hover:bg-accent border border-border'
                 }`}
             >
               <span className="flex items-center space-x-2">
@@ -197,7 +197,7 @@ export default function FeedPage() {
               onClick={() => setActiveFilter('achievements')}
               className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'achievements'
                 ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                : 'bg-card text-muted-foreground hover:bg-accent border border-border'
                 }`}
             >
               <span className="flex items-center space-x-2">
@@ -209,7 +209,7 @@ export default function FeedPage() {
               onClick={() => setActiveFilter('milestones')}
               className={`flex-shrink-0 px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeFilter === 'milestones'
                 ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
+                : 'bg-card text-muted-foreground hover:bg-accent border border-border'
                 }`}
             >
               <span className="flex items-center space-x-2">
@@ -229,14 +229,14 @@ export default function FeedPage() {
             {/* Feed Posts */}
             <div className="space-y-4 sm:space-y-6">
               {loading ? (
-                <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                   <CardContent className="flex flex-col items-center justify-center py-16">
                     <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-green-600 mb-4" />
-                    <p className="text-gray-600 font-medium">Loading your feed...</p>
+                    <p className="text-muted-foreground font-medium">Loading your feed...</p>
                   </CardContent>
                 </Card>
               ) : filteredPosts.length === 0 ? (
-                <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+                <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
                   <div className="relative">
                     <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-green-100 blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-teal-100 blur-3xl"></div>
@@ -244,8 +244,8 @@ export default function FeedPage() {
                       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
                       </div>
-                      <p className="text-gray-900 text-lg sm:text-xl font-bold mb-2">No posts yet</p>
-                      <p className="text-gray-600 text-sm sm:text-base">
+                      <p className="text-foreground text-lg sm:text-xl font-bold mb-2">No posts yet</p>
+                      <p className="text-muted-foreground text-sm sm:text-base">
                         {activeFilter === 'all'
                           ? "Create your first post or add some friends to see their posts!"
                           : `No ${activeFilter} to show. Try selecting a different filter!`}
@@ -294,7 +294,7 @@ export default function FeedPage() {
           {/* Sidebar - Hidden on mobile, visible on large screens */}
           <div className="hidden lg:block space-y-6">
             {/* Trending Topics */}
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent flex items-center space-x-2">
                   <TrendingUp className="w-5 h-5 text-green-600" />
@@ -305,20 +305,20 @@ export default function FeedPage() {
                 {['Web Development', 'Data Science', 'Machine Learning', 'UI/UX Design', 'Mobile Development'].map((topic, index) => (
                   <div
                     key={topic}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer group"
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
-                        index === 1 ? 'bg-gradient-to-r from-green-400 to-teal-500 text-white' :
-                          'bg-gradient-to-r from-green-100 to-teal-100 text-green-700'
+                          index === 1 ? 'bg-gradient-to-r from-green-400 to-teal-500 text-white' :
+                            'bg-accent text-primary'
                         }`}>
                         {index + 1}
                       </div>
-                      <span className="text-sm font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                         {topic}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">
+                    <span className="text-xs text-muted-foreground font-medium">
                       {Math.floor(Math.random() * 500 + 100)} posts
                     </span>
                   </div>

@@ -70,38 +70,38 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Navigation is handled by global Navbar component */}
 
       {/* Hero Section */}
       <section className="py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium mb-6">
             <Heart className="w-4 h-4" />
             About MicroLearning
           </div>
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
             Transforming Education
             <br />
             <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
               One Micro-Lesson at a Time
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            We believe that learning should be accessible, engaging, and fit into your busy life. 
-            That's why we've created a platform that delivers bite-sized, high-quality education 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+            We believe that learning should be accessible, engaging, and fit into your busy life.
+            That's why we've created a platform that delivers bite-sized, high-quality education
             to learners worldwide.
           </p>
-          
+
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
-              <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all">
+              <div key={index} className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-all">
                 <div className={`w-16 h-16 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-white mx-auto mb-4`}>
                   {stat.icon}
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-                <p className="text-gray-600">{stat.label}</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">{stat.value}</h3>
+                <p className="text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -109,55 +109,55 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-12">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-3xl p-12">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white mb-6">
                 <Target className="w-8 h-8" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                To democratize education by making high-quality learning accessible to everyone, 
+              <h2 className="text-3xl font-bold text-foreground mb-4">Our Mission</h2>
+              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                To democratize education by making high-quality learning accessible to everyone,
                 everywhere, through innovative micro-learning technology.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Break down complex topics into digestible lessons</span>
+                  <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Break down complex topics into digestible lessons</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Provide flexible learning that fits any schedule</span>
+                  <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Provide flexible learning that fits any schedule</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Make learning engaging through gamification</span>
+                  <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Make learning engaging through gamification</span>
                 </li>
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-12">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-3xl p-12">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-white mb-6">
                 <Sparkles className="w-8 h-8" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Vision</h2>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                To become the world's leading micro-learning platform, empowering millions of 
+              <h2 className="text-3xl font-bold text-foreground mb-4">Our Vision</h2>
+              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                To become the world's leading micro-learning platform, empowering millions of
                 learners to achieve their goals through personalized, efficient education.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Pioneer AI-powered personalized learning</span>
+                  <CheckCircle className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Pioneer AI-powered personalized learning</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Build a global community of lifelong learners</span>
+                  <CheckCircle className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Build a global community of lifelong learners</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Set new standards for online education quality</span>
+                  <CheckCircle className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                  <span className="text-foreground/80">Set new standards for online education quality</span>
                 </li>
               </ul>
             </div>
@@ -169,23 +169,23 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Our Core
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Values</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               These principles guide everything we do and shape our commitment to excellence.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {values.map((value, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 border border-gray-200 hover:shadow-xl transition-all">
+              <div key={index} className="bg-card rounded-2xl p-8 border border-border/50 hover:shadow-xl transition-all">
                 <div className={`w-20 h-20 bg-gradient-to-br ${value.color} rounded-2xl flex items-center justify-center text-white mb-6`}>
                   {value.icon}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">{value.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-3">{value.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{value.description}</p>
               </div>
             ))}
           </div>
@@ -193,14 +193,14 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Our
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Journey</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               From a small startup to a global learning platform - here's our story.
             </p>
           </div>
@@ -214,12 +214,12 @@ export default function AboutPage() {
               {milestones.map((milestone, index) => (
                 <div key={index} className={`flex items-center gap-8 ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
                   <div className={`flex-1 ${index % 2 === 0 ? 'lg:text-right' : 'lg:text-left'}`}>
-                    <div className="bg-white rounded-2xl p-8 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all">
+                    <div className="bg-card rounded-2xl p-8 border-2 border-border/50 hover:border-green-500 hover:shadow-xl transition-all">
                       <div className="inline-block px-4 py-1 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-full text-sm font-bold mb-3">
                         {milestone.year}
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{milestone.title}</h3>
-                      <p className="text-gray-600">{milestone.description}</p>
+                      <h3 className="text-2xl font-bold text-foreground mb-2">{milestone.title}</h3>
+                      <p className="text-muted-foreground">{milestone.description}</p>
                     </div>
                   </div>
                   <div className="hidden lg:block w-6 h-6 bg-gradient-to-br from-green-500 to-teal-600 rounded-full border-4 border-white shadow-lg z-10"></div>
@@ -235,24 +235,24 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Meet Our
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Leadership Team</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Passionate educators and technologists dedicated to transforming education.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 text-center border border-gray-200 hover:shadow-xl transition-all">
+              <div key={index} className="bg-card rounded-2xl p-8 text-center border border-border/50 hover:shadow-xl transition-all">
                 <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                   {member.image}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-green-600 font-semibold mb-2">{member.role}</p>
-                <p className="text-sm text-gray-600">{member.bio}</p>
+                <h3 className="text-xl font-bold text-foreground mb-1">{member.name}</h3>
+                <p className="text-green-600 dark:text-green-400 font-semibold mb-2">{member.role}</p>
+                <p className="text-sm text-muted-foreground">{member.bio}</p>
               </div>
             ))}
           </div>

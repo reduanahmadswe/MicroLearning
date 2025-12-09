@@ -107,7 +107,7 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
         onClick={() => setShowReactions(!showReactions)}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${userReaction
           ? `${reactionIcons[userReaction.type].bgColor} ${reactionIcons[userReaction.type].color} font-medium`
-          : 'hover:bg-gray-100 text-gray-700'
+          : 'hover:bg-accent text-muted-foreground'
           }`}
         disabled={isUpdating}
       >
@@ -117,7 +117,7 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
 
       {/* Reaction Picker */}
       {showReactions && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white rounded-full shadow-lg border border-gray-200 p-2 flex items-center gap-1 z-10">
+        <div className="absolute bottom-full left-0 mb-2 bg-popover rounded-full shadow-lg border border-border p-2 flex items-center gap-1 z-10">
           {Object.entries(reactionIcons).map(([type, config]) => {
             const Icon = config.icon;
             const isActive = userReaction?.type === type;
@@ -126,7 +126,7 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
               <button
                 key={type}
                 onClick={() => handleReaction(type as any)}
-                className={`p-2 rounded-full transition-all hover:scale-125 ${isActive ? `${config.bgColor} scale-110` : 'hover:bg-gray-100'
+                className={`p-2 rounded-full transition-all hover:scale-125 ${isActive ? `${config.bgColor} scale-110` : 'hover:bg-accent'
                   }`}
                 title={config.label}
               >

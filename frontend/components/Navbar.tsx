@@ -37,6 +37,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import NotificationBell from './NotificationBell';
+import { ThemeToggle } from './ThemeToggle';
 
 // Public navigation items (when not logged in)
 const publicNavItems = [
@@ -231,7 +232,8 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Navbar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm backdrop-blur-sm bg-white/95">
+      {/* Desktop Navbar */}
+      <nav className="bg-background border-b border-border sticky top-0 z-50 shadow-sm backdrop-blur-sm bg-background/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -247,21 +249,20 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Important items with names visible */}
+            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-2 flex-1 justify-center max-w-4xl px-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
-                
+
                 return (
                   <Link
                     key={item.path}
                     href={item.path}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                      active
-                        ? `${getRoleBgColor()} shadow-sm`
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${active
+                      ? 'bg-accent text-primary shadow-sm'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      }`}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     <span>{item.name}</span>
@@ -270,8 +271,11 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* User Menu */}
+            {/* User Menu & Theme Toggle */}
             <div className="flex items-center gap-2">
+              <div className="hidden md:block">
+                <ThemeToggle />
+              </div>
               {user ? (
                 <>
                   {/* Real-time Notifications */}
@@ -283,7 +287,7 @@ export default function Navbar() {
                   <div className="hidden md:block relative" ref={profileRef}>
                     <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-all border border-transparent hover:border-border"
                     >
                       <div className={`w-9 h-9 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white overflow-hidden`}>
                         {user.profilePicture ? (
@@ -297,17 +301,17 @@ export default function Navbar() {
                         )}
                       </div>
                       <div className="text-sm text-left max-w-[120px]">
-                        <p className="font-semibold text-gray-900 truncate">{user.name}</p>
+                        <p className="font-semibold text-foreground truncate">{user.name}</p>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${getRoleBgColor()}`}>
                           {getRoleLabel()}
                         </span>
                       </div>
-                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {/* Profile Dropdown Menu */}
                     {profileDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2">
+                      <div className="absolute right-0 mt-2 w-72 bg-popover rounded-xl shadow-2xl border border-border overflow-hidden z-50 animate-in slide-in-from-top-2">
                         {/* Profile Header */}
                         <div className={`px-5 py-4 bg-gradient-to-br ${getRoleColor()} text-white`}>
                           <div className="flex items-center gap-3 mb-3">
@@ -327,7 +331,7 @@ export default function Navbar() {
                               <p className="text-xs text-white/80 truncate">{user.email}</p>
                             </div>
                           </div>
-                          
+
                           {/* Level & XP Info */}
                           <div className="space-y-2">
                             {user.level && (
@@ -339,7 +343,7 @@ export default function Navbar() {
                                 <span className="font-bold text-white">{user.level}</span>
                               </div>
                             )}
-                            
+
                             {user.xp && (
                               <div>
                                 <div className="flex justify-between text-xs text-white/90 mb-1">
@@ -347,7 +351,7 @@ export default function Navbar() {
                                   <span className="font-semibold">{user.xp} XP</span>
                                 </div>
                                 <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                                  <div 
+                                  <div
                                     className="h-full bg-white/90 rounded-full transition-all duration-500"
                                     style={{ width: `${Math.min((user.xp % 1000) / 10, 100)}%` }}
                                   ></div>
@@ -359,12 +363,12 @@ export default function Navbar() {
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Additional Navigation Items */}
                         {additionalItems.length > 0 && (
                           <>
-                            <div className="px-5 py-2 border-t border-gray-100">
-                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">More Options</p>
+                            <div className="px-5 py-2 border-t border-border">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">More Options</p>
                             </div>
                             <div className="py-2 max-h-60 overflow-y-auto scrollbar-hide">
                               {additionalItems.map((item) => {
@@ -374,10 +378,10 @@ export default function Navbar() {
                                     key={item.path}
                                     href={item.path}
                                     onClick={() => setProfileDropdownOpen(false)}
-                                    className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 transition-colors group"
+                                    className="flex items-center gap-3 px-5 py-2.5 hover:bg-accent transition-colors group"
                                   >
-                                    <Icon className={`w-4 h-4 ${isActive(item.path) ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                                    <span className={`text-sm ${isActive(item.path) ? 'font-semibold text-green-600' : 'text-gray-600 group-hover:text-gray-900'}`}>
+                                    <Icon className={`w-4 h-4 ${isActive(item.path) ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                                    <span className={`text-sm ${isActive(item.path) ? 'font-semibold text-primary' : 'text-foreground group-hover:text-foreground'}`}>
                                       {item.name}
                                     </span>
                                   </Link>
@@ -388,7 +392,7 @@ export default function Navbar() {
                         )}
 
                         {/* Menu Items */}
-                        <div className="py-2 border-t border-gray-100">
+                        <div className="py-2 border-t border-border">
                           {getProfileMenuItems().map((item, index) => {
                             const Icon = item.icon;
                             return (
@@ -396,12 +400,12 @@ export default function Navbar() {
                                 key={item.path}
                                 href={item.path}
                                 onClick={() => setProfileDropdownOpen(false)}
-                                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group"
+                                className="flex items-center gap-3 px-5 py-3 hover:bg-accent transition-colors group"
                               >
                                 <div className={`w-8 h-8 rounded-lg ${getRoleBgColor()} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                                   <Icon className="w-4 h-4" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{item.label}</span>
+                                <span className="text-sm font-medium text-foreground group-hover:text-foreground">{item.label}</span>
                               </Link>
                             );
                           })}
@@ -427,7 +431,7 @@ export default function Navbar() {
               ) : (
                 <div className="flex items-center gap-2">
                   <Link href="/auth/login">
-                    <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                    <button className="px-4 py-2 text-sm font-medium text-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all">
                       Login
                     </button>
                   </Link>
@@ -467,11 +471,10 @@ export default function Navbar() {
                   key={item.path}
                   href={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                    active
-                      ? 'bg-green-50 text-green-600'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${active
+                    ? 'bg-green-50 text-green-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
@@ -482,7 +485,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="border-t border-gray-200 my-4"></div>
-                
+
                 {/* Mobile Profile Section */}
                 <div className="px-4 py-3 bg-gray-50 rounded-lg mx-4">
                   <div className="flex items-center gap-3 mb-3">
@@ -512,7 +515,7 @@ export default function Navbar() {
                         <span>{user.xp} XP</span>
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full bg-gradient-to-r ${getRoleColor()}`}
                           style={{ width: `${Math.min((user.xp % 1000) / 10, 100)}%` }}
                         ></div>

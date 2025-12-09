@@ -116,10 +116,10 @@ export default function QuizResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading results...</p>
+          <p className="mt-4 text-muted-foreground">Loading results...</p>
         </div>
       </div>
     );
@@ -127,11 +127,11 @@ export default function QuizResultsPage() {
 
   if (!results) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Results Found</h2>
-          <p className="text-gray-600 mb-4">Unable to load quiz results</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">No Results Found</h2>
+          <p className="text-muted-foreground mb-4">Unable to load quiz results</p>
           <button
             onClick={() => router.back()}
             className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -144,21 +144,21 @@ export default function QuizResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Quizzes
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{results.quiz.title}</h1>
-              <p className="text-gray-600 mt-1">Quiz Results & Analytics</p>
+              <h1 className="text-3xl font-bold text-foreground">{results.quiz.title}</h1>
+              <p className="text-muted-foreground mt-1">Quiz Results & Analytics</p>
             </div>
             <button
               onClick={() => toast.info('Export feature coming soon')}
@@ -172,79 +172,79 @@ export default function QuizResultsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.enrolledStudents}</p>
-            <p className="text-sm text-gray-600">Enrolled Students</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.enrolledStudents}</p>
+            <p className="text-sm text-muted-foreground">Enrolled Students</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.totalAttempts}</p>
-            <p className="text-sm text-gray-600">Total Attempts</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.totalAttempts}</p>
+            <p className="text-sm text-muted-foreground">Total Attempts</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.averageScore}%</p>
-            <p className="text-sm text-gray-600">Average Score</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.averageScore}%</p>
+            <p className="text-sm text-muted-foreground">Average Score</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.passRate}%</p>
-            <p className="text-sm text-gray-600">Pass Rate</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.passRate}%</p>
+            <p className="text-sm text-muted-foreground">Pass Rate</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.passedCount}</p>
-            <p className="text-sm text-gray-600">Passed</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.passedCount}</p>
+            <p className="text-sm text-muted-foreground">Passed</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <XCircle className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{results.stats.failedCount}</p>
-            <p className="text-sm text-gray-600">Failed</p>
+            <p className="text-2xl font-bold text-foreground">{results.stats.failedCount}</p>
+            <p className="text-sm text-muted-foreground">Failed</p>
           </div>
         </div>
 
         {/* Quiz Info */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+        <div className="bg-card rounded-xl shadow-sm p-6 border border-border mb-8">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-900">
+              <BookOpen className="w-5 h-5 text-muted-foreground" />
+              <span className="text-foreground">
                 <span className="font-semibold">{results.quiz.totalQuestions}</span> Questions
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-900">
+              <Award className="w-5 h-5 text-muted-foreground" />
+              <span className="text-foreground">
                 Passing Score: <span className="font-semibold">{results.quiz.passingScore}%</span>
               </span>
             </div>
@@ -252,68 +252,67 @@ export default function QuizResultsPage() {
         </div>
 
         {/* Attempts Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Student Attempts</h2>
-            <p className="text-sm text-gray-600 mt-1">
+        <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-xl font-bold text-foreground">Student Attempts</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               Showing attempts from enrolled students only ({results.stats.totalAttempts} total)
             </p>
           </div>
 
           {results.attempts.length === 0 ? (
             <div className="p-12 text-center">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Attempts Yet</h3>
-              <p className="text-gray-600">Students haven't taken this quiz yet</p>
+              <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Attempts Yet</h3>
+              <p className="text-muted-foreground">Students haven't taken this quiz yet</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-secondary">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Student
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Score
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Time Spent
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-card divide-y divide-border">
                   {results.attempts.map((attempt) => (
-                    <tr key={attempt._id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={attempt._id} className="hover:bg-secondary/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {attempt.user.name}
                           </div>
-                          <div className="text-sm text-gray-500">{attempt.user.email}</div>
+                          <div className="text-sm text-muted-foreground">{attempt.user.email}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <div className="text-2xl font-bold text-gray-900">
+                          <div className="text-2xl font-bold text-foreground">
                             {attempt.score}%
                           </div>
-                          <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                              className={`h-full transition-all ${
-                                attempt.passed
+                              className={`h-full transition-all ${attempt.passed
                                   ? 'bg-gradient-to-r from-green-500 to-teal-500'
                                   : 'bg-gradient-to-r from-red-500 to-orange-500'
-                              }`}
+                                }`}
                               style={{ width: `${attempt.score}%` }}
                             ></div>
                           </div>
@@ -321,11 +320,10 @@ export default function QuizResultsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                            attempt.passed
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${attempt.passed
+                              ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                              : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                            }`}
                         >
                           {attempt.passed ? (
                             <CheckCircle className="w-3 h-3" />
@@ -336,13 +334,13 @@ export default function QuizResultsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           {formatTime(attempt.timeSpent || 0)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="w-4 h-4" />
                           {formatDate(attempt.createdAt)}
                         </div>
@@ -350,7 +348,7 @@ export default function QuizResultsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={() => handleViewDetails(attempt)}
-                          className="text-green-600 hover:text-green-700 font-medium text-sm flex items-center gap-1"
+                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium text-sm flex items-center gap-1"
                         >
                           <Eye className="w-4 h-4" />
                           View Details
@@ -368,83 +366,82 @@ export default function QuizResultsPage() {
       {/* Attempt Details Modal */}
       {showDetailsModal && selectedAttempt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto border border-border">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Attempt Details</h3>
-                <p className="text-sm text-gray-600">{selectedAttempt.user.name}</p>
+                <h3 className="text-xl font-bold text-foreground">Attempt Details</h3>
+                <p className="text-sm text-muted-foreground">{selectedAttempt.user.name}</p>
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors"
               >
-                <XCircle className="w-5 h-5 text-gray-500" />
+                <XCircle className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             {/* Attempt Summary */}
-            <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-secondary/50 rounded-lg">
               <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">{selectedAttempt.score}%</p>
-                <p className="text-sm text-gray-600">Score</p>
+                <p className="text-2xl font-bold text-foreground">{selectedAttempt.score}%</p>
+                <p className="text-sm text-muted-foreground">Score</p>
               </div>
               <div className="text-center">
-                <p className={`text-2xl font-bold ${selectedAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-2xl font-bold ${selectedAttempt.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {selectedAttempt.passed ? 'Passed' : 'Failed'}
                 </p>
-                <p className="text-sm text-gray-600">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-foreground">
                   {formatTime(selectedAttempt.timeSpent || 0)}
                 </p>
-                <p className="text-sm text-gray-600">Time Spent</p>
+                <p className="text-sm text-muted-foreground">Time Spent</p>
               </div>
             </div>
 
             {/* Answers */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Answers</h4>
+              <h4 className="font-semibold text-foreground mb-4">Answers</h4>
               <div className="space-y-3">
                 {selectedAttempt.answers && selectedAttempt.answers.length > 0 ? (
                   selectedAttempt.answers.map((answer: any, index: number) => (
                     <div
                       key={index}
-                      className={`p-4 rounded-lg border-2 ${
-                        answer.isCorrect
-                          ? 'border-green-200 bg-green-50'
-                          : 'border-red-200 bg-red-50'
-                      }`}
+                      className={`p-4 rounded-lg border-2 ${answer.isCorrect
+                          ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                          : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-foreground">
                           Question {index + 1}
                         </span>
                         {answer.isCorrect ? (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                         ) : (
-                          <XCircle className="w-5 h-5 text-red-600" />
+                          <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">
+                      <p className="text-sm text-foreground mb-2">
                         <span className="font-medium">Answer:</span> {answer.answer || 'No answer'}
                       </p>
                       {!answer.isCorrect && answer.correctAnswer && (
-                        <p className="text-sm text-green-700">
+                        <p className="text-sm text-green-700 dark:text-green-400">
                           <span className="font-medium">Correct:</span> {answer.correctAnswer}
                         </p>
                       )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-4">No answer details available</p>
+                  <p className="text-muted-foreground text-center py-4">No answer details available</p>
                 )}
               </div>
             </div>
 
             <button
               onClick={() => setShowDetailsModal(false)}
-              className="w-full mt-6 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+              className="w-full mt-6 px-4 py-3 bg-secondary text-foreground rounded-xl hover:bg-secondary/80 transition-colors font-medium"
             >
               Close
             </button>

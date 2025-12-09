@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Award, 
-  Download, 
-  Share2, 
+import {
+  Award,
+  Download,
+  Share2,
   ChevronLeft,
   Calendar,
   CheckCircle,
@@ -21,7 +21,7 @@ export default function CertificateViewPage() {
   const searchParams = useSearchParams();
   const certificateId = params.id as string;
   const courseId = searchParams.get('course');
-  
+
   const [certificate, setCertificate] = useState<any>(null);
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -35,12 +35,12 @@ export default function CertificateViewPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       if (certificateId && certificateId !== 'view') {
         // Load specific certificate by ID
         const certResponse = await certificatesAPI.getCertificateById(certificateId);
         setCertificate(certResponse.data.data);
-        
+
         // Load course details
         if (certResponse.data.data.course) {
           const courseResponse = await coursesAPI.getCourse(certResponse.data.data.course);
@@ -50,7 +50,7 @@ export default function CertificateViewPage() {
         // Load certificate by course ID
         const certResponse = await certificatesAPI.getMyCertificates();
         const cert = certResponse.data.data.find((c: any) => c.course._id === courseId);
-        
+
         if (cert) {
           setCertificate(cert);
           setCourse(cert.course);
@@ -68,22 +68,22 @@ export default function CertificateViewPage() {
 
   const handleDownload = async () => {
     if (!certificateRef.current) return;
-    
+
     try {
       setDownloading(true);
       toast.info('Generating certificate...');
-      
+
       const canvas = await html2canvas(certificateRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
         logging: false,
       });
-      
+
       const link = document.createElement('a');
       link.download = `certificate-${course?.title || 'course'}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      
+
       toast.success('Certificate downloaded!');
     } catch (error) {
       console.error('Download error:', error);
@@ -114,10 +114,10 @@ export default function CertificateViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading certificate...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading certificate...</p>
         </div>
       </div>
     );
@@ -125,17 +125,17 @@ export default function CertificateViewPage() {
 
   if (!certificate || !course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 text-center bg-white rounded-lg shadow">
-          <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 text-center bg-card rounded-lg shadow border border-border">
+          <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             Certificate Not Found
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             This certificate doesn't exist or you don't have access to it.
           </p>
           <Link href="/certificates">
-            <button className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <button className="w-full bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90">
               View My Certificates
             </button>
           </Link>
@@ -145,64 +145,64 @@ export default function CertificateViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-page-gradient py-8">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="mb-6">
-          <Link 
+          <Link
             href="/certificates"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Certificates
           </Link>
-          
+
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 Course Certificate
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {course.title}
               </p>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded flex items-center disabled:opacity-50 transition-colors"
               >
                 <Download className="w-4 h-4 mr-2" />
                 {downloading ? 'Generating...' : 'Download'}
               </button>
-              
+
               <div className="relative group">
-                <button className="border border-gray-300 px-4 py-2 rounded flex items-center hover:bg-gray-50">
+                <button className="border border-border bg-card text-foreground px-4 py-2 rounded flex items-center hover:bg-accent transition-colors">
                   <Share2 className="w-4 h-4 mr-2" />
                   Share
                 </button>
-                
+
                 {/* Share Dropdown */}
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                   <button
                     onClick={handleShareLinkedIn}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 rounded-t-lg"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2 rounded-t-lg transition-colors"
                   >
                     <ExternalLink className="w-4 h-4 text-blue-700" />
                     Share on LinkedIn
                   </button>
                   <button
                     onClick={handleShareFacebook}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4 text-blue-600" />
                     Share on Facebook
                   </button>
                   <button
                     onClick={handleShareTwitter}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2 rounded-b-lg transition-colors"
                   >
                     <ExternalLink className="w-4 h-4 text-blue-400" />
                     Share on Twitter
@@ -214,11 +214,11 @@ export default function CertificateViewPage() {
         </div>
 
         {/* Certificate */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div 
+        <div className="bg-card rounded-xl shadow-lg p-8 border border-border mt-4">
+          <div
             ref={certificateRef}
-            className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 border-8 border-blue-600 rounded-2xl p-12"
-            style={{ aspectRatio: '1.414/1' }} // A4 ratio
+            className="relative bg-white text-gray-900 border-8 border-blue-600 rounded-2xl p-12"
+            style={{ aspectRatio: '1.414/1' }} // A4 ratio - Keep white bg for certificate 
           >
             {/* Decorative Corner Elements */}
             <div className="absolute top-4 left-4 w-16 h-16 border-t-4 border-l-4 border-blue-600/30 rounded-tl-xl"></div>
@@ -274,7 +274,7 @@ export default function CertificateViewPage() {
                     })}
                   </p>
                 </div>
-                
+
                 <div className="text-center">
                   <CheckCircle className="w-5 h-5 text-gray-400 mx-auto mb-1" />
                   <p className="text-xs text-gray-500 mb-1">Certificate ID</p>
@@ -299,7 +299,7 @@ export default function CertificateViewPage() {
               {/* Verification Code */}
               <div className="pt-6">
                 <p className="text-xs text-gray-400">
-                  Verify at: {window.location.origin}/verify/{certificate.verificationCode || certificate._id}
+                  Verify at: {typeof window !== 'undefined' ? window.location.origin : ''}/verify/{certificate.verificationCode || certificate._id}
                 </p>
               </div>
             </div>
@@ -307,27 +307,27 @@ export default function CertificateViewPage() {
         </div>
 
         {/* Certificate Info */}
-        <div className="mt-6 p-6 bg-white rounded-lg shadow">
-          <h3 className="font-semibold text-gray-900 mb-4">About This Certificate</h3>
-          <div className="space-y-3 text-sm text-gray-600">
+        <div className="mt-6 p-6 bg-card rounded-lg shadow border border-border">
+          <h3 className="font-semibold text-foreground mb-4">About This Certificate</h3>
+          <div className="space-y-3 text-sm text-muted-foreground">
             <div className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div>
-                <span className="font-medium text-gray-900">Verified Certificate</span>
+                <span className="font-medium text-foreground">Verified Certificate</span>
                 <p>This certificate is issued by MicroLearning and can be verified online.</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Award className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <span className="font-medium text-gray-900">Share Your Achievement</span>
+                <span className="font-medium text-foreground">Share Your Achievement</span>
                 <p>Add this certificate to your LinkedIn profile or share it on social media.</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Download className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <Download className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <span className="font-medium text-gray-900">Download & Print</span>
+                <span className="font-medium text-foreground">Download & Print</span>
                 <p>Download a high-quality version of your certificate for your records.</p>
               </div>
             </div>

@@ -36,7 +36,7 @@ export default function NotificationBell() {
   // Fetch notifications from backend
   const fetchNotifications = async () => {
     if (!token) return;
-    
+
     try {
       setLoading(true);
       const response = await notificationAPI.getNotifications({ limit: 20 });
@@ -53,7 +53,7 @@ export default function NotificationBell() {
   // Fetch unread count
   const fetchUnreadCount = async () => {
     if (!token) return;
-    
+
     try {
       const response = await notificationAPI.getUnreadCount();
       setUnreadCount(response.data.data?.unreadCount || 0);
@@ -74,7 +74,7 @@ export default function NotificationBell() {
       // Listen for new real-time notifications
       socket.on('notification', (notification: Notification) => {
         console.log('📬 Received notification:', notification);
-        
+
         // Add to notifications list at the beginning
         setNotifications((prev) => [notification, ...prev]);
         setUnreadCount((prev) => prev + 1);
@@ -124,7 +124,7 @@ export default function NotificationBell() {
     if (!notification.isRead) {
       handleMarkAsRead(notification._id);
     }
-    
+
     // Navigate to link
     if (notification.data?.link) {
       router.push(notification.data!.link);
@@ -134,7 +134,7 @@ export default function NotificationBell() {
 
   const handleDeleteNotification = async (notificationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     try {
       await notificationAPI.deleteNotification(notificationId);
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
@@ -156,11 +156,11 @@ export default function NotificationBell() {
             fetchNotifications();
           }
         }}
-        className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+        className="relative p-2 hover:bg-accent rounded-full transition-colors"
       >
-        <Bell className="w-6 h-6 text-gray-700" />
+        <Bell className="w-6 h-6 text-foreground" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+          <span className="absolute top-0 right-0 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -168,10 +168,10 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[500px] overflow-hidden flex flex-col">
+        <div className="absolute right-0 mt-2 w-96 bg-popover rounded-lg shadow-xl border border-border z-50 max-h-[500px] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-            <h3 className="font-bold text-gray-900">Notifications</h3>
+          <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
+            <h3 className="font-bold text-foreground">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
@@ -183,9 +183,9 @@ export default function NotificationBell() {
               )}
               <button
                 onClick={() => setShowDropdown(false)}
-                className="p-1 hover:bg-gray-200 rounded"
+                className="p-1 hover:bg-accent rounded"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -198,8 +198,8 @@ export default function NotificationBell() {
                 <p className="mt-2">Loading...</p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <div className="p-8 text-center text-muted-foreground">
+                <Bell className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
                 <p>No notifications yet</p>
               </div>
             ) : (
@@ -207,9 +207,8 @@ export default function NotificationBell() {
                 <div
                   key={notification._id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors relative ${
-                    !notification.isRead ? 'bg-blue-50' : ''
-                  }`}
+                  className={`p-4 border-b border-border hover:bg-accent cursor-pointer transition-colors relative ${!notification.isRead ? 'bg-primary/5' : ''
+                    }`}
                 >
                   <div className="flex gap-3">
                     {/* Actor Avatar */}
@@ -227,13 +226,13 @@ export default function NotificationBell() {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 mb-1">
+                      <p className="text-sm font-medium text-foreground mb-1">
                         {notification.title}
                       </p>
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-muted-foreground/70 mt-1">
                         {new Date(notification.createdAt).toLocaleString()}
                       </p>
                     </div>
@@ -247,10 +246,10 @@ export default function NotificationBell() {
                         {notification.type === 'accept_answer' && '✅'}
                         {notification.type === 'badge_earned' && '🏆'}
                       </div>
-                      
+
                       <button
                         onClick={(e) => handleDeleteNotification(notification._id, e)}
-                        className="p-1 hover:bg-red-100 rounded text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 hover:bg-destructive/10 rounded text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Delete"
                       >
                         <X className="w-3 h-3" />
@@ -259,7 +258,7 @@ export default function NotificationBell() {
 
                     {/* Unread indicator */}
                     {!notification.isRead && (
-                      <div className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <div className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full"></div>
                     )}
                   </div>
                 </div>

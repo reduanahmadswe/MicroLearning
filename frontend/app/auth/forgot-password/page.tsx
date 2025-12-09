@@ -37,12 +37,12 @@ export default function ForgotPasswordPage() {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-page-gradient p-4">
+        <Card className="w-full max-w-md bg-card border-border/50">
           <CardHeader className="space-y-1 text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <svg
-                className="w-8 h-8 text-green-600 dark:text-green-400"
+                className="w-8 h-8 text-primary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -55,8 +55,8 @@ export default function ForgotPasswordPage() {
                 />
               </svg>
             </div>
-            <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold text-foreground">Check Your Email</CardTitle>
+            <CardDescription className="text-muted-foreground">
               We've sent a password reset link to <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
@@ -67,14 +67,14 @@ export default function ForgotPasswordPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
             <Link href="/auth/login" className="w-full">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full border-border/50 hover:bg-muted">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Login
               </Button>
             </Link>
             <button
               onClick={() => setIsEmailSent(false)}
-              className="text-sm text-muted-foreground hover:text-primary"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Didn't receive the email? Try again
             </button>
@@ -85,18 +85,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-page-gradient p-4">
+      <Card className="w-full max-w-md bg-card border-border/50">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-bold text-center">Forgot Password?</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-3xl font-bold text-center text-foreground">Forgot Password?</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
             Enter your email and we'll send you a reset link
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email Address
               </label>
               <Input
@@ -107,16 +107,17 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Reset Link
             </Button>
             <Link href="/auth/login" className="w-full">
-              <Button variant="ghost" className="w-full">
+              <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground hover:bg-muted">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Login
               </Button>

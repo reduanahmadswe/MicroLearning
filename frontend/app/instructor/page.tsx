@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  BookOpen, 
-  Users, 
-  Video, 
-  FileQuestion, 
-  TrendingUp, 
+import {
+  BookOpen,
+  Users,
+  Video,
+  FileQuestion,
+  TrendingUp,
   Award,
   Plus,
   Eye,
@@ -92,47 +92,47 @@ export default function InstructorDashboard() {
       title: 'Total Lessons',
       value: stats.totalLessons,
       icon: BookOpen,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     },
     {
       title: 'Total Courses',
       value: stats.totalCourses,
       icon: Video,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
     },
     {
       title: 'Total Students',
       value: stats.totalStudents,
       icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     },
     {
       title: 'Total Views',
       value: stats.totalViews,
       icon: TrendingUp,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 py-8">
+    <div className="min-h-screen bg-page-gradient py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-       
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statsCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow bg-white border border-gray-100">
+              <Card key={index} className="hover:shadow-lg transition-shadow bg-card border border-border/50">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                      <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
+                      <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                     </div>
                     <div className={`${stat.bgColor} p-3 rounded-lg`}>
                       <Icon className={`w-6 h-6 ${stat.color}`} />
@@ -146,51 +146,51 @@ export default function InstructorDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card 
+          <Card
             onClick={() => setShowCourseModal(true)}
-            className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500 bg-white"
+            className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500 bg-card dark:border-blue-800 dark:hover:border-blue-600"
           >
             <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-              <div className="bg-blue-50 p-4 rounded-full mb-3">
-                <Plus className="w-8 h-8 text-blue-600" />
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-full mb-3">
+                <Plus className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="font-semibold text-lg mb-1 text-black">Create Lesson</h3>
-              <p className="text-sm text-gray-600">Create a new micro-lesson</p>
+              <h3 className="font-semibold text-lg mb-1 text-foreground">Create Lesson</h3>
+              <p className="text-sm text-muted-foreground">Create a new micro-lesson</p>
             </CardContent>
           </Card>
 
           <Link href="/instructor/courses/create">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500 bg-white">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500 bg-card dark:border-green-800 dark:hover:border-green-600">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-                <div className="bg-green-50 p-4 rounded-full mb-3">
-                  <Video className="w-8 h-8 text-green-600" />
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-full mb-3">
+                  <Video className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 text-black">Create Course</h3>
-                <p className="text-sm text-gray-600">Build a complete course</p>
+                <h3 className="font-semibold text-lg mb-1 text-foreground">Create Course</h3>
+                <p className="text-sm text-muted-foreground">Build a complete course</p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/instructor/quizzes/create">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-500 bg-white">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-500 bg-card dark:border-purple-800 dark:hover:border-purple-600">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-                <div className="bg-purple-50 p-4 rounded-full mb-3">
-                  <FileQuestion className="w-8 h-8 text-purple-600" />
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-full mb-3">
+                  <FileQuestion className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 text-black">Create Quiz</h3>
-                <p className="text-sm text-gray-600">Design interactive quizzes</p>
+                <h3 className="font-semibold text-lg mb-1 text-foreground">Create Quiz</h3>
+                <p className="text-sm text-muted-foreground">Design interactive quizzes</p>
               </CardContent>
             </Card>
           </Link>
         </div>
 
         {/* Recent Lessons */}
-        <Card className="mb-8 bg-white border border-gray-100">
+        <Card className="mb-8 bg-card border border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl text-gray-900">Recent Lessons</CardTitle>
+              <CardTitle className="text-xl text-foreground">Recent Lessons</CardTitle>
               <Link href="/instructor/lessons">
-                <Button className="bg-green-600 hover:bg-green-700 text-white" size="sm">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
                   View All
                 </Button>
               </Link>
@@ -198,11 +198,11 @@ export default function InstructorDashboard() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-center text-gray-500 py-8">Loading lessons...</p>
+              <p className="text-center text-muted-foreground py-8">Loading lessons...</p>
             ) : lessons.length === 0 ? (
               <div className="text-center py-12">
-                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No lessons created yet</p>
+                <BookOpen className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No lessons created yet</p>
                 <Link href="/instructor/lessons/create">
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
@@ -215,11 +215,11 @@ export default function InstructorDashboard() {
                 {lessons.slice(0, 5).map((lesson: any) => (
                   <div
                     key={lesson._id}
-                    className="flex items-center justify-between p-4 border border-green-100 rounded-lg hover:bg-green-50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex-1">
-                      <h4 className="font-semibold text-lg mb-1 text-gray-900">{lesson.title}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <h4 className="font-semibold text-lg mb-1 text-foreground">{lesson.title}</h4>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
                           {lesson.views || 0} views
@@ -248,12 +248,12 @@ export default function InstructorDashboard() {
         </Card>
 
         {/* Recent Courses */}
-        <Card className="bg-white border border-gray-100">
+        <Card className="bg-card border border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl text-gray-900">Recent Courses</CardTitle>
+              <CardTitle className="text-xl text-foreground">Recent Courses</CardTitle>
               <Link href="/instructor/courses">
-                <Button className="bg-green-600 hover:bg-green-700 text-white" size="sm">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
                   View All
                 </Button>
               </Link>
@@ -262,8 +262,8 @@ export default function InstructorDashboard() {
           <CardContent>
             {courses.length === 0 ? (
               <div className="text-center py-12">
-                <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No courses created yet</p>
+                <Video className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No courses created yet</p>
                 <Link href="/instructor/courses/create">
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
@@ -274,14 +274,14 @@ export default function InstructorDashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {courses.slice(0, 6).map((course: any) => (
-                  <Card key={course._id} className="hover:shadow-lg transition-shadow bg-white border border-green-100">
+                  <Card key={course._id} className="hover:shadow-lg transition-shadow bg-card border border-border/50">
                     <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2 text-gray-900">{course.title}</h4>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <h4 className="font-semibold mb-2 text-foreground">{course.title}</h4>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {course.description}
                       </p>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">{course.enrolledCount || 0} students</span>
+                        <span className="text-muted-foreground">{course.enrolledCount || 0} students</span>
                         <Link href={`/instructor/courses/${course._id}/lessons`}>
                           <Button variant="ghost" size="sm">
                             Manage Lessons
@@ -298,14 +298,14 @@ export default function InstructorDashboard() {
 
         {/* Course Selection Modal */}
         {showCourseModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-popover rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl border border-border">
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-green-600 to-teal-600 p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold mb-1">Create New Lesson</h2>
-                    <p className="text-green-100 text-sm">Select a course to add this lesson to</p>
+                    <p className="text-green-100 text-sm opacity-90">Select a course to add this lesson to</p>
                   </div>
                   <button
                     onClick={() => {
@@ -323,9 +323,9 @@ export default function InstructorDashboard() {
               <div className="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
                 {courses.length === 0 ? (
                   <div className="text-center py-12">
-                    <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Courses Available</h3>
-                    <p className="text-gray-600 mb-6">You need to create a course first before adding lessons</p>
+                    <Video className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No Courses Available</h3>
+                    <p className="text-muted-foreground mb-6">You need to create a course first before adding lessons</p>
                     <Button
                       onClick={() => {
                         setShowCourseModal(false);
@@ -340,7 +340,7 @@ export default function InstructorDashboard() {
                 ) : (
                   <>
                     <div className="mb-4">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Choose which course this lesson will belong to. You can also create a standalone lesson.
                       </p>
                     </div>
@@ -351,24 +351,23 @@ export default function InstructorDashboard() {
                         <div
                           key={course._id}
                           onClick={() => setSelectedCourse(course)}
-                          className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                            selectedCourse?._id === course._id
-                              ? 'border-green-500 bg-green-50 shadow-md'
-                              : 'border-gray-200 hover:border-green-300 hover:shadow-sm'
-                          }`}
+                          className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedCourse?._id === course._id
+                            ? 'border-primary bg-primary/10 shadow-md'
+                            : 'border-border hover:border-primary/50 hover:shadow-sm'
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                              <h4 className="font-semibold text-foreground mb-1 flex items-center gap-2">
                                 {course.title}
                                 {selectedCourse?._id === course._id && (
-                                  <CheckCircle className="w-5 h-5 text-green-600" />
+                                  <CheckCircle className="w-5 h-5 text-primary" />
                                 )}
                               </h4>
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                                 {course.description}
                               </p>
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <BookOpen className="w-3 h-3" />
                                   {course.lessons?.length || 0} lessons
@@ -377,7 +376,7 @@ export default function InstructorDashboard() {
                                   <Users className="w-3 h-3" />
                                   {course.enrolledCount || 0} students
                                 </span>
-                                <span className="capitalize px-2 py-0.5 bg-gray-100 rounded-full">
+                                <span className="capitalize px-2 py-0.5 bg-muted rounded-full">
                                   {course.difficulty}
                                 </span>
                               </div>
@@ -390,24 +389,23 @@ export default function InstructorDashboard() {
                     {/* Standalone Option */}
                     <div
                       onClick={() => setSelectedCourse({ _id: 'standalone', title: 'Standalone Lesson' })}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                        selectedCourse?._id === 'standalone'
-                          ? 'border-green-500 bg-green-50 shadow-md'
-                          : 'border-gray-200 hover:border-green-300 hover:shadow-sm'
-                      }`}
+                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedCourse?._id === 'standalone'
+                        ? 'border-primary bg-primary/10 shadow-md'
+                        : 'border-border hover:border-primary/50 hover:shadow-sm'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <BookOpen className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <BookOpen className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                          <h4 className="font-semibold text-foreground flex items-center gap-2">
                             Create Standalone Lesson
                             {selectedCourse?._id === 'standalone' && (
-                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <CheckCircle className="w-5 h-5 text-primary" />
                             )}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Create a lesson without attaching it to any course
                           </p>
                         </div>
@@ -419,7 +417,7 @@ export default function InstructorDashboard() {
 
               {/* Modal Footer */}
               {courses.length > 0 && (
-                <div className="border-t border-gray-200 p-6 bg-gray-50">
+                <div className="border-t border-border p-6 bg-muted/30">
                   <div className="flex items-center justify-between gap-4">
                     <Button
                       variant="outline"
@@ -427,7 +425,7 @@ export default function InstructorDashboard() {
                         setShowCourseModal(false);
                         setSelectedCourse(null);
                       }}
-                      className="flex-1 bg-white text-black border-green-600 hover:bg-red-500 hover:text-white hover:border-red-500"
+                      className="flex-1 bg-background text-foreground border-primary hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
                     >
                       Cancel
                     </Button>

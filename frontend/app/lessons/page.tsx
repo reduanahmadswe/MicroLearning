@@ -50,13 +50,13 @@ export default function LessonsPage() {
     topic: '',
     difficulty: 'beginner',
   });
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalLessons, setTotalLessons] = useState(0);
   const lessonsPerPage = 9;
-  
+
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<{ id: string; title: string } | null>(null);
@@ -72,9 +72,9 @@ export default function LessonsPage() {
 
   const loadEnrolledCourses = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/courses/enrollments/me', {
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('token')}` 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/enrollments/me`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
       if (response.ok) {
@@ -100,7 +100,7 @@ export default function LessonsPage() {
 
       const response = await lessonsAPI.getLessons(params);
       setLessons(response.data.data || []);
-      
+
       // Update pagination info from response
       const meta = response.data.meta;
       if (meta) {
@@ -136,18 +136,18 @@ export default function LessonsPage() {
 
       // Show success message
       toast.success('🎉 AI Lesson generated successfully!');
-      
+
       // Close modal and reset form
       setShowAIModal(false);
       setAiForm({ topic: '', difficulty: 'beginner' });
-      
+
       // Reload enrolled courses to include AI Generated Lessons course
       await loadEnrolledCourses();
-      
+
       // Reset to first page and reload lessons to show the new lesson
       setCurrentPage(1);
       await loadLessons();
-      
+
       // Optional: Navigate to the new lesson if you want
       if (response.data?.data?._id) {
         setTimeout(() => {
@@ -175,11 +175,11 @@ export default function LessonsPage() {
     try {
       await lessonsAPI.deleteLesson(lessonToDelete.id);
       toast.success('Lesson deleted successfully!');
-      
+
       // Close modal and reset
       setShowDeleteModal(false);
       setLessonToDelete(null);
-      
+
       // Reload lessons
       await loadLessons();
     } catch (error: any) {
@@ -209,12 +209,12 @@ export default function LessonsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Animated Background Blur Circles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 dark:bg-green-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 dark:bg-teal-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-emerald-200 dark:bg-emerald-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -294,21 +294,21 @@ export default function LessonsPage() {
           </Button>
         </div>
         {/* Filters */}
-        <Card className="mb-4 sm:mb-6 border-0 shadow-xl bg-white">
+        <Card className="mb-4 sm:mb-6 border-0 shadow-xl bg-card">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <form onSubmit={handleSearch} className="mb-4">
               <div className="flex gap-2">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search lessons..."
-                    className="pl-9 sm:pl-10 rounded-xl bg-white border-green-200 focus:border-green-400 focus:ring-green-400 text-sm sm:text-base text-gray-900"
+                    className="pl-9 sm:pl-10 rounded-xl bg-background border-border focus:border-green-400 focus:ring-green-400 text-sm sm:text-base text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md px-4 sm:px-6"
                 >
                   <Search className="w-4 h-4 sm:mr-2" />
@@ -320,10 +320,10 @@ export default function LessonsPage() {
             <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center text-black">
-                    <Filter className="w-4 h-4 text-green-600" />
+                  <div className="w-7 h-7 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center text-black">
+                    <Filter className="w-4 h-4 text-green-600 dark:text-green-400" />
                   </div>
-                  <span className="text-sm font-bold text-gray-700">Difficulty:</span>
+                  <span className="text-sm font-bold text-foreground">Difficulty:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -339,9 +339,9 @@ export default function LessonsPage() {
                   </Button>
                   {difficulties.map((diff) => {
                     const colorMap: any = {
-                      beginner: 'bg-green-100 text-green-700 border-green-300',
-                      intermediate: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-                      advanced: 'bg-red-100 text-red-700 border-red-300'
+                      beginner: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800',
+                      intermediate: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800',
+                      advanced: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800'
                     };
                     return (
                       <Button
@@ -352,7 +352,7 @@ export default function LessonsPage() {
                           setSelectedDifficulty(diff);
                           setCurrentPage(1);
                         }}
-                        className={selectedDifficulty === diff ? colorMap[diff] : 'bg-white text-gray-900 border-gray-300 hover:border-green-300 hover:bg-green-50'}
+                        className={selectedDifficulty === diff ? colorMap[diff] : 'bg-background text-foreground border-border hover:border-green-300 hover:bg-secondary'}
                       >
                         {diff.charAt(0).toUpperCase() + diff.slice(1)}
                       </Button>
@@ -363,10 +363,10 @@ export default function LessonsPage() {
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-teal-600" />
+                  <div className="w-7 h-7 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                   </div>
-                  <span className="text-sm font-bold text-gray-700">Topic:</span>
+                  <span className="text-sm font-bold text-foreground">Topic:</span>
                 </div>
                 <select
                   value={selectedTopic}
@@ -374,7 +374,7 @@ export default function LessonsPage() {
                     setSelectedTopic(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm text-gray-900 focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-white"
+                  className="px-3 py-1.5 border border-border rounded-xl text-sm text-foreground focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-background"
                 >
                   <option value="all">All Topics</option>
                   {topics.map((topic) => (
@@ -390,22 +390,22 @@ export default function LessonsPage() {
 
         {/* Lessons Grid */}
         {loading ? (
-          <Card className="border-0 shadow-xl bg-white">
+          <Card className="border-0 shadow-xl bg-card">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
-              <p className="text-gray-600 font-medium">Loading lessons...</p>
+              <p className="text-muted-foreground font-medium">Loading lessons...</p>
             </CardContent>
           </Card>
         ) : filteredLessons.length === 0 ? (
-          <Card className="border-0 shadow-xl bg-white overflow-hidden">
+          <Card className="border-0 shadow-xl bg-card overflow-hidden">
             <div className="relative">
               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-green-100 blur-3xl"></div>
               <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-teal-100 blur-3xl"></div>
               <CardContent className="relative z-10 p-12 text-center">
-                <BookOpen className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No lessons found</h3>
-                <p className="text-gray-600 mb-6">Try adjusting your filters or generate a new lesson with AI</p>
-                <Button 
+                <BookOpen className="w-20 h-20 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h3 className="text-xl font-bold text-foreground mb-2">No lessons found</h3>
+                <p className="text-muted-foreground mb-6">Try adjusting your filters or generate a new lesson with AI</p>
+                <Button
                   onClick={() => setShowAIModal(true)}
                   className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md"
                 >
@@ -418,23 +418,22 @@ export default function LessonsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             {filteredLessons.map((lesson) => (
-              <Card 
-                key={lesson._id} 
-                className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col h-full"
+              <Card
+                key={lesson._id}
+                className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col h-full"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-3">
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${
-                      lesson.difficulty === 'beginner' ? 'bg-gradient-to-r from-green-400 to-green-500 text-white' :
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${lesson.difficulty === 'beginner' ? 'bg-gradient-to-r from-green-400 to-green-500 text-white' :
                       lesson.difficulty === 'intermediate' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white' :
-                      'bg-gradient-to-r from-red-400 to-red-500 text-white'
-                    }`}>
+                        'bg-gradient-to-r from-red-400 to-red-500 text-white'
+                      }`}>
                       {lesson.difficulty}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-full">
-                        <Eye className="w-3.5 h-3.5 text-gray-600" />
-                        <span className="text-xs font-semibold text-gray-700">{lesson.views || 0}</span>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary rounded-full">
+                        <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-foreground">{lesson.views || 0}</span>
                       </div>
                       {lesson.aiGenerated && (
                         <button
@@ -450,32 +449,32 @@ export default function LessonsPage() {
                       )}
                     </div>
                   </div>
-                  <CardTitle className="text-base sm:text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-green-600 transition-colors">
+                  <CardTitle className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                     {lesson.title}
                   </CardTitle>
                 </CardHeader>
-                
+
                 <CardContent className="flex-1 flex flex-col pt-0">
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{lesson.summary}</p>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{lesson.summary}</p>
 
                   {/* Meta Info */}
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-100">
-                      <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Clock className="w-3 h-3 text-green-600" />
+                    <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/20">
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-3 h-3 text-green-600 dark:text-green-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-medium leading-tight">Duration</p>
-                        <p className="text-sm font-bold text-gray-900">{lesson.estimatedTime} min</p>
+                        <p className="text-xs text-muted-foreground font-medium leading-tight">Duration</p>
+                        <p className="text-sm font-bold text-foreground">{lesson.estimatedTime} min</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg border border-red-100">
-                      <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Heart className="w-3 h-3 text-red-600" />
+                    <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
+                      <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Heart className="w-3 h-3 text-red-600 dark:text-red-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-medium leading-tight">Likes</p>
-                        <p className="text-sm font-bold text-gray-900">{lesson.likes || 0}</p>
+                        <p className="text-xs text-muted-foreground font-medium leading-tight">Likes</p>
+                        <p className="text-sm font-bold text-foreground">{lesson.likes || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -485,7 +484,7 @@ export default function LessonsPage() {
                     {lesson.tags && lesson.tags.length > 0 && lesson.tags.slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-0.5 bg-teal-50 text-teal-700 rounded-md text-xs font-medium border border-teal-200"
+                        className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 rounded-md text-xs font-medium border border-teal-200 dark:border-teal-800"
                       >
                         {tag}
                       </span>
@@ -494,7 +493,7 @@ export default function LessonsPage() {
 
                   {/* Completion Status */}
                   {lesson.isCompleted && (
-                    <div className="mb-3 flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                    <div className="mb-3 flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800">
                       <CheckCircle className="w-3.5 h-3.5" />
                       <span className="text-xs font-bold">Completed</span>
                     </div>
@@ -503,38 +502,38 @@ export default function LessonsPage() {
                   {/* Quick Actions */}
                   <div className="grid grid-cols-3 gap-1.5 mb-3">
                     <Link href={`/quiz?lessonId=${lesson._id}`}>
-                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-purple-50 border border-transparent hover:border-purple-200 transition-all duration-300 group/action">
-                        <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
-                          <FileQuestion className="w-3.5 h-3.5 text-purple-600" />
+                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-transparent hover:border-purple-200 dark:hover:border-purple-800 transition-all duration-300 group/action">
+                        <div className="w-7 h-7 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
+                          <FileQuestion className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <span className="text-xs font-semibold text-gray-600 group-hover/action:text-purple-600">Quiz</span>
+                        <span className="text-xs font-semibold text-muted-foreground group-hover/action:text-purple-600 dark:group-hover/action:text-purple-400">Quiz</span>
                       </button>
                     </Link>
-                    
+
                     <Link href={`/videos?lessonId=${lesson._id}`}>
-                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all duration-300 group/action">
-                        <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
-                          <Video className="w-3.5 h-3.5 text-blue-600" />
+                      <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 group/action">
+                        <div className="w-7 h-7 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
+                          <Video className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <span className="text-xs font-semibold text-gray-600 group-hover/action:text-blue-600">Video</span>
+                        <span className="text-xs font-semibold text-muted-foreground group-hover/action:text-blue-600 dark:group-hover/action:text-blue-400">Video</span>
                       </button>
                     </Link>
-                    
+
                     {lesson.isCompleted ? (
                       <Link href={`/certificates?lessonId=${lesson._id}`}>
-                        <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-yellow-50 border border-transparent hover:border-yellow-200 transition-all duration-300 group/action">
-                          <div className="w-7 h-7 bg-yellow-100 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
-                            <Award className="w-3.5 h-3.5 text-yellow-600" />
+                        <button className="w-full flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20 border border-transparent hover:border-yellow-200 dark:hover:border-yellow-800 transition-all duration-300 group/action">
+                          <div className="w-7 h-7 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center group-hover/action:scale-110 transition-transform">
+                            <Award className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
                           </div>
-                          <span className="text-xs font-semibold text-gray-600 group-hover/action:text-yellow-600">Cert</span>
+                          <span className="text-xs font-semibold text-muted-foreground group-hover/action:text-yellow-600 dark:group-hover/action:text-yellow-400">Cert</span>
                         </button>
                       </Link>
                     ) : (
                       <div className="w-full flex flex-col items-center gap-1 p-2 rounded-lg border border-transparent opacity-50">
-                        <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Award className="w-3.5 h-3.5 text-gray-400" />
+                        <div className="w-7 h-7 bg-secondary rounded-lg flex items-center justify-center">
+                          <Award className="w-3.5 h-3.5 text-muted-foreground" />
                         </div>
-                        <span className="text-xs font-semibold text-gray-400">Cert</span>
+                        <span className="text-xs font-semibold text-muted-foreground">Cert</span>
                       </div>
                     )}
                   </div>
@@ -542,11 +541,10 @@ export default function LessonsPage() {
                   {/* Main CTA - Always at bottom */}
                   <div className="mt-auto">
                     <Link href={`/lessons/${lesson._id}`}>
-                      <Button className={`w-full shadow-md group-hover:shadow-lg transition-all h-10 ${
-                        lesson.isCompleted 
-                          ? 'bg-white border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'
-                          : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white'
-                      }`}>
+                      <Button className={`w-full shadow-md group-hover:shadow-lg transition-all h-10 ${lesson.isCompleted
+                        ? 'bg-card border-2 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700'
+                        : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white'
+                        }`}>
                         <span className="flex items-center justify-center gap-2 text-sm">
                           {lesson.isCompleted ? (
                             <>
@@ -572,16 +570,16 @@ export default function LessonsPage() {
         {/* Pagination Controls */}
         {!loading && filteredLessons.length > 0 && totalPages > 1 && (
           <div className="mt-6 sm:mt-8">
-            <Card className="border-0 shadow-xl bg-white">
+            <Card className="border-0 shadow-xl bg-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   {/* Page Info */}
-                  <div className="text-sm text-gray-600 font-medium">
-                    Showing <span className="font-bold text-gray-900">{((currentPage - 1) * lessonsPerPage) + 1}</span> to{' '}
-                    <span className="font-bold text-gray-900">
+                  <div className="text-sm text-muted-foreground font-medium">
+                    Showing <span className="font-bold text-foreground">{((currentPage - 1) * lessonsPerPage) + 1}</span> to{' '}
+                    <span className="font-bold text-foreground">
                       {Math.min(currentPage * lessonsPerPage, totalLessons)}
                     </span>{' '}
-                    of <span className="font-bold text-gray-900">{totalLessons}</span> lessons
+                    of <span className="font-bold text-foreground">{totalLessons}</span> lessons
                   </div>
 
                   {/* Pagination Buttons */}
@@ -592,7 +590,7 @@ export default function LessonsPage() {
                       disabled={currentPage === 1}
                       variant="outline"
                       size="sm"
-                      className="border-green-200 hover:bg-green-50 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="border-border hover:bg-secondary hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed bg-card text-foreground"
                     >
                       <ChevronLeft className="w-4 h-4 mr-1" />
                       <span className="hidden sm:inline">Previous</span>
@@ -621,7 +619,7 @@ export default function LessonsPage() {
                             className={
                               currentPage === pageNumber
                                 ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white min-w-[2.5rem]'
-                                : 'border-green-200 hover:bg-green-50 hover:border-green-300 min-w-[2.5rem]'
+                                : 'border-border hover:bg-secondary hover:border-green-300 min-w-[2.5rem] bg-card text-foreground'
                             }
                           >
                             {pageNumber}
@@ -636,7 +634,7 @@ export default function LessonsPage() {
                       disabled={currentPage === totalPages}
                       variant="outline"
                       size="sm"
-                      className="border-green-200 hover:bg-green-50 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="border-border hover:bg-secondary hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed bg-card text-foreground"
                     >
                       <span className="hidden sm:inline">Next</span>
                       <ChevronRight className="w-4 h-4 ml-1" />
@@ -675,10 +673,10 @@ export default function LessonsPage() {
                 Let AI create a personalized micro lesson just for you
               </p>
             </div>
-            
-            <CardContent className="p-6 space-y-5 bg-white">
+
+            <CardContent className="p-6 space-y-5 bg-card">
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block flex items-center gap-2">
+                <label className="text-sm font-bold text-foreground mb-2 block flex items-center gap-2">
                   <Target className="w-4 h-4 text-green-600" />
                   What topic would you like to learn?
                 </label>
@@ -686,20 +684,20 @@ export default function LessonsPage() {
                   value={aiForm.topic}
                   onChange={(e) => setAiForm({ ...aiForm, topic: e.target.value })}
                   placeholder="e.g., JavaScript Promises, Photosynthesis..."
-                  className="rounded-xl bg-white border-green-200 focus:border-green-400 focus:ring-green-400 text-gray-900"
+                  className="rounded-xl bg-background border-border focus:border-green-400 focus:ring-green-400 text-foreground placeholder:text-muted-foreground"
                   disabled={aiGenerating}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block flex items-center gap-2">
+                <label className="text-sm font-bold text-foreground mb-2 block flex items-center gap-2">
                   <Zap className="w-4 h-4 text-yellow-600" />
                   Difficulty Level
                 </label>
                 <select
                   value={aiForm.difficulty}
                   onChange={(e) => setAiForm({ ...aiForm, difficulty: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-green-200 rounded-xl focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-white"
+                  className="w-full px-4 py-2.5 border border-border rounded-xl focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-background text-foreground"
                   disabled={aiGenerating}
                 >
                   <option value="beginner">🟢 Beginner - I'm new to this</option>
@@ -713,7 +711,7 @@ export default function LessonsPage() {
                   variant="outline"
                   onClick={() => setShowAIModal(false)}
                   disabled={aiGenerating}
-                  className="flex-1 border-gray-300 hover:bg-gray-50 rounded-xl"
+                  className="flex-1 border-border hover:bg-secondary rounded-xl text-foreground"
                 >
                   Cancel
                 </Button>
@@ -763,17 +761,17 @@ export default function LessonsPage() {
                 </Button>
               </div>
             </div>
-            
-            <CardContent className="p-6 bg-white">
+
+            <CardContent className="p-6 bg-card">
               <div className="mb-6">
-                <p className="text-gray-700 text-base mb-3">
+                <p className="text-foreground text-base mb-3">
                   Are you sure you want to delete this lesson?
                 </p>
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <p className="text-sm font-semibold text-red-900 mb-1">
+                <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-200 mb-1">
                     "{lessonToDelete.title}"
                   </p>
-                  <p className="text-xs text-red-700">
+                  <p className="text-xs text-red-700 dark:text-red-300">
                     This action cannot be undone. All lesson data will be permanently removed.
                   </p>
                 </div>
@@ -784,7 +782,7 @@ export default function LessonsPage() {
                   variant="outline"
                   onClick={cancelDelete}
                   disabled={isDeleting}
-                  className="flex-1 border-gray-300 hover:bg-gray-50 rounded-xl"
+                  className="flex-1 border-border hover:bg-secondary rounded-xl text-foreground"
                 >
                   Cancel
                 </Button>

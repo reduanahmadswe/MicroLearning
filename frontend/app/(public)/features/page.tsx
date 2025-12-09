@@ -37,7 +37,7 @@ export default function FeaturesPage() {
         'Mobile-optimized for learning anywhere'
       ],
       color: 'from-blue-500 to-blue-600',
-      bgColor: 'from-blue-50 to-blue-100'
+      bgColor: 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20'
     },
     {
       icon: <Trophy className="w-12 h-12" />,
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
         'Daily streak bonuses to keep you engaged'
       ],
       color: 'from-purple-500 to-purple-600',
-      bgColor: 'from-purple-50 to-purple-100'
+      bgColor: 'from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20'
     },
     {
       icon: <BarChart3 className="w-12 h-12" />,
@@ -63,7 +63,7 @@ export default function FeaturesPage() {
         'Visual learning path representation'
       ],
       color: 'from-green-500 to-green-600',
-      bgColor: 'from-green-50 to-green-100'
+      bgColor: 'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20'
     },
     {
       icon: <Users className="w-12 h-12" />,
@@ -76,7 +76,7 @@ export default function FeaturesPage() {
         'Instructor Q&A support'
       ],
       color: 'from-orange-500 to-orange-600',
-      bgColor: 'from-orange-50 to-orange-100'
+      bgColor: 'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20'
     },
     {
       icon: <Shield className="w-12 h-12" />,
@@ -89,7 +89,7 @@ export default function FeaturesPage() {
         'Retake quizzes to improve scores'
       ],
       color: 'from-red-500 to-red-600',
-      bgColor: 'from-red-50 to-red-100'
+      bgColor: 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20'
     },
     {
       icon: <Sparkles className="w-12 h-12" />,
@@ -102,7 +102,7 @@ export default function FeaturesPage() {
         'Smart content suggestions'
       ],
       color: 'from-teal-500 to-teal-600',
-      bgColor: 'from-teal-50 to-teal-100'
+      bgColor: 'from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20'
     }
   ];
 
@@ -129,28 +129,28 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Navigation is handled by global Navbar component */}
 
       {/* Hero Section */}
       <section className="py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium mb-6">
             <Zap className="w-4 h-4" />
             Platform Features
           </div>
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
             Everything You Need to
             <br />
             <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
               Master New Skills
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Discover the powerful features that make MicroLearning the most effective way to 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+            Discover the powerful features that make MicroLearning the most effective way to
             learn new skills and advance your career.
           </p>
-          
+
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/auth/register"
@@ -161,7 +161,7 @@ export default function FeaturesPage() {
             </Link>
             <Link
               href="/courses"
-              className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-green-600 hover:text-green-600 transition-all font-semibold"
+              className="px-8 py-4 border-2 border-border text-muted-foreground rounded-lg hover:border-green-600 hover:text-green-600 dark:hover:text-green-400 transition-all font-semibold"
             >
               Browse Courses
             </Link>
@@ -170,7 +170,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* Main Features */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-24">
             {mainFeatures.map((feature, index) => (
@@ -179,13 +179,13 @@ export default function FeaturesPage() {
                   <div className={`w-20 h-20 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center text-white mb-6`}>
                     {feature.icon}
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">{feature.title}</h2>
-                  <p className="text-lg text-gray-600 mb-6">{feature.description}</p>
+                  <h2 className="text-3xl font-bold text-foreground mb-4">{feature.title}</h2>
+                  <p className="text-lg text-muted-foreground mb-6">{feature.description}</p>
                   <ul className="space-y-3">
                     {feature.details.map((detail, idx) => (
                       <li key={idx} className="flex items-start gap-3">
                         <CheckCircle className={`w-6 h-6 flex-shrink-0 mt-1 bg-gradient-to-br ${feature.color} text-white rounded-full p-1`} />
-                        <span className="text-gray-700">{detail}</span>
+                        <span className="text-foreground">{detail}</span>
                       </li>
                     ))}
                   </ul>
@@ -205,23 +205,23 @@ export default function FeaturesPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               And There's
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> More!</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Even more features to enhance your learning experience.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {additionalFeatures.map((feature, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-xl hover:border-green-300 transition-all">
+              <div key={index} className="bg-card rounded-xl p-6 border border-border/50 hover:shadow-xl hover:border-green-300 dark:hover:border-green-700 transition-all">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-white mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600">{feature.description}</p>
+                <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -229,27 +229,27 @@ export default function FeaturesPage() {
       </section>
 
       {/* Comparison Table */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Why Choose
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> MicroLearning?</span>
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               See how we compare to other learning platforms.
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
+          <div className="bg-card rounded-2xl border-2 border-border/50 overflow-hidden">
             <div className="grid grid-cols-3 bg-gradient-to-r from-green-600 to-teal-600 text-white p-4">
               <div className="text-lg font-bold">Feature</div>
               <div className="text-lg font-bold text-center">MicroLearning</div>
               <div className="text-lg font-bold text-center">Other Platforms</div>
             </div>
             {comparisons.map((item, index) => (
-              <div key={index} className={`grid grid-cols-3 p-4 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                <div className="font-medium text-gray-900">{item.feature}</div>
+              <div key={index} className={`grid grid-cols-3 p-4 ${index % 2 === 0 ? 'bg-muted/50' : 'bg-card'}`}>
+                <div className="font-medium text-foreground">{item.feature}</div>
                 <div className="text-center">
                   {item.us ? (
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
@@ -259,9 +259,9 @@ export default function FeaturesPage() {
                 </div>
                 <div className="text-center">
                   {item.others ? (
-                    <CheckCircle className="w-6 h-6 text-gray-400 mx-auto" />
+                    <CheckCircle className="w-6 h-6 text-muted-foreground mx-auto" />
                   ) : (
-                    <span className="text-gray-400">✗</span>
+                    <span className="text-muted-foreground/50">✗</span>
                   )}
                 </div>
               </div>

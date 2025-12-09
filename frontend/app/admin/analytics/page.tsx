@@ -50,7 +50,7 @@ export default function AdminAnalyticsPage() {
         adminAPI.getStats(),
         analyticsAPI.getSystemAnalytics().catch(() => ({ data: { data: {} } })),
       ]);
-      
+
       setStats(dashboardResponse.data.data || {});
       setSystemAnalytics(systemResponse.data.data || {});
     } catch (error: any) {
@@ -63,8 +63,8 @@ export default function AdminAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export default function AdminAnalyticsPage() {
   const engagementStats = stats.engagement || {};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-6">
@@ -88,8 +88,8 @@ export default function AdminAnalyticsPage() {
                 <BarChart3 className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Platform Analytics</h1>
-                <p className="text-gray-600 text-sm">Comprehensive system insights and metrics</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Platform Analytics</h1>
+                <p className="text-muted-foreground text-sm">Comprehensive system insights and metrics</p>
               </div>
             </div>
 
@@ -99,11 +99,10 @@ export default function AdminAnalyticsPage() {
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                    timeRange === range
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${timeRange === range
                       ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                  }`}
+                      : 'bg-card text-muted-foreground hover:bg-accent border border-border/50'
+                    }`}
                 >
                   {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
                 </button>
@@ -115,26 +114,26 @@ export default function AdminAnalyticsPage() {
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total Users */}
-          <Card className="border-2 border-green-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-2 border-green-100 dark:border-green-900/30 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 {userStats.new > 0 && (
-                  <div className="flex items-center gap-1 text-green-600 text-sm">
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm">
                     <ArrowUp className="w-4 h-4" />
                     <span>+{userStats.new}</span>
                   </div>
                 )}
               </div>
-              <p className="text-2xl font-bold text-gray-900">{userStats.total || 0}</p>
-              <p className="text-sm text-gray-600">Total Users</p>
+              <p className="text-2xl font-bold text-foreground">{userStats.total || 0}</p>
+              <p className="text-sm text-muted-foreground">Total Users</p>
               <div className="flex gap-2 mt-2">
-                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
+                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
                   {userStats.byRole?.learner || 0} Learners
                 </span>
-                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
                   {userStats.byRole?.instructor || 0} Instructors
                 </span>
               </div>
@@ -142,22 +141,22 @@ export default function AdminAnalyticsPage() {
           </Card>
 
           {/* Total Content */}
-          <Card className="border-2 border-green-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-2 border-green-100 dark:border-green-900/30 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-foreground">
                 {(contentStats.lessons || 0) + (contentStats.quizzes || 0) + (contentStats.courses || 0)}
               </p>
-              <p className="text-sm text-gray-600">Total Content</p>
+              <p className="text-sm text-muted-foreground">Total Content</p>
               <div className="flex gap-2 mt-2">
-                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
                   {contentStats.lessons || 0} Lessons
                 </span>
-                <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded">
                   {contentStats.courses || 0} Courses
                 </span>
               </div>
@@ -165,20 +164,20 @@ export default function AdminAnalyticsPage() {
           </Card>
 
           {/* Engagement Rate */}
-          <Card className="border-2 border-green-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-2 border-green-100 dark:border-green-900/30 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                   <Activity className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-foreground">
                 {userStats.total > 0 ? Math.round((userStats.active / userStats.total) * 100) : 0}%
               </p>
-              <p className="text-sm text-gray-600">Active Users</p>
+              <p className="text-sm text-muted-foreground">Active Users</p>
               <div className="mt-2">
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
                     className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all"
                     style={{ width: `${userStats.total > 0 ? (userStats.active / userStats.total) * 100 : 0}%` }}
                   ></div>
@@ -188,20 +187,20 @@ export default function AdminAnalyticsPage() {
           </Card>
 
           {/* Completion Rate */}
-          <Card className="border-2 border-green-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-2 border-green-100 dark:border-green-900/30 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-foreground">
                 {engagementStats.averageCompletionRate || 0}%
               </p>
-              <p className="text-sm text-gray-600">Avg Completion</p>
+              <p className="text-sm text-muted-foreground">Avg Completion</p>
               <div className="mt-2">
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
                     className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all"
                     style={{ width: `${engagementStats.averageCompletionRate || 0}%` }}
                   ></div>
@@ -214,21 +213,21 @@ export default function AdminAnalyticsPage() {
         {/* Detailed Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* User Growth */}
-          <Card className="border-2 border-green-100 shadow-sm">
+          <Card className="border-2 border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                 User Growth & Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">New Users (Last 30 Days)</span>
-                    <span className="text-2xl font-bold text-green-600">+{userStats.new || 0}</span>
+                    <span className="text-sm text-muted-foreground">New Users (Last 30 Days)</span>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">+{userStats.new || 0}</span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Growth rate: {userStats.total > 0 ? Math.round((userStats.new / userStats.total) * 100) : 0}%
                   </p>
                 </div>
@@ -236,11 +235,11 @@ export default function AdminAnalyticsPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Learners</span>
+                      <span className="text-muted-foreground">Learners</span>
                       <span className="font-medium">{userStats.byRole?.learner || 0}</span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
                         className="h-full bg-green-600 transition-all"
                         style={{ width: `${userStats.total > 0 ? (userStats.byRole?.learner / userStats.total) * 100 : 0}%` }}
                       ></div>
@@ -249,11 +248,11 @@ export default function AdminAnalyticsPage() {
 
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Instructors</span>
+                      <span className="text-muted-foreground">Instructors</span>
                       <span className="font-medium">{userStats.byRole?.instructor || 0}</span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
                         className="h-full bg-blue-600 transition-all"
                         style={{ width: `${userStats.total > 0 ? (userStats.byRole?.instructor / userStats.total) * 100 : 0}%` }}
                       ></div>
@@ -262,11 +261,11 @@ export default function AdminAnalyticsPage() {
 
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Admins</span>
+                      <span className="text-muted-foreground">Admins</span>
                       <span className="font-medium">{userStats.byRole?.admin || 0}</span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
                         className="h-full bg-purple-600 transition-all"
                         style={{ width: `${userStats.total > 0 ? (userStats.byRole?.admin / userStats.total) * 100 : 0}%` }}
                       ></div>
@@ -278,34 +277,34 @@ export default function AdminAnalyticsPage() {
           </Card>
 
           {/* Content Stats */}
-          <Card className="border-2 border-green-100 shadow-sm">
+          <Card className="border-2 border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-600" />
+                <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Content Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <BookOpen className="w-6 h-6 text-blue-600 mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{contentStats.lessons || 0}</p>
-                  <p className="text-xs text-gray-600">Total Lessons</p>
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{contentStats.lessons || 0}</p>
+                  <p className="text-xs text-muted-foreground">Total Lessons</p>
                 </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <FileText className="w-6 h-6 text-green-600 mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{contentStats.quizzes || 0}</p>
-                  <p className="text-xs text-gray-600">Total Quizzes</p>
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <FileText className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{contentStats.quizzes || 0}</p>
+                  <p className="text-xs text-muted-foreground">Total Quizzes</p>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <GraduationCap className="w-6 h-6 text-purple-600 mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{contentStats.courses || 0}</p>
-                  <p className="text-xs text-gray-600">Total Courses</p>
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{contentStats.courses || 0}</p>
+                  <p className="text-xs text-muted-foreground">Total Courses</p>
                 </div>
-                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <Target className="w-6 h-6 text-orange-600 mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{contentStats.flashcards || 0}</p>
-                  <p className="text-xs text-gray-600">Flashcards</p>
+                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <Target className="w-6 h-6 text-orange-600 dark:text-orange-400 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{contentStats.flashcards || 0}</p>
+                  <p className="text-xs text-muted-foreground">Flashcards</p>
                 </div>
               </div>
             </CardContent>
@@ -313,34 +312,34 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Engagement Metrics */}
-        <Card className="border-2 border-green-100 shadow-sm">
+        <Card className="border-2 border-border/50 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-600" />
+              <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
               Platform Engagement
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                <CheckCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{engagementStats.totalLessonCompletions || 0}</p>
-                <p className="text-xs text-gray-600">Lesson Completions</p>
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <CheckCircle className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">{engagementStats.totalLessonCompletions || 0}</p>
+                <p className="text-xs text-muted-foreground">Lesson Completions</p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-                <FileText className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{engagementStats.totalQuizAttempts || 0}</p>
-                <p className="text-xs text-gray-600">Quiz Attempts</p>
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-800">
+                <FileText className="w-8 h-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">{engagementStats.totalQuizAttempts || 0}</p>
+                <p className="text-xs text-muted-foreground">Quiz Attempts</p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                <Award className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{engagementStats.totalCertificates || 0}</p>
-                <p className="text-xs text-gray-600">Certificates</p>
+              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                <Award className="w-8 h-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">{engagementStats.totalCertificates || 0}</p>
+                <p className="text-xs text-muted-foreground">Certificates</p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200">
-                <Users className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{userStats.active || 0}</p>
-                <p className="text-xs text-gray-600">Active Users</p>
+              <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl border border-orange-200 dark:border-orange-800">
+                <Users className="w-8 h-8 text-orange-600 dark:text-orange-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">{userStats.active || 0}</p>
+                <p className="text-xs text-muted-foreground">Active Users</p>
               </div>
             </div>
           </CardContent>

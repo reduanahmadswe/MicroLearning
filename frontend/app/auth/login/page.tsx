@@ -123,7 +123,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-3 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full bg-page-gradient flex items-center justify-center p-3 sm:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
 
         {/* Left Side - Branding & Features (Hidden on mobile, visible on lg+) */}
@@ -138,56 +138,56 @@ export default function LoginPage() {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
                   MicroLearning
                 </h1>
-                <p className="text-gray-600 font-medium">Learn Smarter, Not Harder</p>
+                <p className="text-muted-foreground font-medium">Learn Smarter, Not Harder</p>
               </div>
             </div>
 
-            <p className="text-xl text-gray-700 leading-relaxed">
+            <p className="text-xl text-foreground leading-relaxed">
               Welcome back to your personalized learning journey! Continue growing your skills with bite-sized lessons designed for students.
             </p>
           </div>
 
           {/* Feature Highlights */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Why Students Love MicroLearning</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Why Students Love MicroLearning</h2>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Bite-Sized Lessons</h3>
-                <p className="text-sm text-gray-600">Learn in 5-10 minute chunks that fit your busy schedule</p>
+                <h3 className="font-bold text-foreground mb-1">Bite-Sized Lessons</h3>
+                <p className="text-sm text-muted-foreground">Learn in 5-10 minute chunks that fit your busy schedule</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-teal-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Award className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Earn Certificates & Badges</h3>
-                <p className="text-sm text-gray-600">Get recognized for your achievements and skills</p>
+                <h3 className="font-bold text-foreground mb-1">Earn Certificates & Badges</h3>
+                <p className="text-sm text-muted-foreground">Get recognized for your achievements and skills</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-emerald-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Learn with Friends</h3>
-                <p className="text-sm text-gray-600">Join a community of 10,000+ students worldwide</p>
+                <h3 className="font-bold text-foreground mb-1">Learn with Friends</h3>
+                <p className="text-sm text-muted-foreground">Join a community of 10,000+ students worldwide</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">AI-Powered Tutoring</h3>
-                <p className="text-sm text-gray-600">Get instant help with your personalized AI tutor</p>
+                <h3 className="font-bold text-foreground mb-1">AI-Powered Tutoring</h3>
+                <p className="text-sm text-muted-foreground">Get instant help with your personalized AI tutor</p>
               </div>
             </div>
           </div>
@@ -214,11 +214,11 @@ export default function LoginPage() {
                 MicroLearning
               </h1>
             </div>
-            <p className="text-sm text-gray-600">Learn Smarter, Not Harder</p>
+            <p className="text-sm text-muted-foreground">Learn Smarter, Not Harder</p>
           </div>
 
           {/* Login Card */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-border overflow-hidden">
             {/* Card Header with Gradient */}
             <div className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 px-4 sm:px-8 py-6 sm:py-8 text-white">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Welcome Back!</h2>
@@ -229,11 +229,11 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="px-4 sm:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
               {/* Email Field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="email" className="block text-sm font-semibold text-foreground">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Mail className="w-5 h-5" />
                   </div>
                   <input
@@ -244,18 +244,18 @@ export default function LoginPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                     disabled={isLoading}
-                    className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                    className="w-full pl-12 pr-4 py-3 sm:py-4 bg-background border-2 border-border rounded-xl text-foreground placeholder-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring focus:bg-background transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="password" className="block text-sm font-semibold text-foreground">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Lock className="w-5 h-5" />
                   </div>
                   <input
@@ -266,12 +266,12 @@ export default function LoginPage() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
                     disabled={isLoading}
-                    className="w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                    className="w-full pl-12 pr-12 py-3 sm:py-4 bg-background border-2 border-border rounded-xl text-foreground placeholder-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring focus:bg-background transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -279,11 +279,10 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Forgot Password Link */}
               <div className="flex justify-end">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors"
+                  className="text-sm font-semibold text-primary hover:text-primary/90 hover:underline transition-colors"
                 >
                   Forgot Password?
                 </Link>
@@ -323,10 +322,10 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-sm text-gray-500">New to MicroLearning?</span>
+                  <span className="bg-card px-4 text-sm text-muted-foreground">New to MicroLearning?</span>
                 </div>
               </div>
 
@@ -334,7 +333,7 @@ export default function LoginPage() {
               <Link href="/auth/register">
                 <button
                   type="button"
-                  className="w-full bg-white text-green-600 font-bold py-3 sm:py-4 px-6 rounded-xl border-2 border-green-600 hover:bg-green-50 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  className="w-full bg-card text-primary font-bold py-3 sm:py-4 px-6 rounded-xl border-2 border-primary hover:bg-accent hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <span>Create Free Account</span>
                   <GraduationCap className="w-5 h-5" />
@@ -344,13 +343,13 @@ export default function LoginPage() {
 
             {/* Footer Note */}
             <div className="px-4 sm:px-8 pb-6 sm:pb-8 text-center">
-              <p className="text-xs sm:text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 By signing in, you agree to our{" "}
-                <Link href="/terms" className="text-green-600 hover:underline font-medium">
+                <Link href="/terms" className="text-primary hover:underline font-medium">
                   Terms of Service
                 </Link>
                 {" "}and{" "}
-                <Link href="/privacy" className="text-green-600 hover:underline font-medium">
+                <Link href="/privacy" className="text-primary hover:underline font-medium">
                   Privacy Policy
                 </Link>
               </p>

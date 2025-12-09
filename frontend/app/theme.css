@@ -1,0 +1,79 @@
+  :root {
+    /* Base Colors - Light Mode (Green/Teal/Emerald Touch) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary Brand: Teal-600ish */
+    --primary: 176 84% 32%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 160 30% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 160 20% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 160 30% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 176 84% 32%;
+
+    --radius: 0.75rem;
+
+    /* Custom Gradients Variables */
+    --gradient-start: 142 76% 36%;
+    /* Green-600 */
+    --gradient-end: 176 84% 32%;
+    /* Teal-600 */
+    --page-gradient: linear-gradient(to bottom right, #f0fdf4, #f0fdfa, #ecfdf5);
+  }
+
+  .dark {
+    /* Base Colors - Dark Mode (Rich Deep Jungle Theme) */
+    --background: 200 50% 3%;
+    --foreground: 210 40% 98%;
+
+    --card: 200 50% 6%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 200 50% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary Brand: Emerald-400 for pop */
+    --primary: 158 64% 52%;
+    --primary-foreground: 142 76% 12%;
+
+    --secondary: 200 30% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 200 30% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 200 30% 15%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 200 30% 12%;
+    --input: 200 30% 12%;
+    --ring: 158 64% 52%;
+
+    /* Custom Gradients Variables */
+    --gradient-start: 158 64% 52%;
+    /* Emerald-400 */
+    --gradient-end: 176 60% 45%;
+    /* Teal-400 */
+    --page-gradient: linear-gradient(to bottom right, #022c22, #042f2e, #064e3b);
+  }

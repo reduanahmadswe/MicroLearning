@@ -33,51 +33,51 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
         components={{
           // Headings
           h1: ({ node, ...props }) => (
-            <h1 className="text-2xl font-bold mt-6 mb-4 text-gray-900" {...props} />
+            <h1 className="text-2xl font-bold mt-6 mb-4 text-foreground" {...props} />
           ),
           h2: ({ node, ...props }) => (
-            <h2 className="text-xl font-bold mt-5 mb-3 text-gray-900" {...props} />
+            <h2 className="text-xl font-bold mt-5 mb-3 text-foreground" {...props} />
           ),
           h3: ({ node, ...props }) => (
-            <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-900" {...props} />
+            <h3 className="text-lg font-semibold mt-4 mb-2 text-foreground" {...props} />
           ),
           h4: ({ node, ...props }) => (
-            <h4 className="text-base font-semibold mt-3 mb-2 text-gray-900" {...props} />
+            <h4 className="text-base font-semibold mt-3 mb-2 text-foreground" {...props} />
           ),
-          
+
           // Paragraphs - prevent nesting block elements
           p: ({ node, children, ...props }) => {
             // Check if children contains block-level elements (code blocks)
-            const hasBlockElement = node?.children?.some((child: any) => 
+            const hasBlockElement = node?.children?.some((child: any) =>
               child.type === 'element' && child.tagName === 'code' && !child.properties?.inline
             );
-            
+
             // If paragraph contains block elements, render as div to avoid nesting issues
             if (hasBlockElement) {
-              return <div className="mb-4 text-sm leading-relaxed text-gray-800" {...props}>{children}</div>;
+              return <div className="mb-4 text-sm leading-relaxed text-foreground" {...props}>{children}</div>;
             }
-            
-            return <p className="mb-4 text-sm leading-relaxed text-gray-800" {...props}>{children}</p>;
+
+            return <p className="mb-4 text-sm leading-relaxed text-foreground" {...props}>{children}</p>;
           },
-          
+
           // Lists
           ul: ({ node, ...props }) => (
-            <ul className="list-disc list-inside mb-4 space-y-1 text-sm text-gray-800" {...props} />
+            <ul className="list-disc list-inside mb-4 space-y-1 text-sm text-foreground" {...props} />
           ),
           ol: ({ node, ...props }) => (
-            <ol className="list-decimal list-inside mb-4 space-y-1 text-sm text-gray-800" {...props} />
+            <ol className="list-decimal list-inside mb-4 space-y-1 text-sm text-foreground" {...props} />
           ),
           li: ({ node, ...props }) => (
-            <li className="ml-4 text-gray-800" {...props} />
+            <li className="ml-4 text-foreground" {...props} />
           ),
-          
+
           // Code blocks
           code: ({ node, inline, className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
             const codeString = String(children).replace(/\n$/, '');
             const isCopied = copiedCode === codeString;
-            
+
             if (!inline) {
               return (
                 <div className="my-4 rounded-lg overflow-hidden border border-gray-700 shadow-lg relative group">
@@ -126,70 +126,70 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                 </div>
               );
             }
-            
+
             return (
               <code
-                className="bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded text-sm font-mono border border-violet-200"
+                className="bg-muted text-foreground px-1.5 py-0.5 rounded text-sm font-mono border border-border"
                 {...props}
               >
                 {children}
               </code>
             );
           },
-          
+
           // Blockquotes
           blockquote: ({ node, ...props }) => (
             <blockquote
-              className="border-l-4 border-violet-500 bg-violet-50 pl-4 py-2 my-4 italic text-gray-700"
+              className="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic text-muted-foreground"
               {...props}
             />
           ),
-          
+
           // Tables
           table: ({ node, ...props }) => (
             <div className="overflow-x-auto my-4">
-              <table className="min-w-full divide-y divide-gray-200 border border-gray-200" {...props} />
+              <table className="min-w-full divide-y divide-border border border-border" {...props} />
             </div>
           ),
           thead: ({ node, ...props }) => (
-            <thead className="bg-gray-50" {...props} />
+            <thead className="bg-muted" {...props} />
           ),
           th: ({ node, ...props }) => (
-            <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />
+            <th className="px-4 py-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider" {...props} />
           ),
           td: ({ node, ...props }) => (
-            <td className="px-4 py-2 text-sm text-gray-800 border-t border-gray-200" {...props} />
+            <td className="px-4 py-2 text-sm text-foreground border-t border-border" {...props} />
           ),
-          
+
           // Links
           a: ({ node, ...props }) => (
             <a
-              className="text-violet-600 hover:text-violet-700 underline font-medium"
+              className="text-primary hover:underline font-medium hover:text-primary/80"
               target="_blank"
               rel="noopener noreferrer"
               {...props}
             />
           ),
-          
+
           // Horizontal rule
           hr: ({ node, ...props }) => (
-            <hr className="my-6 border-t-2 border-gray-200" {...props} />
+            <hr className="my-6 border-t-2 border-border" {...props} />
           ),
-          
+
           // Strong/Bold
           strong: ({ node, ...props }) => (
-            <strong className="font-bold text-gray-900" {...props} />
+            <strong className="font-bold text-foreground" {...props} />
           ),
-          
+
           // Emphasis/Italic
           em: ({ node, ...props }) => (
-            <em className="italic text-gray-800" {...props} />
+            <em className="italic text-foreground" {...props} />
           ),
         }}
       >
         {content}
       </ReactMarkdown>
-      
+
       <style jsx global>{`
         .markdown-content {
           line-height: 1.6;

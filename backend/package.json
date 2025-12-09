@@ -16,6 +16,7 @@
     "seed:all": "ts-node src/scripts/seedComprehensiveData.ts",
     "seed:htmlcss": "ts-node src/scripts/seedHTMLCSSCourseLessons.ts",
     "seed:posts": "ts-node src/scripts/seedEducationalPosts.ts",
+    "seed:badges": "ts-node src/scripts/seedBadges.ts",
     "publish:lessons": "ts-node src/scripts/publishAllLessons.ts",
     "remove:badge": "ts-node src/scripts/removeBadgeFromUser.ts"
   },

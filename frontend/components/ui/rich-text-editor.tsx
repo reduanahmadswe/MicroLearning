@@ -55,7 +55,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-600 underline cursor-pointer',
+          class: 'text-primary underline cursor-pointer',
         },
       }),
       Image.configure({
@@ -102,15 +102,15 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
   };
 
   return (
-    <div className="border border-green-200 rounded-lg overflow-hidden bg-white">
+    <div className="border border-border rounded-lg overflow-hidden bg-background">
       {/* Toolbar */}
-      <div className="bg-white border-b border-green-200 p-2 sm:p-3 flex flex-wrap gap-1">
+      <div className="bg-muted/30 border-b border-border p-2 sm:p-3 flex flex-wrap gap-1">
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`hover:bg-green-50 ${editor.isActive('heading', { level: 1 }) ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('heading', { level: 1 }) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Heading 1"
         >
           <Heading1 className="w-4 h-4" />
@@ -119,8 +119,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           type="button"
           variant="ghost"
           size="sm"
+
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`hover:bg-green-50 ${editor.isActive('heading', { level: 2 }) ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('heading', { level: 2 }) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Heading 2"
         >
           <Heading2 className="w-4 h-4" />
@@ -130,20 +131,20 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`hover:bg-green-50 ${editor.isActive('heading', { level: 3 }) ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('heading', { level: 3 }) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Heading 3"
         >
           <Heading3 className="w-4 h-4" />
         </Button>
-        
-        <div className="w-px h-6 bg-green-200 mx-1" />
+
+        <div className="w-px h-6 bg-border mx-1" />
 
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`hover:bg-green-50 ${editor.isActive('bold') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('bold') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Bold"
         >
           <Bold className="w-4 h-4" />
@@ -153,7 +154,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`hover:bg-green-50 ${editor.isActive('italic') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('italic') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Italic"
         >
           <Italic className="w-4 h-4" />
@@ -163,20 +164,20 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`hover:bg-green-50 ${editor.isActive('underline') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('underline') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Underline"
         >
           <UnderlineIcon className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-6 bg-green-200 mx-1" />
+        <div className="w-px h-6 bg-border mx-1" />
 
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`hover:bg-green-50 ${editor.isActive('bulletList') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('bulletList') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Bullet List"
         >
           <List className="w-4 h-4" />
@@ -186,20 +187,22 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`hover:bg-green-50 ${editor.isActive('orderedList') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+
+
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('orderedList') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Numbered List"
         >
           <ListOrdered className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-6 bg-green-200 mx-1" />
+        <div className="w-px h-6 bg-border mx-1" />
 
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleCode().run()}
-          className={`hover:bg-green-50 ${editor.isActive('code') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('code') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Inline Code"
         >
           <Code className="w-4 h-4" />
@@ -209,20 +212,22 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`hover:bg-green-50 ${editor.isActive('codeBlock') ? 'bg-green-100 text-green-700' : 'text-gray-700'}`}
+
+
+          className={`hover:bg-accent hover:text-accent-foreground ${editor.isActive('codeBlock') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
           title="Code Block"
         >
           <FileCode className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-6 bg-green-200 mx-1" />
+        <div className="w-px h-6 bg-border mx-1" />
 
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => setShowLinkModal(true)}
-          className="hover:bg-green-50 text-gray-700"
+          className="hover:bg-accent hover:text-accent-foreground text-muted-foreground"
           title="Add Link"
         >
           <LinkIcon className="w-4 h-4" />
@@ -232,13 +237,13 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           variant="ghost"
           size="sm"
           onClick={() => setShowImageModal(true)}
-          className="hover:bg-green-50 text-gray-700"
+          className="hover:bg-accent hover:text-accent-foreground text-muted-foreground"
           title="Add Image"
         >
           <ImageIcon className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-6 bg-green-200 mx-1" />
+        <div className="w-px h-6 bg-border mx-1" />
 
         <Button
           type="button"
@@ -246,7 +251,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           size="sm"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="hover:bg-green-50 text-gray-700 disabled:opacity-30"
+          className="hover:bg-accent hover:text-accent-foreground text-muted-foreground disabled:opacity-30"
           title="Undo"
         >
           <Undo className="w-4 h-4" />
@@ -257,7 +262,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           size="sm"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="hover:bg-green-50 text-gray-700 disabled:opacity-30"
+          className="hover:bg-accent hover:text-accent-foreground text-muted-foreground disabled:opacity-30"
           title="Redo"
         >
           <Redo className="w-4 h-4" />
@@ -265,27 +270,27 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
       </div>
 
       {/* Editor Content */}
-      <EditorContent editor={editor} className="bg-white text-gray-900" />
+      <EditorContent editor={editor} className="bg-background text-foreground" />
 
       {/* Link Modal */}
       {showLinkModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-popover rounded-lg p-6 w-full max-w-md shadow-xl border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add Link</h3>
+              <h3 className="text-lg font-semibold text-foreground">Add Link</h3>
               <button
                 onClick={() => {
                   setShowLinkModal(false);
                   setLinkUrl('');
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Enter URL
                 </label>
                 <Input
@@ -300,6 +305,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
                     }
                   }}
                   autoFocus
+                  className="bg-background border-input text-foreground"
                 />
               </div>
               <div className="flex gap-3 justify-end">
@@ -310,14 +316,14 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
                     setShowLinkModal(false);
                     setLinkUrl('');
                   }}
-                  className="border-green-600 text-green-600 hover:bg-green-50"
+                  className="border-primary text-primary hover:bg-primary/10"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="button"
                   onClick={handleAddLink}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Add Link
                 </Button>
@@ -329,23 +335,23 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
 
       {/* Image Modal */}
       {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-popover rounded-lg p-6 w-full max-w-md shadow-xl border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add Image</h3>
+              <h3 className="text-lg font-semibold text-foreground">Add Image</h3>
               <button
                 onClick={() => {
                   setShowImageModal(false);
                   setImageUrl('');
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Enter Image URL
                 </label>
                 <Input
@@ -360,8 +366,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
                     }
                   }}
                   autoFocus
+                  className="bg-background border-input text-foreground"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Paste a direct link to an image
                 </p>
               </div>
@@ -373,14 +380,14 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
                     setShowImageModal(false);
                     setImageUrl('');
                   }}
-                  className="border-green-600 text-green-600 hover:bg-green-50"
+                  className="border-primary text-primary hover:bg-primary/10"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="button"
                   onClick={handleAddImage}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Add Image
                 </Button>

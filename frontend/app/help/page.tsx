@@ -170,14 +170,14 @@ export default function HelpSupportPage() {
 
   const handleSubmitContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!contactForm.name || !contactForm.email || !contactForm.subject || !contactForm.message) {
       toast.error('Please fill in all fields');
       return;
     }
 
     setSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       toast.success('✅ Message sent! We\'ll get back to you within 24 hours.');
@@ -187,9 +187,9 @@ export default function HelpSupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-8">
+    <div className="min-h-screen bg-page-gradient py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -200,7 +200,7 @@ export default function HelpSupportPage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-4">
             Help & Support Center
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             We're here to help! Browse FAQs, contact support, or explore our resources.
           </p>
         </div>
@@ -208,13 +208,13 @@ export default function HelpSupportPage() {
         {/* Search Bar */}
         <div className="max-w-3xl mx-auto mb-12">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search for help articles, FAQs, or topics..."
-              className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg shadow-lg bg-white text-gray-900"
+              className="w-full pl-12 pr-4 py-4 border-2 border-border rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg shadow-lg bg-card text-foreground placeholder-muted-foreground"
             />
           </div>
         </div>
@@ -224,20 +224,20 @@ export default function HelpSupportPage() {
           {supportChannels.map((channel, index) => {
             const Icon = channel.icon;
             const colorClasses = {
-              green: 'from-green-600 to-emerald-600 bg-green-50 text-green-600',
-              teal: 'from-teal-600 to-cyan-600 bg-teal-50 text-teal-600',
-              emerald: 'from-emerald-600 to-green-600 bg-emerald-50 text-emerald-600',
+              green: 'from-green-600 to-emerald-600 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+              teal: 'from-teal-600 to-cyan-600 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
+              emerald: 'from-emerald-600 to-green-600 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
             };
-            
+
             return (
-              <Card key={index} className="hover:shadow-xl transition-all border-0 bg-white">
+              <Card key={index} className="hover:shadow-xl transition-all border-border bg-card">
                 <CardContent className="p-6">
                   <div className={`w-12 h-12 bg-gradient-to-br ${colorClasses[channel.color as keyof typeof colorClasses].split(' ')[0]} ${colorClasses[channel.color as keyof typeof colorClasses].split(' ')[1]} rounded-xl flex items-center justify-center mb-4`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{channel.title}</h3>
-                  <p className="text-gray-600 mb-1 text-sm">{channel.description}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                  <h3 className="text-lg font-bold text-foreground mb-2">{channel.title}</h3>
+                  <p className="text-muted-foreground mb-1 text-sm">{channel.description}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                     <Clock className="w-4 h-4" />
                     {channel.availability}
                   </div>
@@ -252,36 +252,33 @@ export default function HelpSupportPage() {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-100 inline-flex">
+          <div className="bg-card rounded-2xl shadow-lg p-2 border border-border inline-flex">
             <button
               onClick={() => setActiveTab('faq')}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'faq'
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'faq'
                   ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
+                  : 'text-muted-foreground hover:bg-secondary'
+                }`}
             >
               <FileQuestion className="w-4 h-4 inline mr-2" />
               FAQs
             </button>
             <button
               onClick={() => setActiveTab('contact')}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'contact'
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'contact'
                   ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
+                  : 'text-muted-foreground hover:bg-secondary'
+                }`}
             >
               <MessageSquare className="w-4 h-4 inline mr-2" />
               Contact Us
             </button>
             <button
               onClick={() => setActiveTab('resources')}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'resources'
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'resources'
                   ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
+                  : 'text-muted-foreground hover:bg-secondary'
+                }`}
             >
               <BookOpen className="w-4 h-4 inline mr-2" />
               Resources
@@ -293,53 +290,52 @@ export default function HelpSupportPage() {
         {activeTab === 'faq' && (
           <div className="space-y-8">
             {filteredFaqs.length === 0 ? (
-              <Card className="border-0 shadow-xl bg-white">
+              <Card className="border-border shadow-xl bg-card">
                 <CardContent className="p-12 text-center">
-                  <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">No results found</h3>
-                  <p className="text-gray-600">Try different keywords or browse all FAQs</p>
+                  <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-2">No results found</h3>
+                  <p className="text-muted-foreground">Try different keywords or browse all FAQs</p>
                 </CardContent>
               </Card>
             ) : (
               filteredFaqs.map((category, categoryIndex) => (
                 <div key={categoryIndex}>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                    {categoryIndex + 1}
-                  </span>
-                  {category.category}
-                </h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <span className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                      {categoryIndex + 1}
+                    </span>
+                    {category.category}
+                  </h2>
                   <div className="space-y-3">
                     {category.questions.map((faq, faqIndex) => {
                       const globalIndex = categoryIndex * 100 + faqIndex;
                       const isExpanded = expandedFaq === globalIndex;
-                      
+
                       return (
-                        <Card key={faqIndex} className="border-0 shadow-md hover:shadow-xl transition-all bg-white">
+                        <Card key={faqIndex} className="border-border shadow-md hover:shadow-xl transition-all bg-card">
                           <CardContent className="p-0">
                             <button
                               onClick={() => toggleFaq(globalIndex)}
-                              className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors rounded-xl"
+                              className="w-full p-6 text-left flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-xl"
                             >
                               <div className="flex items-start gap-3 flex-1">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  isExpanded ? 'bg-green-600' : 'bg-gray-100'
-                                }`}>
-                                  <HelpCircle className={`w-5 h-5 ${isExpanded ? 'text-white' : 'text-gray-600'}`} />
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isExpanded ? 'bg-green-600' : 'bg-secondary'
+                                  }`}>
+                                  <HelpCircle className={`w-5 h-5 ${isExpanded ? 'text-white' : 'text-muted-foreground'}`} />
                                 </div>
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900 text-lg">{faq.q}</h3>
+                                  <h3 className="font-semibold text-foreground text-lg">{faq.q}</h3>
                                 </div>
                               </div>
                               {isExpanded ? (
                                 <ChevronUp className="w-5 h-5 text-green-600 flex-shrink-0" />
                               ) : (
-                                <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                               )}
                             </button>
                             {isExpanded && (
                               <div className="px-6 pb-6 pt-0 ml-11">
-                                <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+                                <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
                               </div>
                             )}
                           </CardContent>
@@ -355,7 +351,7 @@ export default function HelpSupportPage() {
 
         {/* Contact Tab */}
         {activeTab === 'contact' && (
-          <Card className="border-0 shadow-2xl bg-white">
+          <Card className="border-border shadow-2xl bg-card">
             <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 p-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -371,45 +367,45 @@ export default function HelpSupportPage() {
               <form onSubmit={handleSubmitContact} className="space-y-6">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-900">Your Name *</label>
+                    <label className="text-sm font-bold text-foreground">Your Name *</label>
                     <input
                       type="text"
                       value={contactForm.name}
                       onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-background text-foreground"
                       placeholder="John Doe"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-900">Email Address *</label>
+                    <label className="text-sm font-bold text-foreground">Email Address *</label>
                     <input
                       type="email"
                       value={contactForm.email}
                       onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-background text-foreground"
                       placeholder="john@example.com"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-900">Subject *</label>
+                  <label className="text-sm font-bold text-foreground">Subject *</label>
                   <input
                     type="text"
                     value={contactForm.subject}
                     onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-background text-foreground"
                     placeholder="How can we help you?"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-900">Message *</label>
+                  <label className="text-sm font-bold text-foreground">Message *</label>
                   <textarea
                     value={contactForm.message}
                     onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                     rows={6}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-all bg-background text-foreground"
                     placeholder="Describe your issue or question in detail..."
                   />
                 </div>
@@ -442,14 +438,14 @@ export default function HelpSupportPage() {
             {resources.map((resource, index) => {
               const Icon = resource.icon;
               return (
-                <Card key={index} className="border-0 shadow-xl hover:shadow-2xl transition-all group bg-white">
+                <Card key={index} className="border-border shadow-xl hover:shadow-2xl transition-all group bg-card">
                   <CardContent className="p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xl">
                       <Icon className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{resource.title}</h3>
-                    <p className="text-gray-600 mb-6">{resource.description}</p>
-                    <Button variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
+                    <h3 className="text-xl font-bold text-foreground mb-2">{resource.title}</h3>
+                    <p className="text-muted-foreground mb-6">{resource.description}</p>
+                    <Button variant="outline" className="border-green-300 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20">
                       Learn More
                       <ExternalLink className="w-4 h-4 ml-2" />
                     </Button>

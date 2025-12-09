@@ -153,7 +153,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Navigation is handled by global Navbar component */}
 
       {/* Hero Section */}
@@ -162,19 +162,19 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium mb-6">
                 <Sparkles className="w-4 h-4" />
                 #1 Micro Learning Platform
               </div>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
                 Learn Smarter,
                 <br />
                 <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
                   Achieve Faster
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Master new skills with bite-sized lessons designed for busy professionals. 
+              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                Master new skills with bite-sized lessons designed for busy professionals.
                 Learn anytime, anywhere with our gamified micro-learning platform.
               </p>
               <div className="flex flex-wrap gap-4 mb-8">
@@ -187,7 +187,7 @@ export default function HomePage() {
                 </button>
                 <Link
                   href="/courses"
-                  className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-green-600 hover:text-green-600 transition-all font-semibold flex items-center gap-2"
+                  className="px-8 py-4 border-2 border-border text-foreground rounded-lg hover:border-primary hover:text-primary transition-all font-semibold flex items-center gap-2"
                 >
                   <Play className="w-5 h-5" />
                   Browse Courses
@@ -195,45 +195,45 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-8">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-gray-600">Free Forever Plan</span>
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />
+                  <span className="text-sm text-muted-foreground">Free Forever Plan</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-gray-600">No Credit Card</span>
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />
+                  <span className="text-sm text-muted-foreground">No Credit Card</span>
                 </div>
               </div>
             </div>
 
             {/* Right Content - Stats Cards */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
+              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
+                  <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalCourses}+</h3>
-                <p className="text-gray-600">Active Courses</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.totalCourses}+</h3>
+                <p className="text-muted-foreground">Active Courses</p>
               </div>
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow mt-8">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-green-600" />
+              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow mt-8">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalStudents.toLocaleString()}+</h3>
-                <p className="text-gray-600">Happy Students</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.totalStudents.toLocaleString()}+</h3>
+                <p className="text-muted-foreground">Happy Students</p>
               </div>
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow -mt-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <GraduationCap className="w-6 h-6 text-purple-600" />
+              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow -mt-4">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
+                  <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.instructors}+</h3>
-                <p className="text-gray-600">Expert Instructors</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.instructors}+</h3>
+                <p className="text-muted-foreground">Expert Instructors</p>
               </div>
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow mt-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                  <Trophy className="w-6 h-6 text-orange-600" />
+              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow mt-4">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
+                  <Trophy className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.completionRate}%</h3>
-                <p className="text-gray-600">Completion Rate</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.completionRate}%</h3>
+                <p className="text-muted-foreground">Completion Rate</p>
               </div>
             </div>
           </div>
@@ -241,18 +241,18 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium mb-4">
               <Zap className="w-4 h-4" />
               Platform Features
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Everything You Need to
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Succeed</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Our platform is packed with features designed to make learning engaging, effective, and fun.
             </p>
           </div>
@@ -261,13 +261,13 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-200 hover:border-green-300 hover:shadow-xl transition-all"
+                className="group bg-gradient-to-br from-card to-background rounded-2xl p-8 border border-border hover:border-primary/50 hover:shadow-xl transition-all"
               >
                 <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform`}>
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -279,32 +279,32 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium mb-6">
                 <Heart className="w-4 h-4" />
                 About Us
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl font-bold text-foreground mb-6">
                 Revolutionizing
                 <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Online Learning</span>
               </h2>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                MicroLearning was founded with a simple mission: make quality education accessible to everyone, 
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                MicroLearning was founded with a simple mission: make quality education accessible to everyone,
                 everywhere. We believe that learning should be flexible, engaging, and fit into your busy life.
               </p>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Our bite-sized lessons are designed by experts and delivered through an innovative gamified 
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Our bite-sized lessons are designed by experts and delivered through an innovative gamified
                 platform that keeps you motivated and on track to achieve your goals.
               </p>
               <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <Target className="w-8 h-8 text-green-600 mb-3" />
-                  <h4 className="font-bold text-gray-900 mb-2">Our Mission</h4>
-                  <p className="text-sm text-gray-600">Empower learners worldwide with accessible education</p>
+                <div className="bg-card rounded-xl p-6 border border-border">
+                  <Target className="w-8 h-8 text-green-600 dark:text-green-500 mb-3" />
+                  <h4 className="font-bold text-foreground mb-2">Our Mission</h4>
+                  <p className="text-sm text-muted-foreground">Empower learners worldwide with accessible education</p>
                 </div>
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <Sparkles className="w-8 h-8 text-purple-600 mb-3" />
-                  <h4 className="font-bold text-gray-900 mb-2">Our Vision</h4>
-                  <p className="text-sm text-gray-600">Transform learning through innovation and technology</p>
+                <div className="bg-card rounded-xl p-6 border border-border">
+                  <Sparkles className="w-8 h-8 text-purple-600 dark:text-purple-500 mb-3" />
+                  <h4 className="font-bold text-foreground mb-2">Our Vision</h4>
+                  <p className="text-sm text-muted-foreground">Transform learning through innovation and technology</p>
                 </div>
               </div>
             </div>
@@ -341,18 +341,18 @@ export default function HomePage() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20 bg-white">
+      <section id="services" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium mb-4">
               <BookOpen className="w-4 h-4" />
               What We Offer
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Explore Our
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Course Categories</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Choose from a wide range of subjects taught by industry experts and passionate educators.
             </p>
           </div>
@@ -361,14 +361,14 @@ export default function HomePage() {
             {services.map((service, index) => (
               <div
                 key={index}
-                className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all text-center"
+                className="group bg-gradient-to-br from-card to-background rounded-2xl p-8 border-2 border-border hover:border-primary hover:shadow-xl transition-all text-center"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl flex items-center justify-center text-green-600 mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 rounded-2xl flex items-center justify-center text-green-600 dark:text-green-500 mx-auto mb-6 group-hover:scale-110 transition-transform">
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                <p className="text-gray-600 mb-4">{service.description}</p>
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-green-600">
+                <h3 className="text-xl font-bold text-foreground mb-3">{service.title}</h3>
+                <p className="text-muted-foreground mb-4">{service.description}</p>
+                <div className="inline-flex items-center gap-2 text-sm font-semibold text-green-600 dark:text-green-500">
                   {service.courses}
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -382,15 +382,15 @@ export default function HomePage() {
       <section id="testimonials" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium mb-4">
               <MessageSquare className="w-4 h-4" />
               Student Success Stories
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               What Our
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Students Say</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Join thousands of satisfied learners who have transformed their careers with MicroLearning.
             </p>
           </div>
@@ -399,21 +399,21 @@ export default function HomePage() {
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-8 border border-gray-200 hover:shadow-xl transition-all"
+                className="bg-card rounded-2xl p-8 border border-border hover:shadow-xl transition-all"
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-700 mb-6 leading-relaxed italic">"{testimonial.text}"</p>
+                <p className="text-foreground/80 mb-6 leading-relaxed italic">"{testimonial.text}"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-2xl">
                     {testimonial.image}
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
+                    <h4 className="font-bold text-foreground">{testimonial.name}</h4>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
               </div>

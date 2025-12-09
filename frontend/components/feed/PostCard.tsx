@@ -94,6 +94,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const isOwner = user?._id === post.user._id;
 
@@ -140,7 +141,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       toast.success('Post shared successfully!');
       setIsSharing(false);
       setShareMessage('');
-      
+
       // Update share count
       onUpdate({
         ...post,
@@ -172,7 +173,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
     // YouTube URL patterns
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(youtubeRegex);
-    
+
     if (match && match[1]) {
       return `https://www.youtube.com/embed/${match[1]}`;
     }
@@ -187,12 +188,12 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
       {/* Header */}
       <div className="p-4 flex items-start justify-between">
         <div className="flex items-start gap-3">
           {/* Avatar */}
-          <div 
+          <div
             onClick={() => router.push(`/profile/${post.user._id}`)}
             className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           >
@@ -210,9 +211,9 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
           {/* User Info */}
           <div>
             <div className="flex items-center gap-2">
-              <h3 
+              <h3
                 onClick={() => router.push(`/profile/${post.user._id}`)}
-                className="font-semibold text-gray-900 cursor-pointer hover:underline"
+                className="font-semibold text-foreground cursor-pointer hover:underline"
               >
                 {post.user.name}
               </h3>
@@ -223,7 +224,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
               )}
               {getPostTypeIcon()}
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{formatDate(post.createdAt)}</span>
               <span>•</span>
               {getVisibilityIcon()}
@@ -236,13 +237,13 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-1 hover:bg-accent rounded-full transition-colors"
             >
-              <MoreVertical className="w-5 h-5 text-gray-500" />
+              <MoreVertical className="w-5 h-5 text-muted-foreground" />
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-lg shadow-lg border border-border z-10">
                 <button
                   onClick={handleDeleteClick}
                   className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-lg"
@@ -278,8 +279,19 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       )}
 
       {/* Content */}
+      {/* Content */}
       <div className="px-4 pb-3">
-        <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+        <p className={`text-foreground whitespace-pre-wrap ${!isExpanded && (post.content?.length > 250 || post.content?.split('\n').length > 3) ? 'line-clamp-3' : ''}`}>
+          {post.content}
+        </p>
+        {(post.content?.length > 250 || post.content?.split('\n').length > 3) && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-sm text-green-600 font-semibold hover:underline mt-1 focus:outline-none"
+          >
+            {isExpanded ? 'See Less' : 'See More'}
+          </button>
+        )}
       </div>
 
       {/* Images */}
@@ -314,9 +326,9 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
 
       {/* Shared Post */}
       {post.sharedPost && post.sharedPost.user && (
-        <div className="mx-4 mb-3 border border-gray-300 rounded-lg p-3 bg-gray-50">
+        <div className="mx-4 mb-3 border border-border rounded-lg p-3 bg-muted/50">
           <div className="flex items-center gap-2 mb-2">
-            <div 
+            <div
               onClick={() => router.push(`/profile/${post.sharedPost?.user?._id}`)}
               className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
             >
@@ -331,7 +343,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
               )}
             </div>
             <div>
-              <p 
+              <p
                 onClick={() => router.push(`/profile/${post.sharedPost?.user?._id}`)}
                 className="font-semibold text-sm text-gray-900 cursor-pointer hover:underline"
               >
@@ -345,7 +357,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       )}
 
       {/* Stats */}
-      <div className="px-4 pb-3 flex items-center justify-between text-sm text-gray-500">
+      <div className="px-4 pb-3 flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-4">
           {post.reactionCount > 0 && (
             <span>{post.reactionCount} {post.reactionCount === 1 ? 'reaction' : 'reactions'}</span>
@@ -358,41 +370,41 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-border" />
 
       {/* Action Buttons */}
       <div className="px-4 py-2">
         <ReactionButtons post={post} onUpdate={onUpdate} />
       </div>
 
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-border" />
 
       <div className="px-4 py-2 flex items-center gap-2">
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-accent rounded-lg transition-colors"
         >
-          <MessageCircle className="w-5 h-5 text-gray-600" />
-          <span className="text-gray-700 font-medium">Comment</span>
+          <MessageCircle className="w-5 h-5 text-muted-foreground" />
+          <span className="text-muted-foreground font-medium">Comment</span>
         </button>
 
         <button
           onClick={() => setIsSharing(!isSharing)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-accent rounded-lg transition-colors"
         >
-          <Share2 className="w-5 h-5 text-gray-600" />
-          <span className="text-gray-700 font-medium">Share</span>
+          <Share2 className="w-5 h-5 text-muted-foreground" />
+          <span className="text-muted-foreground font-medium">Share</span>
         </button>
       </div>
 
       {/* Share Form */}
       {isSharing && (
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div className="border-t border-border p-4 bg-muted/30">
           <textarea
             value={shareMessage}
             onChange={(e) => setShareMessage(e.target.value)}
             placeholder="Add a message (optional)..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 border border-input bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             rows={2}
           />
           <div className="flex items-center gap-2 mt-2">
@@ -407,7 +419,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
                 setIsSharing(false);
                 setShareMessage('');
               }}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg"
+              className="px-4 py-2 text-muted-foreground hover:bg-accent rounded-lg"
             >
               Cancel
             </button>
@@ -417,7 +429,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
 
       {/* Comments Section */}
       {showComments && (
-        <div className="border-t border-gray-200">
+        <div className="border-t border-border">
           <CommentSection postId={post._id} />
         </div>
       )}

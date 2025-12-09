@@ -42,31 +42,31 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
     try {
       setIsSubmitting(true);
-      
+
       const postData: any = {
         visibility,
       };
-      
+
       // Only add fields if they have values
       if (content.trim()) {
         postData.content = content.trim();
       }
-      
+
       if (images.length > 0) {
         postData.images = images;
       }
-      
+
       if (videoUrl.trim()) {
         postData.video = videoUrl.trim();
       }
-      
+
       console.log('Creating post with data:', postData);
-      
+
       const response = await postAPI.createPost(postData);
 
       console.log('Post created successfully:', response.data);
       onPostCreated(response.data.data);
-      
+
       // Reset form
       setContent('');
       setImages([]);
@@ -91,7 +91,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border-0 p-5 sm:p-6">
+    <div className="bg-card backdrop-blur-sm rounded-xl shadow-xl border-0 p-5 sm:p-6">
       {/* Header */}
       <div className="flex items-start gap-3 sm:gap-4">
         {/* User Avatar */}
@@ -113,7 +113,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white resize-none text-gray-900 placeholder-gray-400 transition-all duration-200"
+            className="w-full px-4 py-3 bg-muted/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:bg-background resize-none text-foreground placeholder-muted-foreground transition-all duration-200"
             rows={3}
           />
         </div>
@@ -139,11 +139,11 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
       {/* Video URL */}
       {videoUrl && (
-        <div className="mt-4 bg-gradient-to-r from-green-50 to-teal-50 p-3 rounded-xl flex items-center gap-3 border border-green-100">
-          <Video className="w-5 h-5 text-teal-600" />
-          <span className="flex-1 text-sm text-gray-700 truncate font-medium">{videoUrl}</span>
-          <button onClick={() => setVideoUrl('')} className="p-2 hover:bg-red-50 rounded-lg transition-colors">
-            <X className="w-4 h-4 text-red-500" />
+        <div className="mt-4 bg-muted/50 p-3 rounded-xl flex items-center gap-3 border border-border">
+          <Video className="w-5 h-5 text-primary" />
+          <span className="flex-1 text-sm text-foreground truncate font-medium">{videoUrl}</span>
+          <button onClick={() => setVideoUrl('')} className="p-2 hover:bg-destructive/10 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-destructive" />
           </button>
         </div>
       )}
@@ -156,7 +156,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             value={imageUrlInput}
             onChange={(e) => setImageUrlInput(e.target.value)}
             placeholder="Paste image URL..."
-            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white text-gray-900 placeholder-gray-400 transition-all duration-200"
+            className="flex-1 px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:bg-background text-foreground placeholder-muted-foreground transition-all duration-200"
             onKeyPress={(e) => e.key === 'Enter' && handleAddImage()}
           />
           <button
@@ -170,7 +170,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
               setShowImageInput(false);
               setImageUrlInput('');
             }}
-            className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+            className="px-5 py-2.5 text-muted-foreground hover:bg-accent rounded-xl font-medium transition-colors"
           >
             Cancel
           </button>
@@ -185,7 +185,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             placeholder="Paste YouTube/Vimeo URL..."
-            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white text-gray-900 placeholder-gray-400 transition-all duration-200"
+            className="flex-1 px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:bg-background text-foreground placeholder-muted-foreground transition-all duration-200"
           />
           <button
             onClick={() => setShowVideoInput(false)}
@@ -197,12 +197,12 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
       )}
 
       {/* Actions */}
-      <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="mt-5 pt-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Add Image Button */}
           <button
             onClick={() => setShowImageInput(!showImageInput)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-green-200"
+            className="flex items-center gap-2 px-4 py-2 text-foreground hover:bg-accent rounded-xl transition-all duration-200 border border-transparent hover:border-border"
             disabled={showVideoInput}
           >
             <Image className="w-5 h-5 text-green-600" />
@@ -212,7 +212,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           {/* Add Video Button */}
           <button
             onClick={() => setShowVideoInput(!showVideoInput)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
+            className="flex items-center gap-2 px-4 py-2 text-foreground hover:bg-destructive/10 rounded-xl transition-all duration-200 border border-transparent hover:border-destructive/20"
             disabled={showImageInput}
           >
             <Video className="w-5 h-5 text-red-600" />
@@ -223,7 +223,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as any)}
-            className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-medium text-gray-700 cursor-pointer transition-all duration-200"
+            className="px-4 py-2 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium text-foreground cursor-pointer transition-all duration-200"
           >
             <option value="public">🌍 Public</option>
             <option value="friends">👥 Friends</option>

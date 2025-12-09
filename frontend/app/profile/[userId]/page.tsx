@@ -62,7 +62,7 @@ interface Post {
 export default function UserProfilePage() {
   const params = useParams();
   const userId = params?.userId as string;
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,25 +105,25 @@ export default function UserProfilePage() {
     try {
       const response = await friendsAPI.getFriends();
       console.log('Full response:', response.data);
-      
+
       // Handle both array and object responses
       let friends = response.data.data || [];
-      
+
       // If friends is an object with a friends property, use that
       if (!Array.isArray(friends) && friends.friends) {
         friends = friends.friends;
       }
-      
+
       // If still not an array, convert to array or use empty array
       if (!Array.isArray(friends)) {
         console.log('Friends is not an array, received:', friends);
         friends = [];
       }
-      
+
       console.log('Current userId:', userId);
       console.log('Friends array:', friends);
       console.log('First friend structure:', friends[0]);
-      
+
       // Check if already friends (check both friend._id and friend.friend._id)
       const isFriend = friends.some((f: any) => {
         // Handle both possible structures
@@ -131,9 +131,9 @@ export default function UserProfilePage() {
         console.log('Checking friendId:', friendId, 'against userId:', userId);
         return friendId === userId;
       });
-      
+
       console.log('Is friend?', isFriend);
-      
+
       if (isFriend) {
         setFriendStatus('friends');
       } else {
@@ -168,8 +168,8 @@ export default function UserProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex justify-center items-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
       </div>
     );
   }
@@ -192,17 +192,17 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Cover & Profile Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-48"></div>
-      
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-900 dark:to-purple-900 h-48"></div>
+
       <div className="max-w-6xl mx-auto px-4 -mt-20">
-        <Card>
+        <Card className="bg-card border-border shadow-xl">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Profile Picture */}
               <div className="flex-shrink-0">
-                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+                <Avatar className="w-32 h-32 border-4 border-white dark:border-background shadow-lg">
                   <AvatarImage src={profile.profilePicture} />
                   <AvatarFallback className="text-2xl bg-blue-600 text-white">
                     {getInitials(profile.name)}
@@ -214,17 +214,17 @@ export default function UserProfilePage() {
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                    <h1 className="text-3xl font-bold text-foreground mb-1">
                       {profile.name}
                     </h1>
-                    <p className="text-gray-600">{profile.email}</p>
+                    <p className="text-muted-foreground">{profile.email}</p>
                   </div>
-                  
+
                   <div className="flex gap-2">
                     {friendStatus === 'friends' ? (
                       <Button
                         disabled
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
                       >
                         <UserCheck className="w-4 h-4 mr-2" />
                         Friends
@@ -255,52 +255,52 @@ export default function UserProfilePage() {
                 </div>
 
                 {profile.bio && (
-                  <p className="text-gray-700 mb-4">{profile.bio}</p>
+                  <p className="text-foreground mb-4">{profile.bio}</p>
                 )}
 
                 {/* Stats */}
                 <div className="flex flex-wrap gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Trophy className="w-5 h-5 text-purple-600" />
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <Trophy className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Level</p>
-                      <p className="font-bold text-gray-900">{profile.level}</p>
+                      <p className="text-sm text-muted-foreground">Level</p>
+                      <p className="font-bold text-foreground">{profile.level}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Zap className="w-5 h-5 text-yellow-600" />
+                    <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                      <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">XP</p>
-                      <p className="font-bold text-gray-900">
+                      <p className="text-sm text-muted-foreground">XP</p>
+                      <p className="font-bold text-foreground">
                         {profile.xp.toLocaleString()}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <Clock className="w-5 h-5 text-orange-600" />
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                      <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Streak</p>
-                      <p className="font-bold text-gray-900">
+                      <p className="text-sm text-muted-foreground">Streak</p>
+                      <p className="font-bold text-foreground">
                         {profile.stats.currentStreak} days
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <BookOpen className="w-5 h-5 text-green-600" />
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Lessons</p>
-                      <p className="font-bold text-gray-900">
+                      <p className="text-sm text-muted-foreground">Lessons</p>
+                      <p className="font-bold text-foreground">
                         {profile.stats.lessonsCompleted}
                       </p>
                     </div>
@@ -315,21 +315,19 @@ export default function UserProfilePage() {
         <div className="flex gap-2 mt-6 mb-4">
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-              activeTab === 'posts'
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${activeTab === 'posts'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
+                : 'bg-card text-muted-foreground hover:bg-secondary'
+              }`}
           >
             Posts
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
-              activeTab === 'about'
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${activeTab === 'about'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
+                : 'bg-card text-muted-foreground hover:bg-secondary'
+              }`}
           >
             About
           </button>
@@ -346,12 +344,12 @@ export default function UserProfilePage() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                   </div>
                 ) : posts.length === 0 ? (
-                  <Card className="p-12 text-center">
-                    <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <Card className="p-12 text-center bg-card border-border">
+                    <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       No posts yet
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       This user hasn't shared anything yet.
                     </p>
                   </Card>
@@ -378,7 +376,7 @@ export default function UserProfilePage() {
 
                           {/* Post Content */}
                           {post.content && (
-                            <p className="text-gray-800 mb-4 whitespace-pre-wrap">
+                            <p className="text-foreground mb-4 whitespace-pre-wrap">
                               {post.content}
                             </p>
                           )}
@@ -447,32 +445,32 @@ export default function UserProfilePage() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                      <Award className="w-5 h-5 text-gray-600" />
+                    <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Award className="w-5 h-5 text-muted-foreground" />
                       Achievements
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="p-3 bg-purple-50 rounded-lg">
-                        <p className="text-sm text-gray-600">Lessons Completed</p>
-                        <p className="text-xl font-bold text-purple-600">
+                      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Lessons Completed</p>
+                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
                           {profile.stats.lessonsCompleted}
                         </p>
                       </div>
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-gray-600">Quizzes Completed</p>
-                        <p className="text-xl font-bold text-blue-600">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Quizzes Completed</p>
+                        <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                           {profile.stats.quizzesCompleted}
                         </p>
                       </div>
-                      <div className="p-3 bg-orange-50 rounded-lg">
-                        <p className="text-sm text-gray-600">Current Streak</p>
-                        <p className="text-xl font-bold text-orange-600">
+                      <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Current Streak</p>
+                        <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
                           {profile.stats.currentStreak} days
                         </p>
                       </div>
-                      <div className="p-3 bg-green-50 rounded-lg">
-                        <p className="text-sm text-gray-600">Longest Streak</p>
-                        <p className="text-xl font-bold text-green-600">
+                      <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Longest Streak</p>
+                        <p className="text-xl font-bold text-green-600 dark:text-green-400">
                           {profile.stats.longestStreak} days
                         </p>
                       </div>
@@ -499,10 +497,10 @@ export default function UserProfilePage() {
                     {profile.badges.map((badge: any) => (
                       <div
                         key={badge._id}
-                        className="p-2 bg-gray-50 rounded-lg text-center"
+                        className="p-2 bg-secondary rounded-lg text-center"
                       >
                         <div className="text-2xl mb-1">{badge.icon}</div>
-                        <p className="text-xs text-gray-600">{badge.name}</p>
+                        <p className="text-xs text-muted-foreground">{badge.name}</p>
                       </div>
                     ))}
                   </div>
@@ -520,20 +518,20 @@ export default function UserProfilePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Time</span>
-                  <span className="font-semibold">
+                  <span className="text-sm text-muted-foreground">Total Time</span>
+                  <span className="font-semibold text-foreground">
                     {Math.round(profile.stats.totalTimeSpent / 60)} mins
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Lessons</span>
-                  <span className="font-semibold">
+                  <span className="text-sm text-muted-foreground">Lessons</span>
+                  <span className="font-semibold text-foreground">
                     {profile.stats.lessonsCompleted}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Quizzes</span>
-                  <span className="font-semibold">
+                  <span className="text-sm text-muted-foreground">Quizzes</span>
+                  <span className="font-semibold text-foreground">
                     {profile.stats.quizzesCompleted}
                   </span>
                 </div>

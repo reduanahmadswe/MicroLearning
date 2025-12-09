@@ -111,21 +111,21 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Navigation is handled by global Navbar component */}
 
       {/* Hero Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium mb-6">
             <Headphones className="w-4 h-4" />
             We're Here to Help
           </div>
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
             Get in
             <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Touch</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
@@ -139,14 +139,14 @@ export default function ContactPage() {
               <a
                 key={index}
                 href={method.link}
-                className="bg-white rounded-2xl p-8 text-center border border-gray-200 hover:shadow-xl hover:border-green-300 transition-all group"
+                className="bg-card rounded-2xl p-8 text-center border border-border/50 hover:shadow-xl hover:border-green-300 dark:hover:border-green-700 transition-all group"
               >
                 <div className={`w-16 h-16 bg-gradient-to-br ${method.color} rounded-xl flex items-center justify-center text-white mx-auto mb-4 group-hover:scale-110 transition-transform`}>
                   {method.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{method.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">{method.description}</p>
-                <p className="text-green-600 font-semibold">{method.value}</p>
+                <h3 className="text-xl font-bold text-foreground mb-2">{method.title}</h3>
+                <p className="text-sm text-muted-foreground mb-3">{method.description}</p>
+                <p className="text-green-600 dark:text-green-400 font-semibold">{method.value}</p>
               </a>
             ))}
           </div>
@@ -158,11 +158,11 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Form */}
-            <div className="bg-white rounded-3xl p-8 lg:p-12 border border-gray-200 shadow-lg">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
+            <div className="bg-card rounded-3xl p-8 lg:p-12 border border-border/50 shadow-lg">
+              <h2 className="text-3xl font-bold text-foreground mb-6">Send Us a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-2">
                     Your Name
                   </label>
                   <input
@@ -171,13 +171,13 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="John Doe"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-2">
                     Email Address
                   </label>
                   <input
@@ -186,13 +186,13 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="subject" className="block text-sm font-semibold text-foreground mb-2">
                     Subject
                   </label>
                   <input
@@ -201,13 +201,13 @@ export default function ContactPage() {
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="How can we help?"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="message" className="block text-sm font-semibold text-foreground mb-2">
                     Message
                   </label>
                   <textarea
@@ -216,7 +216,7 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                     placeholder="Tell us more about your inquiry..."
                   />
                 </div>
@@ -244,38 +244,38 @@ export default function ContactPage() {
             {/* Additional Info */}
             <div className="space-y-8">
               {/* Support Hours */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-3xl p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white">
                     <Clock className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">Support Hours</h3>
+                  <h3 className="text-2xl font-bold text-foreground">Support Hours</h3>
                 </div>
                 <div className="space-y-3">
                   {supportHours.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center py-3 border-b border-blue-200 last:border-0">
-                      <span className="font-medium text-gray-700">{item.day}</span>
-                      <span className="text-blue-600 font-semibold">{item.hours}</span>
+                    <div key={index} className="flex justify-between items-center py-3 border-b border-blue-200 dark:border-blue-800 last:border-0">
+                      <span className="font-medium text-foreground">{item.day}</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold">{item.hours}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Social Links */}
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-3xl p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
                     <Globe className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">Follow Us</h3>
+                  <h3 className="text-2xl font-bold text-foreground">Follow Us</h3>
                 </div>
-                <p className="text-gray-600 mb-6">Stay connected on social media for updates and tips!</p>
+                <p className="text-muted-foreground mb-6">Stay connected on social media for updates and tips!</p>
                 <div className="flex gap-4">
                   {socialLinks.map((social, index) => (
                     <a
                       key={index}
                       href={social.link}
-                      className={`w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-600 ${social.color} transition-all hover:shadow-lg`}
+                      className={`w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground ${social.color} transition-all hover:shadow-lg`}
                       title={social.name}
                     >
                       {social.icon}
@@ -285,29 +285,29 @@ export default function ContactPage() {
               </div>
 
               {/* Quick Stats */}
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-8">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-3xl p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white">
                     <Users className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">Join Our Community</h3>
+                  <h3 className="text-2xl font-bold text-foreground">Join Our Community</h3>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-gray-700">5,000+ Active Students</span>
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-foreground">5,000+ Active Students</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-gray-700">50+ Expert Instructors</span>
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-foreground">50+ Expert Instructors</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-gray-700">24/7 Support Available</span>
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-foreground">24/7 Support Available</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-gray-700">100+ Countries Worldwide</span>
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-foreground">100+ Countries Worldwide</span>
                   </div>
                 </div>
               </div>
@@ -317,35 +317,35 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium mb-4">
               <HelpCircle className="w-4 h-4" />
               Frequently Asked Questions
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Quick
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Answers</span>
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               Find answers to common questions about our platform.
             </p>
           </div>
 
           <div className="space-y-4">
             {faq.map((item, index) => (
-              <div key={index} className="bg-white rounded-xl border-2 border-gray-200 hover:border-green-300 transition-all">
+              <div key={index} className="bg-card rounded-xl border-2 border-border/50 hover:border-green-300 dark:hover:border-green-700 transition-all">
                 <div className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600">{item.answer}</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2">{item.question}</h3>
+                  <p className="text-muted-foreground">{item.answer}</p>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">Still have questions?</p>
+            <p className="text-muted-foreground mb-4">Still have questions?</p>
             <Link
               href="#"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
@@ -360,10 +360,10 @@ export default function ContactPage() {
       {/* Map Section (Placeholder) */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl h-96 flex items-center justify-center">
+          <div className="bg-secondary/50 rounded-3xl h-96 flex items-center justify-center">
             <div className="text-center">
-              <MapPin className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">Interactive Map Coming Soon</p>
+              <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">Interactive Map Coming Soon</p>
             </div>
           </div>
         </div>

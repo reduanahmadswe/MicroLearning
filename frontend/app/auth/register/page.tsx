@@ -156,7 +156,7 @@ export default function RegisterPage() {
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-3 sm:p-6 lg:p-8">
+    <div className="min-h-screen w-full bg-page-gradient flex items-center justify-center p-3 sm:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
 
         {/* Left Side - Branding & Benefits (Hidden on mobile, visible on lg+) */}
@@ -171,73 +171,73 @@ export default function RegisterPage() {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
                   MicroLearning
                 </h1>
-                <p className="text-gray-600 font-medium">Learn Smarter, Not Harder</p>
+                <p className="text-muted-foreground font-medium">Learn Smarter, Not Harder</p>
               </div>
             </div>
 
-            <p className="text-xl text-gray-700 leading-relaxed">
+            <p className="text-xl text-foreground leading-relaxed">
               Join thousands of students who are mastering new skills through bite-sized, interactive lessons designed for the modern learner.
             </p>
           </div>
 
           {/* Benefits Highlights */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Start Your Learning Journey Today</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Start Your Learning Journey Today</h2>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Free Access to 1000+ Courses</h3>
-                <p className="text-sm text-gray-600">Learn programming, design, business, and more</p>
+                <h3 className="font-bold text-foreground mb-1">Free Access to 1000+ Courses</h3>
+                <p className="text-sm text-muted-foreground">Learn programming, design, business, and more</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-teal-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Trophy className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Earn Certificates & Badges</h3>
-                <p className="text-sm text-gray-600">Showcase your achievements to employers</p>
+                <h3 className="font-bold text-foreground mb-1">Earn Certificates & Badges</h3>
+                <p className="text-sm text-muted-foreground">Showcase your achievements to employers</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-emerald-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Clock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">Learn at Your Own Pace</h3>
-                <p className="text-sm text-gray-600">5-10 minute lessons that fit your schedule</p>
+                <h3 className="font-bold text-foreground mb-1">Learn at Your Own Pace</h3>
+                <p className="text-sm text-muted-foreground">5-10 minute lessons that fit your schedule</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
+            <div className="flex items-start gap-4 p-4 bg-card/60 backdrop-blur-sm rounded-xl border border-border hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 mb-1">AI-Powered Personalization</h3>
-                <p className="text-sm text-gray-600">Get customized learning paths and instant help</p>
+                <h3 className="font-bold text-foreground mb-1">AI-Powered Personalization</h3>
+                <p className="text-sm text-muted-foreground">Get customized learning paths and instant help</p>
               </div>
             </div>
           </div>
 
           {/* Stats Banner */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-white/80 rounded-xl border border-green-100 shadow-sm">
+            <div className="text-center p-4 bg-card/80 rounded-xl border border-border shadow-sm">
               <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">10K+</p>
-              <p className="text-xs text-gray-600 font-medium mt-1">Active Students</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Active Students</p>
             </div>
-            <div className="text-center p-4 bg-white/80 rounded-xl border border-teal-100 shadow-sm">
+            <div className="text-center p-4 bg-card/80 rounded-xl border border-border shadow-sm">
               <p className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">1000+</p>
-              <p className="text-xs text-gray-600 font-medium mt-1">Courses</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Courses</p>
             </div>
-            <div className="text-center p-4 bg-white/80 rounded-xl border border-emerald-100 shadow-sm">
+            <div className="text-center p-4 bg-card/80 rounded-xl border border-border shadow-sm">
               <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">50K+</p>
-              <p className="text-xs text-gray-600 font-medium mt-1">Certificates</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Certificates</p>
             </div>
           </div>
         </div>
@@ -254,11 +254,11 @@ export default function RegisterPage() {
                 MicroLearning
               </h1>
             </div>
-            <p className="text-sm text-gray-600">Join 10,000+ students learning smarter</p>
+            <p className="text-sm text-muted-foreground">Join 10,000+ students learning smarter</p>
           </div>
 
           {/* Registration Card */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-border overflow-hidden">
             {/* Card Header with Gradient */}
             <div className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 px-4 sm:px-8 py-6 sm:py-8 text-white">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Create Your Account</h2>
@@ -269,11 +269,11 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="px-4 sm:px-8 py-6 sm:py-8 space-y-4 sm:space-y-5">
               {/* Name Field */}
               <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="name" className="block text-sm font-semibold text-foreground">
                   Full Name
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <User className="w-5 h-5" />
                   </div>
                   <input
@@ -286,14 +286,14 @@ export default function RegisterPage() {
                       setErrors({ ...errors, name: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.name
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-background border-2 rounded-xl text-foreground placeholder-muted-foreground focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.name
+                      ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                      : "border-border focus:border-primary focus:ring-primary/20"
                       }`}
                   />
                 </div>
                 {errors.name && (
-                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                  <p className="text-xs sm:text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
                     <span>⚠️</span> {errors.name}
                   </p>
                 )}
@@ -301,11 +301,11 @@ export default function RegisterPage() {
 
               {/* Email Field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="email" className="block text-sm font-semibold text-foreground">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Mail className="w-5 h-5" />
                   </div>
                   <input
@@ -318,14 +318,14 @@ export default function RegisterPage() {
                       setErrors({ ...errors, email: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.email
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-background border-2 rounded-xl text-foreground placeholder-muted-foreground focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.email
+                      ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                      : "border-border focus:border-primary focus:ring-primary/20"
                       }`}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                  <p className="text-xs sm:text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
                     <span>⚠️</span> {errors.email}
                   </p>
                 )}
@@ -333,11 +333,11 @@ export default function RegisterPage() {
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="password" className="block text-sm font-semibold text-foreground">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Lock className="w-5 h-5" />
                   </div>
                   <input
@@ -350,15 +350,15 @@ export default function RegisterPage() {
                       setErrors({ ...errors, password: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.password
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-background border-2 rounded-xl text-foreground placeholder-muted-foreground focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.password
+                      ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                      : "border-border focus:border-primary focus:ring-primary/20"
                       }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -368,18 +368,18 @@ export default function RegisterPage() {
                 {formData.password && (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                           style={{ width: `${passwordStrength.strength}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs font-semibold text-gray-600">{passwordStrength.label}</span>
+                      <span className="text-xs font-semibold text-muted-foreground">{passwordStrength.label}</span>
                     </div>
                   </div>
                 )}
                 {errors.password && (
-                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                  <p className="text-xs sm:text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
                     <span>⚠️</span> {errors.password}
                   </p>
                 )}
@@ -387,11 +387,11 @@ export default function RegisterPage() {
 
               {/* Confirm Password Field */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-foreground">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Shield className="w-5 h-5" />
                   </div>
                   <input
@@ -404,27 +404,27 @@ export default function RegisterPage() {
                       setErrors({ ...errors, confirmPassword: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.confirmPassword
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-background border-2 rounded-xl text-foreground placeholder-muted-foreground focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.confirmPassword
+                      ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                      : "border-border focus:border-primary focus:ring-primary/20"
                       }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {formData.confirmPassword && formData.password === formData.confirmPassword && !errors.confirmPassword && (
-                  <p className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
+                  <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" /> Passwords match!
                   </p>
                 )}
                 {errors.confirmPassword && (
-                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                  <p className="text-xs sm:text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
                     <span>⚠️</span> {errors.confirmPassword}
                   </p>
                 )}
@@ -464,10 +464,10 @@ export default function RegisterPage() {
               {/* Divider */}
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-sm text-gray-500">Already have an account?</span>
+                  <span className="bg-card px-4 text-sm text-muted-foreground">Already have an account?</span>
                 </div>
               </div>
 
@@ -475,7 +475,7 @@ export default function RegisterPage() {
               <Link href="/auth/login">
                 <button
                   type="button"
-                  className="w-full bg-white text-green-600 font-bold py-3 sm:py-4 px-6 rounded-xl border-2 border-green-600 hover:bg-green-50 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  className="w-full bg-card text-primary font-bold py-3 sm:py-4 px-6 rounded-xl border-2 border-primary hover:bg-accent hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <span>Sign In to Existing Account</span>
                   <Users className="w-5 h-5" />
@@ -485,13 +485,13 @@ export default function RegisterPage() {
 
             {/* Footer Note */}
             <div className="px-4 sm:px-8 pb-6 sm:pb-8 text-center">
-              <p className="text-xs sm:text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 By creating an account, you agree to our{" "}
-                <Link href="/terms" className="text-green-600 hover:underline font-medium">
+                <Link href="/terms" className="text-primary hover:underline font-medium">
                   Terms of Service
                 </Link>
                 {" "}and{" "}
-                <Link href="/privacy" className="text-green-600 hover:underline font-medium">
+                <Link href="/privacy" className="text-primary hover:underline font-medium">
                   Privacy Policy
                 </Link>
               </p>
@@ -500,17 +500,17 @@ export default function RegisterPage() {
 
           {/* Mobile Stats (visible only on mobile) */}
           <div className="lg:hidden mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="text-center p-3 sm:p-4 bg-white rounded-xl border border-green-100 shadow-sm">
+            <div className="text-center p-3 sm:p-4 bg-card rounded-xl border border-border shadow-sm">
               <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">10K+</p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Students</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Students</p>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-white rounded-xl border border-teal-100 shadow-sm">
+            <div className="text-center p-3 sm:p-4 bg-card rounded-xl border border-border shadow-sm">
               <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">1000+</p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Courses</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Courses</p>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-white rounded-xl border border-emerald-100 shadow-sm">
+            <div className="text-center p-3 sm:p-4 bg-card rounded-xl border border-border shadow-sm">
               <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">50K+</p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Certificates</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Certificates</p>
             </div>
           </div>
         </div>

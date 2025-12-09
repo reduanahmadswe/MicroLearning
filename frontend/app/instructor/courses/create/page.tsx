@@ -37,7 +37,7 @@ export default function CreateCoursePage() {
 
       const response = await coursesAPI.createCourse(courseData);
       toast.success('Course created successfully! Now add lessons.');
-      
+
       // Navigate to lessons management page for this course
       router.push(`/instructor/courses/${response.data._id}/lessons`);
     } catch (error: any) {
@@ -48,41 +48,41 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 py-4 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-page-gradient py-4 sm:py-6 lg:py-8">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <Link href="/instructor/courses">
-          <Button variant="ghost" size="sm" className="mb-4 hover:bg-green-50 text-sm">
+          <Button variant="ghost" size="sm" className="mb-4 hover:bg-green-50 dark:hover:bg-green-900/20 text-sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Courses
           </Button>
         </Link>
 
-        <Card className="bg-white border-green-100 shadow-lg">
+        <Card className="bg-card border-border shadow-lg">
           <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 px-4 sm:px-6 py-4 sm:py-6">
             <CardTitle className="text-xl sm:text-2xl text-white">Create New Course</CardTitle>
             <p className="text-sm text-green-100 mt-1">
               Create a course and then add lessons with quizzes
             </p>
           </CardHeader>
-          <CardContent className="bg-white px-4 sm:px-6 py-6">
+          <CardContent className="bg-card px-4 sm:px-6 py-6">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Title */}
               <div className="space-y-2">
-                <label className="text-sm sm:text-base font-medium text-gray-900">
+                <label className="text-sm sm:text-base font-medium text-foreground">
                   Course Title *
                 </label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Enter course title"
-                  className="bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all"
+                  className="bg-background text-foreground text-sm sm:text-base border-2 border-border focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all placeholder:text-muted-foreground"
                   required
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <label className="text-sm sm:text-base font-medium text-gray-900">
+                <label className="text-sm sm:text-base font-medium text-foreground">
                   Description *
                 </label>
                 <RichTextEditor
@@ -90,21 +90,21 @@ export default function CreateCoursePage() {
                   onChange={(value) => setFormData({ ...formData, description: value })}
                   placeholder="Write a detailed course description with formatting..."
                 />
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                   Use the toolbar to format your text with bold, italic, headings, lists, links, and images
                 </p>
               </div>
 
               {/* Topic */}
               <div className="space-y-2">
-                <label className="text-sm sm:text-base font-medium text-gray-900">
+                <label className="text-sm sm:text-base font-medium text-foreground">
                   Topic *
                 </label>
                 <Input
                   value={formData.topic}
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                   placeholder="e.g., Programming, Math, Science"
-                  className="bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all"
+                  className="bg-background text-foreground text-sm sm:text-base border-2 border-border focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all placeholder:text-muted-foreground"
                   required
                 />
               </div>
@@ -112,13 +112,13 @@ export default function CreateCoursePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Difficulty */}
                 <div className="space-y-2">
-                  <label className="text-sm sm:text-base font-medium text-gray-900">
+                  <label className="text-sm sm:text-base font-medium text-foreground">
                     Difficulty *
                   </label>
                   <select
                     value={formData.difficulty}
                     onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    className="w-full px-3 py-2 bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                    className="w-full px-3 py-2 bg-background text-foreground text-sm sm:text-base border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -128,26 +128,26 @@ export default function CreateCoursePage() {
 
                 {/* Thumbnail URL */}
                 <div className="space-y-2">
-                  <label className="text-sm sm:text-base font-medium text-gray-900">
+                  <label className="text-sm sm:text-base font-medium text-foreground">
                     Thumbnail URL (Optional)
                   </label>
                   <Input
                     value={formData.thumbnailUrl}
                     onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
                     placeholder="https://example.com/image.jpg"
-                    className="bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all"
+                    className="bg-background text-foreground text-sm sm:text-base border-2 border-border focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all placeholder:text-muted-foreground"
                     type="url"
                   />
                 </div>
               </div>
 
               {/* Free or Paid */}
-              <div className="border-t border-green-100 pt-4 sm:pt-6">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Course Access</h3>
-                
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Course Access</h3>
+
                 <div className="space-y-3 sm:space-y-4">
                   {/* Free Option */}
-                  <label className="flex items-start sm:items-center gap-3 p-3 sm:p-4 border-2 rounded-lg cursor-pointer hover:bg-green-50 transition-colors border-green-100">
+                  <label className="flex items-start sm:items-center gap-3 p-3 sm:p-4 border-2 rounded-lg cursor-pointer hover:bg-secondary transition-colors border-border">
                     <input
                       type="radio"
                       name="courseType"
@@ -158,8 +158,8 @@ export default function CreateCoursePage() {
                     <div className="flex items-center gap-2 flex-1">
                       <Unlock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm sm:text-base text-gray-900">Free Course</p>
-                        <p className="text-xs sm:text-sm text-gray-600">
+                        <p className="font-semibold text-sm sm:text-base text-foreground">Free Course</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           All learners can access this course
                         </p>
                       </div>
@@ -167,7 +167,7 @@ export default function CreateCoursePage() {
                   </label>
 
                   {/* Paid Option */}
-                  <label className="flex items-start sm:items-center gap-3 p-3 sm:p-4 border-2 rounded-lg cursor-pointer hover:bg-green-50 transition-colors border-green-100">
+                  <label className="flex items-start sm:items-center gap-3 p-3 sm:p-4 border-2 rounded-lg cursor-pointer hover:bg-secondary transition-colors border-border">
                     <input
                       type="radio"
                       name="courseType"
@@ -178,8 +178,8 @@ export default function CreateCoursePage() {
                     <div className="flex items-center gap-2 flex-1">
                       <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm sm:text-base text-gray-900">Paid Course</p>
-                        <p className="text-xs sm:text-sm text-gray-600">
+                        <p className="font-semibold text-sm sm:text-base text-foreground">Paid Course</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Students need to purchase to access
                         </p>
                       </div>
@@ -188,8 +188,8 @@ export default function CreateCoursePage() {
 
                   {/* Price Input (shown when paid is selected) */}
                   {formData.isPremium && (
-                    <div className="ml-0 sm:ml-12 space-y-2 p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
-                      <label className="text-sm sm:text-base font-medium text-gray-900">
+                    <div className="ml-0 sm:ml-12 space-y-2 p-3 sm:p-4 bg-secondary/30 rounded-lg border border-border">
+                      <label className="text-sm sm:text-base font-medium text-foreground">
                         Course Price (BDT) *
                       </label>
                       <Input
@@ -197,12 +197,12 @@ export default function CreateCoursePage() {
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
                         placeholder="Enter price in BDT"
-                        className="bg-white text-gray-900 text-sm sm:text-base border-2 border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all"
+                        className="bg-background text-foreground text-sm sm:text-base border-2 border-border focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all placeholder:text-muted-foreground"
                         min={0}
                         step={0.01}
                         required={formData.isPremium}
                       />
-                      <p className="text-xs sm:text-sm text-gray-600">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Students will pay this amount to unlock the course
                       </p>
                     </div>
@@ -232,7 +232,7 @@ export default function CreateCoursePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-green-600 text-black bg-white hover:bg-white hover:text-black w-full sm:flex-1"
+                  className="bg-card text-foreground hover:bg-secondary w-full sm:flex-1"
                   onClick={() => router.push('/instructor/courses')}
                 >
                   Cancel

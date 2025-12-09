@@ -212,25 +212,25 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading settings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-        
+
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
             Account Settings
           </h1>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage your profile, security, and preferences
           </p>
         </div>
@@ -239,33 +239,30 @@ export default function ProfileSettingsPage() {
         <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
-              activeTab === 'profile'
+            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${activeTab === 'profile'
                 ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
-            }`}
+                : 'bg-card text-muted-foreground hover:bg-secondary border border-border shadow-sm'
+              }`}
           >
             <User className="w-4 h-4" />
             <span className="text-sm sm:text-base">Profile</span>
           </button>
           <button
             onClick={() => setActiveTab('security')}
-            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
-              activeTab === 'security'
+            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${activeTab === 'security'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
-            }`}
+                : 'bg-card text-muted-foreground hover:bg-secondary border border-border shadow-sm'
+              }`}
           >
             <Shield className="w-4 h-4" />
             <span className="text-sm sm:text-base">Security</span>
           </button>
           <button
             onClick={() => setActiveTab('preferences')}
-            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
-              activeTab === 'preferences'
+            className={`flex-shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${activeTab === 'preferences'
                 ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
-            }`}
+                : 'bg-card text-muted-foreground hover:bg-secondary border border-border shadow-sm'
+              }`}
           >
             <Bell className="w-4 h-4" />
             <span className="text-sm sm:text-base">Preferences</span>
@@ -274,62 +271,62 @@ export default function ProfileSettingsPage() {
 
         {/* Profile Tab */}
         {activeTab === 'profile' && (
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Profile Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Full Name
                 </label>
                 <input
                   type="text"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
                   placeholder="Enter your full name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Bio
                 </label>
                 <textarea
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none placeholder:text-muted-foreground"
                   placeholder="Tell us about yourself..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Profile Picture URL
                 </label>
                 <input
                   type="url"
                   value={profile.profilePicture}
                   onChange={(e) => setProfile({ ...profile, profilePicture: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
                   placeholder="https://example.com/avatar.jpg"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
                   placeholder="+1 234 567 8900"
                 />
               </div>
@@ -352,16 +349,16 @@ export default function ProfileSettingsPage() {
         {activeTab === 'security' && (
           <div className="space-y-6">
             {/* Change Password */}
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-purple-600" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   Change Password
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Current Password
                   </label>
                   <div className="relative">
@@ -369,13 +366,13 @@ export default function ProfileSettingsPage() {
                       type={showPasswords.current ? 'text' : 'password'}
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-muted-foreground"
                       placeholder="Enter current password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -383,7 +380,7 @@ export default function ProfileSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -391,13 +388,13 @@ export default function ProfileSettingsPage() {
                       type={showPasswords.new ? 'text' : 'password'}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-muted-foreground"
                       placeholder="Enter new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -408,7 +405,7 @@ export default function ProfileSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -416,13 +413,13 @@ export default function ProfileSettingsPage() {
                       type={showPasswords.confirm ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-muted-foreground"
                       placeholder="Confirm new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -443,29 +440,29 @@ export default function ProfileSettingsPage() {
             </Card>
 
             {/* Change Email */}
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Change Email Address
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     New Email Address
                   </label>
                   <input
                     type="email"
                     value={emailData.email}
                     onChange={(e) => setEmailData({ ...emailData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
                     placeholder="Enter new email address"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Confirm with Password
                   </label>
                   <div className="relative">
@@ -473,13 +470,13 @@ export default function ProfileSettingsPage() {
                       type={showEmailPassword ? 'text' : 'password'}
                       value={emailData.password}
                       onChange={(e) => setEmailData({ ...emailData, password: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
                       placeholder="Enter your password to confirm"
                     />
                     <button
                       type="button"
                       onClick={() => setShowEmailPassword(!showEmailPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showEmailPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -503,17 +500,17 @@ export default function ProfileSettingsPage() {
 
         {/* Preferences Tab */}
         {activeTab === 'preferences' && (
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-green-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Bell className="w-5 h-5 text-green-600 dark:text-green-400" />
                 Learning Preferences
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Interests */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Interests
                 </label>
                 <div className="flex gap-2 mb-3">
@@ -522,7 +519,7 @@ export default function ProfileSettingsPage() {
                     value={newInterest}
                     onChange={(e) => setNewInterest(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addInterest()}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-muted-foreground"
                     placeholder="Add an interest"
                   />
                   <Button onClick={addInterest} variant="outline">
@@ -533,12 +530,12 @@ export default function ProfileSettingsPage() {
                   {preferences.interests.map((interest) => (
                     <span
                       key={interest}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm"
                     >
                       {interest}
                       <button
                         onClick={() => removeInterest(interest)}
-                        className="hover:text-green-900"
+                        className="hover:text-green-900 dark:hover:text-green-100"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -549,7 +546,7 @@ export default function ProfileSettingsPage() {
 
               {/* Goals */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Learning Goals
                 </label>
                 <div className="flex gap-2 mb-3">
@@ -558,7 +555,7 @@ export default function ProfileSettingsPage() {
                     value={newGoal}
                     onChange={(e) => setNewGoal(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addGoal()}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-muted-foreground"
                     placeholder="Add a goal"
                   />
                   <Button onClick={addGoal} variant="outline">
@@ -569,12 +566,12 @@ export default function ProfileSettingsPage() {
                   {preferences.goals.map((goal) => (
                     <span
                       key={goal}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm"
                     >
                       {goal}
                       <button
                         onClick={() => removeGoal(goal)}
-                        className="hover:text-blue-900"
+                        className="hover:text-blue-900 dark:hover:text-blue-100"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -585,7 +582,7 @@ export default function ProfileSettingsPage() {
 
               {/* Daily Learning Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Daily Learning Time (minutes): {preferences.dailyLearningTime}
                 </label>
                 <input
@@ -597,7 +594,7 @@ export default function ProfileSettingsPage() {
                   onChange={(e) => setPreferences({ ...preferences, dailyLearningTime: parseInt(e.target.value) })}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>5 min</span>
                   <span>8 hours</span>
                 </div>
@@ -605,7 +602,7 @@ export default function ProfileSettingsPage() {
 
               {/* Difficulty */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Preferred Difficulty
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -613,11 +610,10 @@ export default function ProfileSettingsPage() {
                     <button
                       key={level}
                       onClick={() => setPreferences({ ...preferences, preferredDifficulty: level })}
-                      className={`px-4 py-3 rounded-xl font-medium capitalize transition-all ${
-                        preferences.preferredDifficulty === level
+                      className={`px-4 py-3 rounded-xl font-medium capitalize transition-all ${preferences.preferredDifficulty === level
                           ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                          : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                        }`}
                     >
                       {level}
                     </button>
@@ -627,13 +623,13 @@ export default function ProfileSettingsPage() {
 
               {/* Language */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Language
                 </label>
                 <select
                   value={preferences.language}
                   onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="en">English</option>
                   <option value="bn">বাংলা (Bangla)</option>

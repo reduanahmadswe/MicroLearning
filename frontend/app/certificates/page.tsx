@@ -56,7 +56,7 @@ export default function CertificatesPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch earned certificates
       const certRes = await axios.get('http://localhost:5000/api/v1/certificates/me', {
         headers: { Authorization: `Bearer ${token}` },
@@ -79,7 +79,7 @@ export default function CertificatesPage() {
     try {
       // Check if certificate already exists
       const existingCert = certificates.find(cert => cert.course._id === courseId);
-      
+
       if (existingCert) {
         // Certificate exists, show it
         setSelectedCertificate(existingCert);
@@ -90,12 +90,12 @@ export default function CertificatesPage() {
           { courseId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
+
         if (generateRes.data.success) {
           const newCert = generateRes.data.data;
           setCertificates([...certificates, newCert]);
           setSelectedCertificate(newCert);
-          
+
           // Remove from enrolled courses since it's now complete
           setEnrolledCourses(enrolledCourses.filter(e => e.course._id !== courseId));
         }
@@ -114,7 +114,7 @@ export default function CertificatesPage() {
   const handleShare = (certificate: Certificate) => {
     const shareText = `I've completed "${certificate.course.title}" and earned a certificate! 🎉`;
     const shareUrl = `${window.location.origin}/certificates/verify/${certificate.certificateId}`;
-    
+
     if (navigator.share) {
       navigator.share({
         title: 'Course Certificate',
@@ -136,17 +136,17 @@ export default function CertificatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-page-gradient py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Certificates</h1>
-        
+        <h1 className="text-3xl font-bold text-foreground mb-8">My Certificates</h1>
+
         {certificates.length === 0 && enrolledCourses.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <Award size={64} className="mx-auto text-gray-300 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+          <div className="bg-card rounded-lg shadow border border-border p-12 text-center">
+            <Award size={64} className="mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               No certificates yet
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               Complete a course to earn your first certificate!
             </p>
             <button
@@ -161,14 +161,14 @@ export default function CertificatesPage() {
             {/* Earned Certificates */}
             {certificates.length > 0 && (
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-foreground mb-4">
                   Your Certificates ({certificates.length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {certificates.map((cert) => (
                     <div
                       key={cert._id}
-                      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
+                      className="bg-card rounded-lg shadow border border-border hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
                       onClick={() => setSelectedCertificate(cert)}
                     >
                       <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-6 text-white">
@@ -183,19 +183,19 @@ export default function CertificatesPage() {
                       </div>
 
                       <div className="p-4">
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-2 text-sm text-foreground">
                           <div>
-                            <span className="text-gray-500">Issued to:</span>
+                            <span className="text-muted-foreground">Issued to:</span>
                             <p className="font-medium">{cert.metadata.userName}</p>
                           </div>
                           <div>
-                            <span className="text-gray-500">Date:</span>
+                            <span className="text-muted-foreground">Date:</span>
                             <p className="font-medium">
                               {new Date(cert.metadata.completionDate).toLocaleDateString()}
                             </p>
                           </div>
                           <div>
-                            <span className="text-gray-500">Certificate ID:</span>
+                            <span className="text-muted-foreground">Certificate ID:</span>
                             <p className="font-mono text-xs">{cert.certificateId}</p>
                           </div>
                         </div>
@@ -216,7 +216,7 @@ export default function CertificatesPage() {
                               e.stopPropagation();
                               handleShare(cert);
                             }}
-                            className="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-50 flex items-center justify-center gap-2"
+                            className="flex-1 border border-border px-3 py-2 rounded text-sm hover:bg-muted flex items-center justify-center gap-2 text-foreground"
                           >
                             <Share2 size={16} />
                             Share
@@ -232,7 +232,7 @@ export default function CertificatesPage() {
             {/* Completed Courses - Ready for Certificate */}
             {enrolledCourses.filter(e => e.completedAt && !certificates.find(cert => cert.course._id === e.course._id)).length > 0 && (
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-foreground mb-4">
                   Ready for Certificate ({enrolledCourses.filter(e => e.completedAt && !certificates.find(cert => cert.course._id === e.course._id)).length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -241,7 +241,7 @@ export default function CertificatesPage() {
                     .map((enrollment) => (
                       <div
                         key={enrollment._id}
-                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                        className="bg-card rounded-lg shadow border border-border hover:shadow-lg transition-shadow overflow-hidden"
                       >
                         <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-6 text-white">
                           <div className="flex items-start justify-between mb-4">
@@ -255,15 +255,15 @@ export default function CertificatesPage() {
                         </div>
 
                         <div className="p-4">
-                          <div className="space-y-2 text-sm mb-4">
+                          <div className="space-y-2 text-sm mb-4 text-foreground">
                             <div>
-                              <span className="text-gray-500">Completed on:</span>
+                              <span className="text-muted-foreground">Completed on:</span>
                               <p className="font-medium">
                                 {enrollment.completedAt ? new Date(enrollment.completedAt).toLocaleDateString() : 'N/A'}
                               </p>
                             </div>
                             <div>
-                              <span className="text-gray-500">Progress:</span>
+                              <span className="text-muted-foreground">Progress:</span>
                               <p className="font-medium text-green-600">{enrollment.progress}%</p>
                             </div>
                           </div>
@@ -285,7 +285,7 @@ export default function CertificatesPage() {
             {/* Locked Certificates - Courses in Progress */}
             {enrolledCourses.filter(e => !e.completedAt).length > 0 && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-foreground mb-4">
                   Certificates in Progress ({enrolledCourses.filter(e => !e.completedAt).length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -294,9 +294,9 @@ export default function CertificatesPage() {
                     .map((enrollment) => (
                       <div
                         key={enrollment._id}
-                        className="bg-white rounded-lg shadow overflow-hidden relative"
+                        className="bg-card rounded-lg shadow border border-border overflow-hidden relative"
                       >
-                        <div className="bg-gradient-to-br from-gray-400 to-gray-500 p-6 text-white relative">
+                        <div className="bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-600 dark:to-gray-700 p-6 text-white relative">
                           {/* Lock Overlay */}
                           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
                             <div className="text-center">
@@ -304,7 +304,7 @@ export default function CertificatesPage() {
                               <p className="text-sm font-medium">Certificate Locked</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start justify-between mb-4">
                             <Award size={40} className="opacity-50" />
                           </div>
@@ -318,19 +318,19 @@ export default function CertificatesPage() {
                           <div className="space-y-3 text-sm">
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-gray-500">Progress:</span>
+                                <span className="text-muted-foreground">Progress:</span>
                                 <span className="font-medium text-blue-600">{enrollment.progress}%</span>
                               </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
+                              <div className="w-full bg-secondary rounded-full h-2">
+                                <div
                                   className="bg-blue-500 h-2 rounded-full transition-all"
                                   style={{ width: `${enrollment.progress}%` }}
                                 ></div>
                               </div>
                             </div>
-                            
+
                             <div className="text-center pt-2">
-                              <p className="text-gray-600 text-xs mb-2">
+                              <p className="text-muted-foreground text-xs mb-2">
                                 Complete this course to unlock your certificate
                               </p>
                               <button
@@ -349,44 +349,44 @@ export default function CertificatesPage() {
             )}
           </div>
         )}
-        
+
         {/* Certificate Detail Modal */}
         {selectedCertificate && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedCertificate(null)}
           >
             <div
-              className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Certificate Preview */}
               <div className="border-8 border-double border-blue-600 m-8 p-12 bg-gradient-to-br from-blue-50 to-purple-50">
                 <div className="text-center">
                   <Award size={80} className="mx-auto text-yellow-600 mb-6" />
-                  
+
                   <h1 className="text-4xl font-bold text-gray-800 mb-2">
                     Certificate of Completion
                   </h1>
-                  
+
                   <div className="w-32 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto my-6"></div>
-                  
+
                   <p className="text-lg text-gray-600 mb-8">
                     This is to certify that
                   </p>
-                  
+
                   <h2 className="text-3xl font-bold text-gray-900 mb-8">
                     {selectedCertificate.metadata.userName}
                   </h2>
-                  
+
                   <p className="text-lg text-gray-600 mb-4">
                     has successfully completed the course
                   </p>
-                  
+
                   <h3 className="text-2xl font-semibold text-blue-600 mb-8">
                     "{selectedCertificate.course.title}"
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-8 mb-8 text-sm text-gray-600">
                     <div>
                       <p className="font-semibold mb-1">Completion Date</p>
@@ -397,7 +397,7 @@ export default function CertificatesPage() {
                       <p>{selectedCertificate.metadata.totalLessons}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-end mt-12 pt-8 border-t border-gray-300">
                     <div className="text-left">
                       <div className="w-48 border-t border-gray-400 pt-2">
@@ -416,10 +416,10 @@ export default function CertificatesPage() {
               </div>
 
               {/* Modal Actions */}
-              <div className="p-6 bg-gray-50 flex gap-3 justify-end">
+              <div className="p-6 bg-secondary/10 flex gap-3 justify-end border-t border-border">
                 <button
                   onClick={() => setSelectedCertificate(null)}
-                  className="px-6 py-2 border border-gray-300 rounded hover:bg-white"
+                  className="px-6 py-2 border border-border rounded hover:bg-muted text-foreground"
                 >
                   Close
                 </button>

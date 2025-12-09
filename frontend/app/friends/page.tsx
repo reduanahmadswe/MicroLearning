@@ -60,7 +60,7 @@ export default function FriendsPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -92,11 +92,11 @@ export default function FriendsPage() {
       const response = await friendsAPI.getFriends();
       const responseData = response.data.data;
       console.log('👥 Friends response:', responseData);
-      
+
       // Backend now returns { friends: [], pagination: {} }
       const friendsData = responseData?.friends || responseData;
       setFriends(Array.isArray(friendsData) ? friendsData : []);
-      
+
       // Update pagination if available
       if (responseData?.pagination) {
         setTotalPages(responseData.pagination.totalPages || 1);
@@ -133,15 +133,15 @@ export default function FriendsPage() {
       const response = await friendsAPI.getSuggestions(page, itemsPerPage);
       const suggestionsData = response.data.data;
       const meta = response.data.meta;
-      
+
       console.log('📊 Suggestions data:', suggestionsData);
       console.log('📊 Pagination meta:', meta);
-      
+
       // Extract user from nested structure
-      const users = Array.isArray(suggestionsData) 
+      const users = Array.isArray(suggestionsData)
         ? suggestionsData.map((item: any) => item.user || item)
         : [];
-      
+
       setSuggestions(users);
       setCurrentPage(meta?.page || 1);
       setTotalPages(meta?.totalPages || 1);
@@ -188,7 +188,7 @@ export default function FriendsPage() {
 
   const handleRemoveFriend = async (friendId: string) => {
     if (!confirm('Remove this friend?')) return;
-    
+
     try {
       await friendsAPI.removeFriend(friendId);
       toast.success('Friend removed');
@@ -203,7 +203,7 @@ export default function FriendsPage() {
   );
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen w-full bg-page-gradient">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -221,23 +221,23 @@ export default function FriendsPage() {
 
           {/* Stats Bar */}
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
-            <div className="bg-white rounded-xl border-2 border-green-100 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
+            <div className="bg-card rounded-xl border-2 border-green-100 dark:border-green-900/30 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
                 {friends.length}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Friends</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Friends</p>
             </div>
-            <div className="bg-white rounded-xl border-2 border-teal-100 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
+            <div className="bg-card rounded-xl border-2 border-teal-100 dark:border-teal-900/30 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
                 {requests.length}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Requests</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Requests</p>
             </div>
-            <div className="bg-white rounded-xl border-2 border-emerald-100 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
+            <div className="bg-card rounded-xl border-2 border-emerald-100 dark:border-emerald-900/30 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                 {totalItems || suggestions.length}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-600 font-medium mt-1">Suggestions</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Suggestions</p>
             </div>
           </div>
         </div>
@@ -247,45 +247,40 @@ export default function FriendsPage() {
           <div className="flex gap-2 sm:gap-3 min-w-max pb-2">
             <button
               onClick={() => setActiveTab('friends')}
-              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'friends'
-                  ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200'
-              }`}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'friends'
+                ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
+                : 'bg-card text-muted-foreground hover:bg-secondary border-2 border-border'
+                }`}
             >
               <UserCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>My Friends</span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                activeTab === 'friends' ? 'bg-white/20' : 'bg-gray-100'
-              }`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'friends' ? 'bg-white/20' : 'bg-muted text-muted-foreground'
+                }`}>
                 {friends.length}
               </span>
             </button>
             <button
               onClick={() => setActiveTab('requests')}
-              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap relative ${
-                activeTab === 'requests'
-                  ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200'
-              }`}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap relative ${activeTab === 'requests'
+                ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
+                : 'bg-card text-muted-foreground hover:bg-secondary border-2 border-border'
+                }`}
             >
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Requests</span>
               {requests.length > 0 && (
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  activeTab === 'requests' ? 'bg-white/20' : 'bg-red-500 text-white'
-                }`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'requests' ? 'bg-white/20' : 'bg-red-500 text-white'
+                  }`}>
                   {requests.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab('suggestions')}
-              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'suggestions'
-                  ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200'
-              }`}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'suggestions'
+                ? 'bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white shadow-lg scale-105'
+                : 'bg-card text-muted-foreground hover:bg-secondary border-2 border-border'
+                }`}
             >
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Discover</span>
@@ -297,12 +292,12 @@ export default function FriendsPage() {
             {/* Search */}
             <div className="mb-6">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search friends by name..."
-                  className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all outline-none text-sm sm:text-base"
+                  className="w-full pl-12 pr-4 py-3 sm:py-4 bg-background border-2 border-border rounded-xl text-foreground placeholder-muted-foreground focus:border-green-500 focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/30 transition-all outline-none text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -317,15 +312,15 @@ export default function FriendsPage() {
                 <p className="mt-4 text-gray-600 font-medium">Loading friends...</p>
               </div>
             ) : filteredFriends.length === 0 ? (
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border-2 border-gray-100 p-8 sm:p-16 text-center">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="bg-card rounded-2xl sm:rounded-3xl shadow-xl border-2 border-border p-8 sm:p-16 text-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Users className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3">
                   {friends.length === 0 ? 'No Friends Yet' : 'No Friends Found'}
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-md mx-auto">
-                  {friends.length === 0 
+                <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto">
+                  {friends.length === 0
                     ? 'Start connecting with fellow students to learn together, compete in quizzes, and share your journey!'
                     : 'Try a different search term to find your friends'}
                 </p>
@@ -346,13 +341,13 @@ export default function FriendsPage() {
                   const friend = friendship.friend;
                   if (!friend) return null;
                   return (
-                    <div 
-                      key={friendship._id} 
-                      className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all group"
+                    <div
+                      key={friendship._id}
+                      className="bg-card rounded-2xl shadow-lg border-2 border-border p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all group"
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="relative">
-                          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden ring-4 ring-green-100 group-hover:ring-green-200 transition-all">
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden ring-4 ring-green-100 dark:ring-green-900/30 group-hover:ring-green-200 dark:group-hover:ring-green-800/50 transition-all">
                             {friend?.profilePicture ? (
                               <img
                                 src={friend.profilePicture}
@@ -363,36 +358,36 @@ export default function FriendsPage() {
                               friend?.name?.charAt(0).toUpperCase()
                             )}
                           </div>
-                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-card flex items-center justify-center">
                             <CheckCircle2 className="w-3 h-3 text-white" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">{friend.name}</h3>
-                          <p className="text-xs sm:text-sm text-gray-500 truncate">{friend.email}</p>
+                          <h3 className="font-bold text-foreground text-base sm:text-lg truncate">{friend.name}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">{friend.email}</p>
                           <div className="flex items-center gap-1 mt-1">
                             <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                            <span className="text-xs font-semibold text-gray-600">Friend</span>
+                            <span className="text-xs font-semibold text-muted-foreground">Friend</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg sm:rounded-xl border border-green-100">
-                          <span className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                        <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/10 dark:to-teal-900/10 rounded-lg sm:rounded-xl border border-green-100 dark:border-green-900/30">
+                          <span className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm font-medium">
                             <Zap className="w-4 h-4 text-green-600" />
                             Level
                           </span>
-                          <span className="font-bold text-green-600 text-sm sm:text-base">
+                          <span className="font-bold text-green-600 dark:text-green-500 text-sm sm:text-base">
                             {friend.level || 1}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg sm:rounded-xl border border-teal-100">
-                          <span className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                        <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/10 dark:to-emerald-900/10 rounded-lg sm:rounded-xl border border-teal-100 dark:border-teal-900/30">
+                          <span className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm font-medium">
                             <Trophy className="w-4 h-4 text-teal-600" />
                             Experience
                           </span>
-                          <span className="font-bold text-teal-600 text-sm sm:text-base">
+                          <span className="font-bold text-teal-600 dark:text-teal-500 text-sm sm:text-base">
                             {friend.xp?.toLocaleString() || 0}
                           </span>
                         </div>
@@ -405,7 +400,7 @@ export default function FriendsPage() {
                         </button>
                         <button
                           onClick={() => handleRemoveFriend(friendship._id)}
-                          className="bg-white border-2 border-red-200 text-red-600 font-semibold p-2.5 sm:p-3 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all"
+                          className="bg-card border-2 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-semibold p-2.5 sm:p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 hover:border-red-300 dark:hover:border-red-900 transition-all"
                           title="Remove friend"
                         >
                           <UserX className="w-4 h-4" />
@@ -430,29 +425,29 @@ export default function FriendsPage() {
                 <p className="mt-4 text-gray-600 font-medium">Loading requests...</p>
               </div>
             ) : requests.length === 0 ? (
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border-2 border-gray-100 p-8 sm:p-16 text-center">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="bg-card rounded-2xl sm:rounded-3xl shadow-xl border-2 border-border p-8 sm:p-16 text-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/30 dark:to-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-teal-600" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">No Pending Requests</h3>
-                <p className="text-sm sm:text-base text-gray-600">You're all caught up! Check back later for new friend requests.</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3">No Pending Requests</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">You're all caught up! Check back later for new friend requests.</p>
               </div>
             ) : (
               <>
-                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-200 rounded-xl sm:rounded-2xl">
-                  <p className="text-xs sm:text-sm text-teal-800 font-medium flex items-center gap-2">
+                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border-2 border-teal-200 dark:border-teal-900/30 rounded-xl sm:rounded-2xl">
+                  <p className="text-xs sm:text-sm text-teal-800 dark:text-teal-300 font-medium flex items-center gap-2">
                     <Heart className="w-4 h-4" />
                     <span>You have <strong>{requests.length}</strong> pending friend {requests.length === 1 ? 'request' : 'requests'}</span>
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {requests.map((request) => {
                     const user = request.from;
                     if (!user) return null;
                     return (
-                      <div 
-                        key={request._id} 
+                      <div
+                        key={request._id}
                         className="bg-white rounded-2xl shadow-lg border-2 border-teal-100 p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all group"
                       >
                         <div className="flex items-start gap-4 mb-4">
@@ -549,13 +544,13 @@ export default function FriendsPage() {
                   {suggestions.map((user, index) => {
                     if (!user) return null;
                     return (
-                      <div 
-                        key={user._id || user.email || index} 
-                        className="bg-white rounded-2xl shadow-lg border-2 border-emerald-100 p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all group"
+                      <div
+                        key={user._id || user.email || index}
+                        className="bg-card rounded-2xl shadow-lg border-2 border-border p-5 sm:p-6 hover:shadow-2xl hover:scale-[1.02] transition-all group"
                       >
                         <div className="flex items-start gap-4 mb-4">
                           <div className="relative">
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden ring-4 ring-emerald-100 group-hover:ring-emerald-200 transition-all">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden ring-4 ring-emerald-100 dark:ring-emerald-900/30 group-hover:ring-emerald-200 dark:group-hover:ring-emerald-800/50 transition-all">
                               {user?.profilePicture ? (
                                 <img
                                   src={user.profilePicture}
@@ -571,31 +566,31 @@ export default function FriendsPage() {
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">{user.name}</h3>
-                            <p className="text-xs sm:text-sm text-gray-500 truncate">{user.email}</p>
+                            <h3 className="font-bold text-foreground text-base sm:text-lg truncate">{user.name}</h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
                             <div className="flex items-center gap-1 mt-1">
                               <Star className="w-3 h-3 text-emerald-500 fill-emerald-500" />
-                              <span className="text-xs font-semibold text-emerald-600">Suggested</span>
+                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Suggested</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="space-y-2 mb-4">
-                          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg sm:rounded-xl border border-emerald-100">
-                            <span className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/10 dark:to-green-900/10 rounded-lg sm:rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                            <span className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm font-medium">
                               <Zap className="w-4 h-4 text-emerald-600" />
                               Level
                             </span>
-                            <span className="font-bold text-emerald-600 text-sm sm:text-base">
+                            <span className="font-bold text-emerald-600 dark:text-emerald-500 text-sm sm:text-base">
                               {user.level || 1}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg sm:rounded-xl border border-green-100">
-                            <span className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/10 dark:to-teal-900/10 rounded-lg sm:rounded-xl border border-green-100 dark:border-green-900/30">
+                            <span className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm font-medium">
                               <Trophy className="w-4 h-4 text-green-600" />
                               Experience
                             </span>
-                            <span className="font-bold text-green-600 text-sm sm:text-base">
+                            <span className="font-bold text-green-600 dark:text-green-500 text-sm sm:text-base">
                               {user.xp?.toLocaleString() || 0}
                             </span>
                           </div>
@@ -603,12 +598,12 @@ export default function FriendsPage() {
 
                         {user.commonInterests && user.commonInterests.length > 0 && (
                           <div className="mb-4">
-                            <p className="text-xs text-gray-500 font-semibold mb-2">Common Interests</p>
+                            <p className="text-xs text-muted-foreground font-semibold mb-2">Common Interests</p>
                             <div className="flex flex-wrap gap-1.5">
                               {user.commonInterests.slice(0, 3).map((interest: string, idx: number) => (
                                 <span
                                   key={idx}
-                                  className="px-2.5 py-1 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 text-[10px] sm:text-xs font-semibold rounded-full border border-green-200"
+                                  className="px-2.5 py-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-400 text-[10px] sm:text-xs font-semibold rounded-full border border-green-200 dark:border-green-900/30"
                                 >
                                   {interest}
                                 </span>
@@ -641,7 +636,7 @@ export default function FriendsPage() {
                         >
                           Previous
                         </button>
-                        
+
                         <div className="flex items-center gap-1 sm:gap-2">
                           {[...Array(totalPages)].map((_, i) => {
                             const page = i + 1;
@@ -654,11 +649,10 @@ export default function FriendsPage() {
                                 <button
                                   key={page}
                                   onClick={() => handlePageChange(page)}
-                                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg font-bold transition-all text-sm ${
-                                    currentPage === page
-                                      ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg scale-110'
-                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                  }`}
+                                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg font-bold transition-all text-sm ${currentPage === page
+                                    ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg scale-110'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
                                 >
                                   {page}
                                 </button>
@@ -681,7 +675,7 @@ export default function FriendsPage() {
                           Next
                         </button>
                       </div>
-                      
+
                       <p className="text-xs text-gray-500 text-center mt-2">
                         Page {currentPage} of {totalPages} • {totalItems} total suggestions
                       </p>

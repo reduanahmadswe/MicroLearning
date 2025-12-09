@@ -10,7 +10,7 @@ export default function InstructorLayout({
 
   return (
     <ProtectedRoute requireInstructor={true}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+      <div className="min-h-screen bg-page-gradient">
         {/* Main Content */}
         <main>{children}</main>
       </div>

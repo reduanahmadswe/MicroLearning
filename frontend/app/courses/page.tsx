@@ -95,7 +95,7 @@ export default function CoursesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header Section */}
         <div className="mb-6 sm:mb-8">
@@ -112,24 +112,24 @@ export default function CoursesPage() {
                   <p className="text-green-50 text-sm sm:text-base mt-1">Structured learning paths for mastery</p>
                 </div>
               </div>
-              
+
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4">
+                <div className="bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                   <div className="flex items-center gap-2 mb-1">
                     <BookOpen className="w-4 h-4 text-green-200" />
                     <p className="text-xs sm:text-sm text-green-100">Total Courses</p>
                   </div>
                   <p className="text-xl sm:text-2xl font-bold">{courses.length}</p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4">
+                <div className="bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Play className="w-4 h-4 text-green-200" />
                     <p className="text-xs sm:text-sm text-green-100">Enrolled</p>
                   </div>
                   <p className="text-xl sm:text-2xl font-bold">{enrolledCourses.length}</p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4">
+                <div className="bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Award className="w-4 h-4 text-green-200" />
                     <p className="text-xs sm:text-sm text-green-100">Completed</p>
@@ -148,11 +148,10 @@ export default function CoursesPage() {
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
               onClick={() => setActiveTab('browse')}
-              className={`flex-shrink-0 px-5 sm:px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base ${
-                activeTab === 'browse'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
-              }`}
+              className={`flex-shrink-0 px-5 sm:px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base ${activeTab === 'browse'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                : 'bg-card text-muted-foreground hover:bg-accent border border-border'
+                }`}
             >
               <span className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
@@ -161,11 +160,10 @@ export default function CoursesPage() {
             </button>
             <button
               onClick={() => setActiveTab('enrolled')}
-              className={`flex-shrink-0 px-5 sm:px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base ${
-                activeTab === 'enrolled'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-green-50 border border-gray-200'
-              }`}
+              className={`flex-shrink-0 px-5 sm:px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base ${activeTab === 'enrolled'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg'
+                : 'bg-card text-muted-foreground hover:bg-accent border border-border'
+                }`}
             >
               <span className="flex items-center gap-2">
                 <Play className="w-4 h-4" />
@@ -175,24 +173,22 @@ export default function CoursesPage() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-white rounded-xl p-1 shadow-md border border-gray-100">
+          <div className="flex items-center gap-2 bg-card rounded-xl p-1 shadow-md border border-border/50">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                  : 'text-gray-500 hover:bg-gray-100'
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                : 'text-muted-foreground hover:bg-accent'
+                }`}
             >
               <Grid3x3 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'list'
-                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                  : 'text-gray-500 hover:bg-gray-100'
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list'
+                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                : 'text-muted-foreground hover:bg-accent'
+                }`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -201,19 +197,19 @@ export default function CoursesPage() {
         {activeTab === 'browse' ? (
           <>
             {/* Search & Filters */}
-            <Card className="mb-6 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <Card className="mb-6 border-0 shadow-xl bg-card/80 backdrop-blur-sm">
               <CardContent className="p-4 sm:p-6">
                 {/* Search Bar */}
                 <form onSubmit={handleSearch} className="mb-4">
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                     <Input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search courses by title, topic, or keyword..."
-                      className="pl-12 pr-4 py-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
+                      className="pl-12 pr-4 py-3 bg-background border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base text-foreground"
                     />
-                    <Button 
+                    <Button
                       type="submit"
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-lg shadow-md"
                     >
@@ -227,17 +223,16 @@ export default function CoursesPage() {
                   {/* Difficulty Filter */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">Difficulty Level:</span>
+                      <Zap className="w-4 h-4 text-green-600 dark:text-green-500" />
+                      <span className="text-sm font-semibold text-foreground">Difficulty Level:</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setSelectedDifficulty('all')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                          selectedDifficulty === 'all'
-                            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                            : 'bg-gray-100 text-gray-600 hover:bg-green-50 border border-gray-200'
-                        }`}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedDifficulty === 'all'
+                          ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                          : 'bg-background text-muted-foreground hover:bg-accent border border-border'
+                          }`}
                       >
                         All Levels
                       </button>
@@ -245,15 +240,13 @@ export default function CoursesPage() {
                         <button
                           key={diff}
                           onClick={() => setSelectedDifficulty(diff)}
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            selectedDifficulty === diff
-                              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                              : `${
-                                  diff === 'beginner' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                  diff === 'intermediate' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                  'bg-red-50 text-red-700 border border-red-200'
-                                } hover:shadow-md`
-                          }`}
+                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedDifficulty === diff
+                            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                            : `${diff === 'beginner' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800' :
+                              diff === 'intermediate' ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800' :
+                                'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
+                            } hover:shadow-md`
+                            }`}
                         >
                           {diff.charAt(0).toUpperCase() + diff.slice(1)}
                         </button>
@@ -264,13 +257,13 @@ export default function CoursesPage() {
                   {/* Topic Filter */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Filter className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">Topic:</span>
+                      <Filter className="w-4 h-4 text-green-600 dark:text-green-500" />
+                      <span className="text-sm font-semibold text-foreground">Topic:</span>
                     </div>
                     <select
                       value={selectedTopic}
                       onChange={(e) => setSelectedTopic(e.target.value)}
-                      className="w-full sm:w-auto px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
+                      className="w-full sm:w-auto px-4 py-2.5 bg-background border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
                     >
                       <option value="all">All Topics</option>
                       {topics.map((topic) => (
@@ -283,24 +276,24 @@ export default function CoursesPage() {
 
                   {/* Active Filters Display */}
                   {(selectedDifficulty !== 'all' || selectedTopic !== 'all' || searchQuery) && (
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                    <div className="pt-3 border-t border-border">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         <TrendingUp className="w-4 h-4" />
                         <span className="font-medium">Active Filters:</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {searchQuery && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium border border-green-200 dark:border-green-800">
                             Search: "{searchQuery}"
                           </span>
                         )}
                         {selectedDifficulty !== 'all' && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium border border-green-200 dark:border-green-800">
                             {selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}
                           </span>
                         )}
                         {selectedTopic !== 'all' && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium border border-green-200 dark:border-green-800">
                             {selectedTopic}
                           </span>
                         )}
@@ -313,22 +306,22 @@ export default function CoursesPage() {
 
             {/* Courses Grid */}
             {loading ? (
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading courses...</p>
+                  <p className="text-muted-foreground font-medium">Loading courses...</p>
                 </CardContent>
               </Card>
             ) : filteredCourses.length === 0 ? (
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+              <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
                 <div className="relative">
                   <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-green-100 blur-3xl"></div>
                   <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-teal-100 blur-3xl"></div>
                   <CardContent className="relative z-10 p-12 text-center">
-                    <GraduationCap className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">No courses found</h3>
-                    <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
-                    <Button 
+                    <GraduationCap className="w-20 h-20 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-foreground mb-2">No courses found</h3>
+                    <p className="text-muted-foreground mb-6">Try adjusting your search or filters</p>
+                    <Button
                       onClick={() => {
                         setSearchQuery('');
                         setSelectedDifficulty('all');
@@ -342,19 +335,17 @@ export default function CoursesPage() {
                 </div>
               </Card>
             ) : (
-              <div className={viewMode === 'grid' 
-                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" 
+              <div className={viewMode === 'grid'
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                 : "space-y-4"
               }>
                 {filteredCourses.map((course) => (
                   <Link key={course._id} href={`/courses/${course._id}`}>
-                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer ${
-                      viewMode === 'grid' ? '' : 'hover:-translate-y-1'
-                    } ${viewMode === 'list' ? 'flex flex-row' : ''}`}>
+                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer ${viewMode === 'grid' ? '' : 'hover:-translate-y-1'
+                      } ${viewMode === 'list' ? 'flex flex-row' : ''}`}>
                       {/* Thumbnail */}
-                      <div className={`relative overflow-hidden ${
-                        viewMode === 'grid' ? 'h-48' : 'w-48 flex-shrink-0'
-                      } bg-gradient-to-br from-green-100 to-teal-100`}>
+                      <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'h-48' : 'w-48 flex-shrink-0'
+                        } bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/20 dark:to-teal-900/20`}>
                         {course.thumbnail ? (
                           <img
                             src={course.thumbnail}
@@ -363,20 +354,19 @@ export default function CoursesPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <GraduationCap className="w-16 h-16 text-teal-300" />
+                            <GraduationCap className="w-16 h-16 text-teal-300 dark:text-teal-600" />
                           </div>
                         )}
-                        
+
                         {/* Overlay Gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        
+
                         {/* Difficulty Badge */}
                         <div className="absolute top-3 left-3">
-                          <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-md ${
-                            course.difficulty === 'beginner' ? 'bg-green-500/90 text-white' :
+                          <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-md ${course.difficulty === 'beginner' ? 'bg-green-500/90 text-white' :
                             course.difficulty === 'intermediate' ? 'bg-yellow-500/90 text-white' :
-                            'bg-red-500/90 text-white'
-                          }`}>
+                              'bg-red-500/90 text-white'
+                            }`}>
                             {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)}
                           </span>
                         </div>
@@ -399,43 +389,43 @@ export default function CoursesPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Content */}
                       <div className="flex-1">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-green-600 transition-colors">
+                          <CardTitle className="text-lg font-bold text-foreground line-clamp-2 group-hover:text-green-600 transition-colors">
                             {course.title}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div 
-                            className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed"
+                          <div
+                            className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed"
                             dangerouslySetInnerHTML={{ __html: course.description }}
                           />
 
                           {/* Meta Info */}
-                          <div className="grid grid-cols-2 gap-2 mb-4 text-sm text-gray-600">
+                          <div className="grid grid-cols-2 gap-2 mb-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                                <BookOpen className="w-4 h-4 text-green-600" />
+                              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                <BookOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
                               </div>
                               <span className="font-medium">{(course as any).lessonCount || course.lessons?.length || 0} lessons</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
-                                <Clock className="w-4 h-4 text-teal-600" />
+                              <div className="w-8 h-8 bg-teal-50 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
+                                <Clock className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                               </div>
                               <span className="font-medium">{course.estimatedDuration}h</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <Users className="w-4 h-4 text-blue-600" />
+                              <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               </div>
                               <span className="font-medium">{course.enrolledCount || 0} students</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
-                                <TrendingUp className="w-4 h-4 text-yellow-600" />
+                              <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                                <TrendingUp className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                               </div>
                               <span className="font-medium">Popular</span>
                             </div>
@@ -460,22 +450,22 @@ export default function CoursesPage() {
           <>
             {/* Enrolled Courses */}
             {loading ? (
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading your courses...</p>
+                  <p className="text-muted-foreground font-medium">Loading your courses...</p>
                 </CardContent>
               </Card>
             ) : enrolledCourses.length === 0 ? (
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+              <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm overflow-hidden">
                 <div className="relative">
                   <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-green-100 blur-3xl"></div>
                   <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-teal-100 blur-3xl"></div>
                   <CardContent className="relative z-10 p-12 text-center">
-                    <GraduationCap className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">No enrolled courses yet</h3>
-                    <p className="text-gray-600 mb-6">Start your learning journey by enrolling in a course</p>
-                    <Button 
+                    <GraduationCap className="w-20 h-20 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-foreground mb-2">No enrolled courses yet</h3>
+                    <p className="text-muted-foreground mb-6">Start your learning journey by enrolling in a course</p>
+                    <Button
                       onClick={() => setActiveTab('browse')}
                       className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md"
                     >
@@ -491,9 +481,9 @@ export default function CoursesPage() {
                   const course = enrollment.course;
                   return (
                     <Link key={enrollment._id} href={`/courses/${course._id}`}>
-                      <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden cursor-pointer">
+                      <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer">
                         {/* Thumbnail with Progress */}
-                        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100">
+                        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/20 dark:to-teal-900/20">
                           {course.thumbnail ? (
                             <img
                               src={course.thumbnail}
@@ -502,13 +492,13 @@ export default function CoursesPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <GraduationCap className="w-16 h-16 text-teal-300" />
+                              <GraduationCap className="w-16 h-16 text-teal-300 dark:text-teal-600" />
                             </div>
                           )}
-                          
+
                           {/* Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                          
+
                           {/* Progress Badge */}
                           <div className="absolute top-3 right-3">
                             <div className="bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
@@ -540,7 +530,7 @@ export default function CoursesPage() {
                         </div>
 
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-green-600 transition-colors">
+                          <CardTitle className="text-lg font-bold text-foreground line-clamp-2 group-hover:text-green-600 transition-colors">
                             {course.title}
                           </CardTitle>
                         </CardHeader>
@@ -548,29 +538,29 @@ export default function CoursesPage() {
                         <CardContent>
                           {/* Progress Bar */}
                           <div className="mb-4">
-                            <div className="flex justify-between text-sm text-gray-600 mb-2 font-medium">
+                            <div className="flex justify-between text-sm text-foreground mb-2 font-medium">
                               <span>Your Progress</span>
                               <span className="text-green-600">{enrollment.progress}%</span>
                             </div>
-                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-3 bg-secondary rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-gradient-to-r from-green-500 to-teal-500 rounded-full transition-all duration-500"
                                 style={{ width: `${enrollment.progress}%` }}
                               />
                             </div>
-                            <p className="text-xs text-gray-500 mt-1.5 font-medium">
-                              {enrollment.progress === 100 
-                                ? '🎉 Course completed!' 
+                            <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+                              {enrollment.progress === 100
+                                ? '🎉 Course completed!'
                                 : `${100 - enrollment.progress}% remaining`}
                             </p>
                           </div>
 
                           {/* Lessons Info */}
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4 bg-green-50 p-3 rounded-xl border border-green-100">
-                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                              <CheckCircle className="w-4 h-4 text-green-600" />
+                          <div className="flex items-center gap-2 text-sm text-foreground mb-4 bg-green-50 dark:bg-green-900/30 p-3 rounded-xl border border-green-100 dark:border-green-900">
+                            <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center">
+                              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                             </div>
-                            <span className="font-semibold text-gray-700">
+                            <span className="font-semibold text-foreground">
                               {enrollment.completedLessons?.length || 0} / {course.lessons?.length || 0} lessons completed
                             </span>
                           </div>

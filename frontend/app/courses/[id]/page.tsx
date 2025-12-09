@@ -94,7 +94,7 @@ export default function CourseDetailPage() {
       const response = await coursesAPI.getEnrollment(courseId);
       const enrollmentData = response.data.data;
       setEnrollment(enrollmentData);
-      
+
       // Check unlock status for each lesson if enrolled
       if (enrollmentData) {
         await loadCourseWithLessons();
@@ -111,17 +111,17 @@ export default function CourseDetailPage() {
         coursesAPI.getCourse(courseId),
         coursesAPI.getEnrollment(courseId).catch(() => null)
       ]);
-      
+
       const courseData = courseResponse.data.data;
       const enrollmentData = enrollmentResponse?.data?.data || null;
-      
+
       console.log('🔄 Refreshed enrollment data:', enrollmentData?.completedLessons);
-      
+
       setCourse(courseData);
       if (enrollmentData) {
         setEnrollment(enrollmentData);
       }
-      
+
       // Check unlock status with fresh enrollment data
       if (enrollmentData && courseData.lessons) {
         await checkLessonUnlockStatus(courseData.lessons, enrollmentData);
@@ -135,61 +135,61 @@ export default function CourseDetailPage() {
     console.log('🔓 Checking lesson unlock status...');
     console.log('📚 Total lessons:', lessons.length);
     console.log('✅ Completed lessons:', enrollmentData.completedLessons);
-    
+
     const unlockStatus: Record<string, boolean> = {};
     const quizData: Record<string, any> = {};
-    
+
     // First lesson always unlocked for enrolled students
     if (lessons.length > 0 && lessons[0].order === 1) {
       unlockStatus[lessons[0]._id] = true;
       console.log('✓ First lesson unlocked:', lessons[0].title);
     }
-    
+
     // Check subsequent lessons
     for (let i = 0; i < lessons.length; i++) {
       const lesson = lessons[i];
-      
+
       if (lesson.order === 1) continue; // Already handled
-      
+
       console.log(`\n🔍 Checking lesson ${lesson.order}: ${lesson.title}`);
-      
+
       // Find previous lesson
       const previousLesson = lessons.find((l: any) => l.order === lesson.order - 1);
-      
+
       if (previousLesson) {
         console.log(`  Previous lesson: ${previousLesson.title}`);
-        
+
         // Check if previous lesson is completed
         const isPreviousCompleted = enrollmentData.completedLessons?.some(
           (lessonId: any) => lessonId.toString() === previousLesson._id.toString()
         );
         console.log(`  Previous completed:`, isPreviousCompleted);
-        
+
         if (!isPreviousCompleted) {
           // Previous lesson not even completed
           unlockStatus[lesson._id] = false;
           console.log(`  ❌ Locked - previous not completed`);
           continue;
         }
-        
+
         try {
           // Check if quiz exists for previous lesson
           const quizResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${previousLesson._id}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );
-          
+
           if (quizResponse.ok) {
             // Quiz exists - check if passed (80%+)
             const quizInfo = await quizResponse.json();
             const quiz = quizInfo.data;
-            
+
             // Check if student passed this quiz
             const attemptResponse = await fetch(
               `${process.env.NEXT_PUBLIC_API_URL}/quiz/${quiz._id}/attempts`,
               { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
-            
+
             if (attemptResponse.ok) {
               const attempts = await attemptResponse.json();
               const passedAttempt = attempts.data?.find((a: any) => a.passed === true);
@@ -210,7 +210,7 @@ export default function CourseDetailPage() {
         }
       }
     }
-    
+
     console.log('\n📊 Final unlock status:', unlockStatus);
     setLessonUnlockStatus(unlockStatus);
     setQuizResults(quizData);
@@ -224,9 +224,9 @@ export default function CourseDetailPage() {
         // Initiate payment for premium course
         const response = await coursesAPI.initiatePayment(courseId);
         const { paymentUrl } = response.data.data;
-        
+
         toast.success('Redirecting to payment gateway...');
-        
+
         // Redirect to SSLCommerz payment page
         window.location.href = paymentUrl;
       } else {
@@ -264,10 +264,10 @@ export default function CourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-green-200 border-t-green-600 mb-4"></div>
-          <p className="text-gray-600 text-sm sm:text-base">Loading course...</p>
+          <p className="text-muted-foreground text-sm sm:text-base">Loading course...</p>
         </div>
       </div>
     );
@@ -275,13 +275,13 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
+        <Card className="max-w-md w-full bg-card border-border">
           <CardContent className="p-6 sm:p-8 text-center">
-            <GraduationCap className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Course Not Found</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
-            <Button onClick={() => router.push('/courses')} className="w-full sm:w-auto">
+            <GraduationCap className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Course Not Found</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6">The course you're looking for doesn't exist.</p>
+            <Button onClick={() => router.push('/courses')} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
               Browse Courses
             </Button>
           </CardContent>
@@ -295,12 +295,12 @@ export default function CourseDetailPage() {
   const isFree = !course.price || course.price === 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
           {/* Back Button */}
-          <Link 
+          <Link
             href="/courses"
             className="inline-flex items-center gap-2 text-white/90 hover:text-white transition-colors mb-4 sm:mb-6 text-sm sm:text-base"
           >
@@ -352,7 +352,7 @@ export default function CourseDetailPage() {
                   </div>
                   <div>
                     <p className="text-xs text-white/70">Instructor</p>
-                    <p className="font-semibold text-sm sm:text-base">{course.instructor?.name || 'Anonymous'}</p>
+                    <p className="font-semibold text-sm sm:text-base text-white">{course.instructor?.name || 'Anonymous'}</p>
                   </div>
                 </div>
               </div>
@@ -366,8 +366,8 @@ export default function CourseDetailPage() {
                   <div className="mb-6">
                     {course.isPremium && course.price > 0 ? (
                       <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-gray-900">${course.price}</span>
-                        <span className="text-gray-500 line-through text-lg">${(course.price * 1.5).toFixed(2)}</span>
+                        <span className="text-3xl font-bold text-foreground">${course.price}</span>
+                        <span className="text-muted-foreground line-through text-lg">${(course.price * 1.5).toFixed(2)}</span>
                       </div>
                     ) : (
                       <div className="text-3xl font-bold text-green-600">Free</div>
@@ -378,26 +378,26 @@ export default function CourseDetailPage() {
                   {isEnrolled && (
                     <div className="mb-6">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Your Progress</span>
+                        <span className="text-muted-foreground">Your Progress</span>
                         <span className="font-semibold text-green-600">{progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                      <div className="w-full bg-secondary rounded-full h-2">
+                        <div
                           className="bg-gradient-to-r from-green-600 to-teal-600 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         ></div>
                       </div>
-                      
+
                       {/* Certificate Available - Show when 100% complete */}
                       {progress === 100 && (
-                        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 rounded-lg">
+                        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                               <Award className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1">
-                              <h4 className="font-bold text-gray-900 text-sm">Certificate Available!</h4>
-                              <p className="text-xs text-gray-600">Congratulations on completing the course</p>
+                              <h4 className="font-bold text-foreground text-sm">Certificate Available!</h4>
+                              <p className="text-xs text-muted-foreground">Congratulations on completing the course</p>
                             </div>
                           </div>
                           <Link href="/certificates">
@@ -419,16 +419,16 @@ export default function CourseDetailPage() {
                           toast.error('No lessons available yet');
                           return;
                         }
-                        
+
                         // Find first unlocked incomplete lesson
                         const nextLesson = course.lessons.find(
-                          (l: any) => !isLessonCompleted(l._id) && 
-                          (l.order === 1 || lessonUnlockStatus[l._id] === true)
+                          (l: any) => !isLessonCompleted(l._id) &&
+                            (l.order === 1 || lessonUnlockStatus[l._id] === true)
                         );
-                        
+
                         // If all complete or no unlocked found, go to first lesson
                         const targetLesson = nextLesson || course.lessons[0];
-                        
+
                         if (targetLesson) {
                           router.push(`/lessons/${targetLesson._id}`);
                         } else {
@@ -462,19 +462,19 @@ export default function CourseDetailPage() {
 
                   {/* What's Included */}
                   <div className="mt-6 space-y-3 text-sm">
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span>Lifetime access</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span>{course.lessons?.length || 0} micro lessons</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span>Certificate of completion</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span>Mobile & desktop access</span>
                     </div>
@@ -492,7 +492,7 @@ export default function CourseDetailPage() {
           {/* Left Column - Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Tabs */}
-            <div className="border-b border-gray-200 overflow-x-auto">
+            <div className="border-b border-border overflow-x-auto">
               <div className="flex gap-2 sm:gap-4 min-w-max sm:min-w-0">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
@@ -502,11 +502,10 @@ export default function CourseDetailPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
-                      activeTab === tab.id
-                        ? 'border-green-600 text-green-600'
-                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === tab.id
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     <tab.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>{tab.label}</span>
@@ -521,7 +520,7 @@ export default function CourseDetailPage() {
                 {/* What You'll Learn */}
                 <Card>
                   <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                       <Target className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                       What You'll Learn
                     </h2>
@@ -536,7 +535,7 @@ export default function CourseDetailPage() {
                       ].map((item, index) => (
                         <div key={index} className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm sm:text-base text-gray-700">{item}</span>
+                          <span className="text-sm sm:text-base text-muted-foreground">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -546,8 +545,8 @@ export default function CourseDetailPage() {
                 {/* Course Description */}
                 <Card>
                   <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">About This Course</h2>
-                    <div className="prose prose-sm sm:prose max-w-none text-gray-700">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">About This Course</h2>
+                    <div className="prose prose-sm sm:prose max-w-none text-muted-foreground dark:prose-invert">
                       {course.description ? (
                         <MarkdownRenderer content={course.description} />
                       ) : (
@@ -560,8 +559,8 @@ export default function CourseDetailPage() {
                 {/* Requirements */}
                 <Card>
                   <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Requirements</h2>
-                    <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Requirements</h2>
+                    <ul className="space-y-2 text-sm sm:text-base text-muted-foreground">
                       <li className="flex items-start gap-2">
                         <span className="text-green-600 mt-1">•</span>
                         <span>Basic understanding of the topic</span>
@@ -584,22 +583,22 @@ export default function CourseDetailPage() {
               <Card>
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">Course Curriculum</h2>
-                    <span className="text-xs sm:text-sm text-gray-600">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground">Course Curriculum</h2>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {course.lessons?.length || 0} Lessons
                     </span>
                   </div>
 
                   {!course.lessons || course.lessons.length === 0 ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                        <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No Lessons Yet</h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">No Lessons Yet</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground mb-4">
                         The instructor hasn't added any lessons to this course yet.
                       </p>
-                      <p className="text-xs sm:text-sm text-gray-500 mb-6">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-6">
                         Check back soon or browse other available courses.
                       </p>
                       <Link href="/courses" className="inline-block">
@@ -615,11 +614,11 @@ export default function CourseDetailPage() {
                         const isFirstLesson = lesson.order === 1;
                         const previousLesson = course.lessons.find((l: any) => l.order === lesson.order - 1);
                         const isPreviousCompleted = previousLesson ? isLessonCompleted(previousLesson._id) : false;
-                        
+
                         // Locking logic
                         let isUnlocked = false;
                         let lockReason = '';
-                        
+
                         if (!isEnrolled) {
                           // Not enrolled - all lessons locked
                           isUnlocked = false;
@@ -630,7 +629,7 @@ export default function CourseDetailPage() {
                         } else {
                           // Check unlock status from state
                           isUnlocked = lessonUnlockStatus[lesson._id] === true;
-                          
+
                           // Determine lock reason
                           if (!isUnlocked) {
                             if (!isPreviousCompleted) {
@@ -644,95 +643,91 @@ export default function CourseDetailPage() {
                             }
                           }
                         }
-                        
+
                         const completed = isCompleted;
                         const unlocked = isUnlocked;
 
-                      return (
-                        <div
-                          key={lesson._id}
-                          className={`group border rounded-lg p-3 sm:p-4 transition-all ${
-                            unlocked
-                              ? 'border-gray-200 hover:border-green-300 hover:shadow-md cursor-pointer'
-                              : 'border-gray-100 bg-gray-50 opacity-60'
-                          }`}
-                          onClick={() => {
-                            if (unlocked && isEnrolled) {
-                              router.push(`/lessons/${lesson._id}`);
-                            } else if (!isEnrolled) {
-                              toast.error('Please enroll to access lessons');
-                            }
-                          }}
-                        >
-                          <div className="flex items-start gap-3 sm:gap-4">
-                            {/* Lesson Number/Status */}
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              completed
-                                ? 'bg-green-100 text-green-600'
+                        return (
+                          <div
+                            key={lesson._id}
+                            className={`group border rounded-lg p-3 sm:p-4 transition-all ${unlocked
+                              ? 'border-border hover:border-green-300 dark:hover:border-green-700 hover:shadow-md cursor-pointer bg-card'
+                              : 'border-border bg-secondary/50 opacity-60'
+                              }`}
+                            onClick={() => {
+                              if (unlocked && isEnrolled) {
+                                router.push(`/lessons/${lesson._id}`);
+                              } else if (!isEnrolled) {
+                                toast.error('Please enroll to access lessons');
+                              }
+                            }}
+                          >
+                            <div className="flex items-start gap-3 sm:gap-4">
+                              {/* Lesson Number/Status */}
+                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${completed
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                                 : unlocked
-                                ? 'bg-gradient-to-br from-green-100 to-teal-100 text-green-700'
-                                : 'bg-gray-200 text-gray-400'
-                            }`}>
-                              {completed ? (
-                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                              ) : unlocked ? (
-                                <span className="font-bold text-xs sm:text-sm">{lesson.order || (index + 1)}</span>
-                              ) : (
-                                <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  ? 'bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 text-green-700 dark:text-green-400'
+                                  : 'bg-secondary text-muted-foreground'
+                                }`}>
+                                {completed ? (
+                                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                ) : unlocked ? (
+                                  <span className="font-bold text-xs sm:text-sm">{lesson.order || (index + 1)}</span>
+                                ) : (
+                                  <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                )}
+                              </div>
+
+                              {/* Lesson Info */}
+                              <div className="flex-1 min-w-0">
+                                <h3 className={`font-semibold text-sm sm:text-base mb-1 ${unlocked ? 'text-foreground group-hover:text-green-600' : 'text-muted-foreground'
+                                  }`}>
+                                  {lesson.title}
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    {lesson.estimatedTime || 10} min
+                                  </span>
+                                  {course.difficulty && (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${course.difficulty === 'beginner'
+                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                      : course.difficulty === 'intermediate'
+                                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                      }`}>
+                                      {course.difficulty}
+                                    </span>
+                                  )}
+                                  {isEnrolled && isFirstLesson && (
+                                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                                      ✓ Unlocked
+                                    </span>
+                                  )}
+                                  {!unlocked && lockReason && (
+                                    <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded hidden sm:inline">
+                                      {lockReason}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Action Icon */}
+                              {unlocked && (
+                                <div className="flex-shrink-0">
+                                  {completed ? (
+                                    <Award className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                                  ) : (
+                                    <Play className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-green-600 transition-colors" />
+                                  )}
+                                </div>
                               )}
                             </div>
-
-                            {/* Lesson Info */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className={`font-semibold text-sm sm:text-base mb-1 ${
-                                unlocked ? 'text-gray-900 group-hover:text-green-600' : 'text-gray-500'
-                              }`}>
-                                {lesson.title}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                                  {lesson.estimatedTime || 10} min
-                                </span>
-                                {course.difficulty && (
-                                  <span className={`px-2 py-0.5 rounded-full text-xs ${
-                                    course.difficulty === 'beginner'
-                                      ? 'bg-green-100 text-green-700'
-                                      : course.difficulty === 'intermediate'
-                                      ? 'bg-yellow-100 text-yellow-700'
-                                      : 'bg-red-100 text-red-700'
-                                  }`}>
-                                    {course.difficulty}
-                                  </span>
-                                )}
-                                {isEnrolled && isFirstLesson && (
-                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                                    ✓ Unlocked
-                                  </span>
-                                )}
-                                {!unlocked && lockReason && (
-                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded hidden sm:inline">
-                                    {lockReason}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Action Icon */}
-                            {unlocked && (
-                              <div className="flex-shrink-0">
-                                {completed ? (
-                                  <Award className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                                ) : (
-                                  <Play className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-green-600 transition-colors" />
-                                )}
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -746,13 +741,13 @@ export default function CourseDetailPage() {
                       {course.instructor?.name?.charAt(0).toUpperCase() || 'I'}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
                         {course.instructor?.name || 'Anonymous Instructor'}
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-4">
+                      <p className="text-sm sm:text-base text-muted-foreground mb-4">
                         {course.instructor?.email || 'No email provided'}
                       </p>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <GraduationCap className="w-4 h-4" />
                           <span>Expert Instructor</span>
@@ -776,19 +771,19 @@ export default function CourseDetailPage() {
           {/* Right Column - Enrollment Card (Desktop already rendered above) */}
           <div className="lg:hidden">
             {/* Mobile Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 shadow-lg z-40">
               <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
                 <div>
                   {course.isPremium && course.price > 0 && !isEnrolled ? (
-                    <div className="text-xl font-bold text-gray-900">${course.price}</div>
+                    <div className="text-xl font-bold text-foreground">${course.price}</div>
                   ) : !isEnrolled ? (
                     <div className="text-xl font-bold text-green-600">Free</div>
                   ) : null}
                   {isEnrolled && (
-                    <div className="text-xs text-gray-600">{progress}% Complete</div>
+                    <div className="text-xs text-muted-foreground">{progress}% Complete</div>
                   )}
                 </div>
-                
+
                 {isEnrolled ? (
                   <>
                     {progress === 100 ? (
@@ -805,16 +800,16 @@ export default function CourseDetailPage() {
                             toast.error('No lessons available yet');
                             return;
                           }
-                          
+
                           // Find first unlocked incomplete lesson
                           const nextLesson = course.lessons.find(
-                            (l: any) => !isLessonCompleted(l._id) && 
-                            (l.order === 1 || lessonUnlockStatus[l._id] === true)
+                            (l: any) => !isLessonCompleted(l._id) &&
+                              (l.order === 1 || lessonUnlockStatus[l._id] === true)
                           );
-                          
+
                           // If all complete or no unlocked found, go to first lesson
                           const targetLesson = nextLesson || course.lessons[0];
-                          
+
                           if (targetLesson) {
                             router.push(`/lessons/${targetLesson._id}`);
                           } else {

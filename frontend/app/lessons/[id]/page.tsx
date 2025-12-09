@@ -37,21 +37,21 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 // Utility function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string | null => {
   if (!url) return null;
-  
+
   const patterns = [
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
     /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/
   ];
-  
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
       return match[1];
     }
   }
-  
+
   return null;
 };
 
@@ -83,7 +83,7 @@ export default function LessonDetailPage() {
       const lessonData = response.data.data;
       setLesson(lessonData);
       setLikeCount(lessonData.likes || 0);
-      
+
       if (lessonData.likedBy && user?._id) {
         setLiked(lessonData.likedBy.includes(user._id));
       }
@@ -185,7 +185,7 @@ export default function LessonDetailPage() {
     try {
       setCompleting(true);
       await lessonsAPI.completeLesson(lessonId);
-      
+
       // Find next lesson
       if (courseData?.lessons && lesson) {
         const currentLessonOrder = lesson.order || 1;
@@ -202,7 +202,7 @@ export default function LessonDetailPage() {
               duration: 2000,
             }
           );
-          
+
           // Redirect to next lesson after 2 seconds
           setTimeout(() => {
             router.push(`/lessons/${nextLesson._id}`);
@@ -218,7 +218,7 @@ export default function LessonDetailPage() {
               duration: 2000,
             }
           );
-          
+
           // Redirect back to course page
           setTimeout(() => {
             if (lesson.course) {
@@ -229,7 +229,7 @@ export default function LessonDetailPage() {
       } else {
         // Fallback - simple success message
         toast.success('🎉 Lesson completed!', { duration: 1500 });
-        
+
         setTimeout(() => {
           if (lesson?.course) {
             router.push(`/courses/${lesson.course}?refresh=true`);
@@ -244,11 +244,11 @@ export default function LessonDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-4">
-        <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
+        <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm">
           <CardContent className="flex flex-col items-center justify-center py-16 px-8">
             <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
-            <p className="text-gray-600 font-medium">Loading lesson...</p>
+            <p className="text-muted-foreground font-medium">Loading lesson...</p>
           </CardContent>
         </Card>
       </div>
@@ -257,12 +257,12 @@ export default function LessonDetailPage() {
 
   if (!lesson) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-4">
-        <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm max-w-md w-full">
+      <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
+        <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm max-w-md w-full">
           <CardContent className="p-8 text-center">
-            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson not found</h3>
-            <p className="text-gray-600 mb-6">The lesson you're looking for doesn't exist.</p>
+            <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl font-bold text-foreground mb-2">Lesson not found</h3>
+            <p className="text-muted-foreground mb-6">The lesson you're looking for doesn't exist.</p>
             <Link href="/lessons">
               <Button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700">
                 <ChevronLeft className="w-4 h-4 mr-2" />
@@ -286,12 +286,12 @@ export default function LessonDetailPage() {
   const videoId = lessonVideo ? getYouTubeVideoId(lessonVideo.url) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50">
+    <div className="min-h-screen bg-page-gradient">
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 dark:bg-green-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 dark:bg-teal-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-emerald-200 dark:bg-emerald-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -299,7 +299,7 @@ export default function LessonDetailPage() {
         <div className="mb-4 sm:mb-6">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
+            className="flex items-center gap-2 text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors group"
           >
             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Back</span>
@@ -310,7 +310,7 @@ export default function LessonDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Lesson Header Card */}
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+            <Card className="border-0 shadow-xl bg-card backdrop-blur-sm overflow-hidden">
               <div className="bg-gradient-to-r from-green-600 to-teal-600 p-6 sm:p-8">
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -330,7 +330,7 @@ export default function LessonDetailPage() {
                     </div>
                   )}
                 </div>
-                
+
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight">
                   {lesson.title}
                 </h1>
@@ -358,31 +358,32 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
+
               {/* Action Buttons */}
-              <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-100">
+              <div className="p-4 sm:p-6 bg-secondary/30 border-t border-border">
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   <Button
                     onClick={handleLike}
                     variant="outline"
-                    className={`flex-1 sm:flex-none ${liked ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' : 'hover:bg-white'}`}
+                    className={`flex-1 sm:flex-none ${liked ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40' : 'hover:bg-secondary bg-card text-foreground border-border'}`}
                   >
                     <Heart className={`w-4 h-4 mr-2 ${liked ? 'fill-current' : ''}`} />
                     <span className="hidden sm:inline">Like</span>
                   </Button>
-                  
+
                   <Button
                     onClick={handleBookmark}
                     variant="outline"
-                    className={`flex-1 sm:flex-none ${bookmarked ? 'bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100' : 'hover:bg-white'}`}
+                    className={`flex-1 sm:flex-none ${bookmarked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/40' : 'hover:bg-secondary bg-card text-foreground border-border'}`}
                   >
                     <Bookmark className={`w-4 h-4 mr-2 ${bookmarked ? 'fill-current' : ''}`} />
                     <span className="hidden sm:inline">Save</span>
                   </Button>
-                  
+
                   <Button
                     onClick={handleShare}
                     variant="outline"
-                    className="flex-1 sm:flex-none hover:bg-white"
+                    className="flex-1 sm:flex-none hover:bg-secondary bg-card text-foreground border-border"
                   >
                     <Share2 className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">Share</span>
@@ -393,14 +394,14 @@ export default function LessonDetailPage() {
 
             {/* Video Section */}
             {videoId && (
-              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+              <Card className="border-0 shadow-xl bg-card backdrop-blur-sm overflow-hidden">
                 <CardContent className="p-6 sm:p-8">
                   <div className="flex items-center gap-2 mb-4">
-                    <Play className="w-5 h-5 text-green-600" />
-                    <h2 className="text-xl font-bold text-gray-900">Video Lesson</h2>
+                    <Play className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <h2 className="text-xl font-bold text-foreground">Video Lesson</h2>
                   </div>
-                  <p className="text-gray-600 text-sm mb-4">Watch the video to understand the concepts better</p>
-                  
+                  <p className="text-muted-foreground text-sm mb-4">Watch the video to understand the concepts better</p>
+
                   <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
                     <iframe
                       className="absolute top-0 left-0 w-full h-full"
@@ -410,7 +411,7 @@ export default function LessonDetailPage() {
                       allowFullScreen
                     />
                   </div>
-                  
+
                   <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
                     <Clock className="w-4 h-4" />
                     <span>{lessonVideo?.duration ? `${lessonVideo.duration} min` : '10 min'}</span>
@@ -424,13 +425,13 @@ export default function LessonDetailPage() {
             )}
 
             {/* Lesson Content */}
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl bg-card backdrop-blur-sm">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Lesson Content</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Lesson Content</h2>
                 </div>
 
                 <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
@@ -439,16 +440,16 @@ export default function LessonDetailPage() {
 
                 {/* Key Points */}
                 {lesson.tags && lesson.tags.length > 0 && (
-                  <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl border border-green-100">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Star className="w-5 h-5 text-green-600" />
+                  <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-2xl border border-green-100 dark:border-green-800">
+                    <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-green-600 dark:text-green-400" />
                       Key Points
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {lesson.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1.5 bg-white text-green-700 rounded-lg text-sm font-medium border border-green-200 shadow-sm"
+                          className="px-3 py-1.5 bg-card text-green-700 dark:text-green-300 rounded-lg text-sm font-medium border border-green-200 dark:border-green-800 shadow-sm"
                         >
                           {tag}
                         </span>
@@ -470,7 +471,7 @@ export default function LessonDetailPage() {
                     <Button
                       onClick={handleCompleteLesson}
                       disabled={completing}
-                      className="bg-white text-green-600 hover:bg-green-50 shadow-lg font-bold px-8 py-6 text-base sm:text-lg"
+                      className="bg-card text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 shadow-lg font-bold px-8 py-6 text-base sm:text-lg"
                     >
                       {completing ? (
                         <>
@@ -493,66 +494,66 @@ export default function LessonDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm sticky top-6">
+            <Card className="border-0 shadow-xl bg-card backdrop-blur-sm sticky top-6">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+                <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
                 <div className="space-y-3">
                   <Link href={`/quiz?lessonId=${lessonId}`} className="block">
-                    <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-purple-50 border-2 border-transparent hover:border-purple-200 transition-all group">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <FileQuestion className="w-5 h-5 text-purple-600" />
+                    <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 border-2 border-transparent hover:border-purple-200 dark:hover:border-purple-800 transition-all group">
+                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FileQuestion className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-gray-900 group-hover:text-purple-600">Take Quiz</p>
-                        <p className="text-xs text-gray-500">Test your knowledge</p>
+                        <p className="font-semibold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400">Take Quiz</p>
+                        <p className="text-xs text-muted-foreground">Test your knowledge</p>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
                     </button>
                   </Link>
 
                   {!videoId ? (
                     <Link href={`/videos?lessonId=${lessonId}`} className="block">
-                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all group">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <VideoIcon className="w-5 h-5 text-blue-600" />
+                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all group">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <VideoIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="flex-1 text-left">
-                          <p className="font-semibold text-gray-900 group-hover:text-blue-600">Watch Video</p>
-                          <p className="text-xs text-gray-500">Visual learning</p>
+                          <p className="font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400">Watch Video</p>
+                          <p className="text-xs text-muted-foreground">Visual learning</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                       </button>
                     </Link>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => {
                         const videoSection = document.querySelector('iframe');
                         videoSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}
-                      className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 border-2 border-transparent hover:border-blue-200 transition-all group"
+                      className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
                     >
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-gray-900 group-hover:text-blue-600">Watch Video</p>
-                        <p className="text-xs text-gray-500">Scroll to video</p>
+                        <p className="font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400">Watch Video</p>
+                        <p className="text-xs text-muted-foreground">Scroll to video</p>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                     </button>
                   )}
 
                   {lesson.isCompleted && (
                     <Link href={`/certificates?lessonId=${lessonId}`} className="block">
-                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-yellow-50 border-2 border-transparent hover:border-yellow-200 transition-all group">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Award className="w-5 h-5 text-yellow-600" />
+                      <button className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 border-2 border-transparent hover:border-yellow-200 dark:hover:border-yellow-800 transition-all group">
+                        <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Award className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                         </div>
                         <div className="flex-1 text-left">
-                          <p className="font-semibold text-gray-900 group-hover:text-yellow-600">Get Certificate</p>
-                          <p className="text-xs text-gray-500">Download proof</p>
+                          <p className="font-semibold text-foreground group-hover:text-yellow-600 dark:group-hover:text-yellow-400">Get Certificate</p>
+                          <p className="text-xs text-muted-foreground">Download proof</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-600 group-hover:translate-x-1 transition-all" />
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-yellow-600 dark:group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" />
                       </button>
                     </Link>
                   )}
