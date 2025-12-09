@@ -22,26 +22,29 @@ export interface IUser {
   profilePicture?: string;
   bio?: string;
   phone?: string;
-  
+  googleId?: string;
+  authProvider?: 'email' | 'google';
+
+
   // Gamification
   xp: number;
   coins: number;
   level: number;
   streak: IStreak;
   badges: string[]; // Badge IDs
-  
+
   // Learning Preferences
   preferences: ILearningPreferences;
-  
+
   // Premium
   isPremium: boolean;
   premiumExpiresAt?: Date;
-  
+
   // Seller Verification & Moderation
   isVerified?: boolean;
   isSuspended?: boolean;
   suspensionReason?: string;
-  
+
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;

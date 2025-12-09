@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { 
-  Eye, 
-  EyeOff, 
-  Loader2, 
-  GraduationCap, 
-  BookOpen, 
-  Trophy, 
-  Target, 
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  GraduationCap,
+  BookOpen,
+  Trophy,
+  Target,
   Sparkles,
   Mail,
   Lock,
@@ -21,11 +23,13 @@ import {
   CheckCircle2,
   Shield,
   Clock,
-  Users
+  Users,
 } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -79,6 +83,45 @@ export default function RegisterPage() {
     return !Object.values(newErrors).some((error) => error !== "");
   };
 
+
+
+  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/auth/google-login", {
+        idToken: credentialResponse.credential
+      });
+      const { data } = response.data;
+
+      const userData = {
+        _id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: data.user.role,
+        profilePicture: data.user.profilePicture,
+        xp: data.user.xp || 0,
+        level: data.user.level || 1,
+        streak: data.user.streak || 0,
+      };
+
+      login(userData, data.accessToken);
+      toast.success("Account created & Login successful!");
+
+      if (data.user.role === 'admin') {
+        router.push("/admin");
+      } else if (data.user.role === 'instructor') {
+        router.push("/instructor");
+      } else {
+        router.push("/dashboard");
+      }
+
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Google Signup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -92,7 +135,7 @@ export default function RegisterPage() {
     try {
       const { confirmPassword, ...registerData } = formData;
       await api.post("/auth/register", registerData);
-      
+
       toast.success("🎉 Account created successfully! Please login.");
       router.push("/auth/login");
     } catch (error: any) {
@@ -115,7 +158,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-3 sm:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
-        
+
         {/* Left Side - Branding & Benefits (Hidden on mobile, visible on lg+) */}
         <div className="hidden lg:flex flex-col gap-8 animate-in slide-in-from-left duration-700">
           {/* Logo & Brand */}
@@ -131,7 +174,7 @@ export default function RegisterPage() {
                 <p className="text-gray-600 font-medium">Learn Smarter, Not Harder</p>
               </div>
             </div>
-            
+
             <p className="text-xl text-gray-700 leading-relaxed">
               Join thousands of students who are mastering new skills through bite-sized, interactive lessons designed for the modern learner.
             </p>
@@ -140,7 +183,7 @@ export default function RegisterPage() {
           {/* Benefits Highlights */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Start Your Learning Journey Today</h2>
-            
+
             <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <BookOpen className="w-6 h-6 text-white" />
@@ -243,11 +286,10 @@ export default function RegisterPage() {
                       setErrors({ ...errors, name: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
-                      errors.name 
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100" 
-                        : "border-gray-200 focus:border-green-500 focus:ring-green-100"
-                    }`}
+                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.name
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                      }`}
                   />
                 </div>
                 {errors.name && (
@@ -276,11 +318,10 @@ export default function RegisterPage() {
                       setErrors({ ...errors, email: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
-                      errors.email 
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100" 
-                        : "border-gray-200 focus:border-green-500 focus:ring-green-100"
-                    }`}
+                    className={`w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.email
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                      }`}
                   />
                 </div>
                 {errors.email && (
@@ -309,11 +350,10 @@ export default function RegisterPage() {
                       setErrors({ ...errors, password: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
-                      errors.password 
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100" 
-                        : "border-gray-200 focus:border-green-500 focus:ring-green-100"
-                    }`}
+                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.password
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                      }`}
                   />
                   <button
                     type="button"
@@ -329,7 +369,7 @@ export default function RegisterPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                           style={{ width: `${passwordStrength.strength}%` }}
                         ></div>
@@ -364,11 +404,10 @@ export default function RegisterPage() {
                       setErrors({ ...errors, confirmPassword: "" });
                     }}
                     disabled={isLoading}
-                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
-                      errors.confirmPassword 
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-100" 
-                        : "border-gray-200 focus:border-green-500 focus:ring-green-100"
-                    }`}
+                    className={`w-full pl-12 pr-12 py-3 sm:py-4 bg-white border-2 rounded-xl text-gray-800 placeholder-gray-400 focus:ring-4 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${errors.confirmPassword
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                      }`}
                   />
                   <button
                     type="button"
@@ -409,6 +448,18 @@ export default function RegisterPage() {
                   </>
                 )}
               </button>
+
+              <div className="mt-4 w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={() => toast.error("Google Signup Failed")}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="signup_with"
+                  shape="circle"
+                />
+              </div>
 
               {/* Divider */}
               <div className="relative py-4">

@@ -28,6 +28,19 @@ class AuthController {
     });
   });
 
+  // Google Login
+  googleLogin = catchAsync(async (req: Request, res: Response) => {
+    const { idToken } = req.body;
+    const result = await authService.loginWithGoogle(idToken);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Google login successful',
+      data: result,
+    });
+  });
+
   // Refresh access token
   refreshToken = catchAsync(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;

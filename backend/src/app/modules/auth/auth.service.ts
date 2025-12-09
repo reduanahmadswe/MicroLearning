@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import ApiError from '../../../utils/ApiError';
 import User from './auth.model';
 import {
@@ -119,6 +120,108 @@ class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  // Google Login
+  async loginWithGoogle(idToken: string): Promise<IAuthResponse> {
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      throw new ApiError(500, 'Google Client ID is not configured');
+    }
+
+    const client = new OAuth2Client(googleClientId);
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: googleClientId,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new ApiError(401, 'Invalid Google Token');
+      }
+
+      const { email, name, picture, sub: googleId } = payload;
+
+      // Check if user exists
+      let user = await User.findOne({ email });
+
+      if (user) {
+        // If user exists, but no googleId (merged account logic could go here)
+        if (!user.googleId) {
+          user.googleId = googleId;
+          if (picture && !user.profilePicture) {
+            user.profilePicture = picture;
+          }
+          await user.save();
+        }
+      } else {
+        // Create new user
+        user = await User.create({
+          email,
+          name: name || 'Google User',
+          profilePicture: picture,
+          googleId,
+          authProvider: 'google',
+          role: 'learner', // Default role
+          isActive: true,
+          // Preferences - defaults will be applied
+          preferences: {
+            interests: [],
+            goals: [],
+            dailyLearningTime: 30,
+            preferredDifficulty: 'beginner',
+            language: 'en',
+          },
+          // Gamification - defaults will be applied
+          xp: 0,
+          coins: 0,
+          level: 1,
+          streak: {
+            current: 0,
+            longest: 0,
+          },
+          badges: [],
+        });
+      }
+
+      if (!user.isActive) {
+        throw new ApiError(403, 'Your account has been deactivated');
+      }
+
+      // Generate tokens
+      const jwtPayload: IJwtPayload = {
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      };
+
+      const accessToken = this.generateAccessToken(jwtPayload);
+      const refreshToken = this.generateRefreshToken(jwtPayload);
+
+      // Save refresh token
+      user.refreshToken = refreshToken;
+      await user.save();
+
+      return {
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          profilePicture: user.profilePicture,
+          xp: user.xp,
+          level: user.level,
+          streak: user.streak?.current || 0,
+        },
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      throw new ApiError(401, 'Google authentication failed');
+    }
   }
 
   // Refresh access token

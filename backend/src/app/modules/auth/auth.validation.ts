@@ -44,6 +44,14 @@ export const refreshTokenValidation = z.object({
   }),
 });
 
+export const googleLoginValidation = z.object({
+  body: z.object({
+    idToken: z.string({
+      required_error: 'Google ID Token is required',
+    }),
+  }),
+});
+
 export type RegisterInput = z.infer<typeof registerValidation>['body'];
 export type LoginInput = z.infer<typeof loginValidation>['body'];
 export type RefreshTokenInput = z.infer<typeof refreshTokenValidation>['body'];

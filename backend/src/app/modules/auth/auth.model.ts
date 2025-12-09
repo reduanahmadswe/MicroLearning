@@ -16,9 +16,21 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function (this: IUser) {
+        return !this.googleId;
+      },
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ['email', 'google'],
+      default: 'email',
     },
     name: {
       type: String,
@@ -44,7 +56,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     phone: {
       type: String,
     },
-    
+
     // Gamification
     xp: {
       type: Number,
@@ -80,7 +92,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         ref: 'Badge',
       },
     ],
-    
+
     // Learning Preferences
     preferences: {
       interests: {
@@ -110,7 +122,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         enum: ['visual', 'auditory', 'kinesthetic'],
       },
     },
-    
+
     // Premium
     isPremium: {
       type: Boolean,
@@ -119,7 +131,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     premiumExpiresAt: {
       type: Date,
     },
-    
+
     // Seller Verification & Moderation
     isVerified: {
       type: Boolean,
@@ -132,7 +144,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     suspensionReason: {
       type: String,
     },
-    
+
     refreshToken: {
       type: String,
       select: false,

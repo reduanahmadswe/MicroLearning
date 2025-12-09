@@ -6,20 +6,21 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { 
-  Eye, 
-  EyeOff, 
-  Loader2, 
-  GraduationCap, 
-  BookOpen, 
-  Award, 
-  Users, 
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  GraduationCap,
+  BookOpen,
+  Award,
+  Users,
   Zap,
   Mail,
   Lock,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,6 +32,46 @@ export default function LoginPage() {
     password: "",
   });
 
+
+
+  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/auth/google-login", {
+        idToken: credentialResponse.credential
+      });
+      const { data } = response.data;
+
+      const userData = {
+        _id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: data.user.role,
+        profilePicture: data.user.profilePicture,
+        xp: data.user.xp || 0,
+        level: data.user.level || 1,
+        streak: data.user.streak || 0,
+      };
+
+      login(userData, data.accessToken);
+      toast.success("Login successful!");
+
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        router.push("/admin");
+      } else if (data.user.role === 'instructor') {
+        router.push("/instructor");
+      } else {
+        router.push("/dashboard");
+      }
+
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Google Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -39,7 +80,7 @@ export default function LoginPage() {
       const response = await api.post("/auth/login", formData);
       console.log('Login response:', response.data);
       const { data } = response.data;
-      
+
       // Backend returns: { user: {id, email, name, role, xp, level, streak}, accessToken, refreshToken }
       const userData = {
         _id: data.user.id,
@@ -51,10 +92,10 @@ export default function LoginPage() {
         level: data.user.level || 1,
         streak: data.user.streak || 0,
       };
-      
+
       console.log('Calling login with:', userData, 'token:', data.accessToken);
       login(userData, data.accessToken);
-      
+
       // Verify token was stored
       setTimeout(() => {
         const storedToken = localStorage.getItem('token');
@@ -62,7 +103,7 @@ export default function LoginPage() {
         console.log('After login - localStorage token:', storedToken);
         console.log('After login - store state:', storeState);
       }, 100);
-      
+
       // Redirect based on user role
       if (data.user.role === 'admin') {
         toast.success("Welcome Admin!");
@@ -84,7 +125,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-50 via-teal-50 to-emerald-50 flex items-center justify-center p-3 sm:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
-        
+
         {/* Left Side - Branding & Features (Hidden on mobile, visible on lg+) */}
         <div className="hidden lg:flex flex-col gap-8 animate-in slide-in-from-left duration-700">
           {/* Logo & Brand */}
@@ -100,7 +141,7 @@ export default function LoginPage() {
                 <p className="text-gray-600 font-medium">Learn Smarter, Not Harder</p>
               </div>
             </div>
-            
+
             <p className="text-xl text-gray-700 leading-relaxed">
               Welcome back to your personalized learning journey! Continue growing your skills with bite-sized lessons designed for students.
             </p>
@@ -109,7 +150,7 @@ export default function LoginPage() {
           {/* Feature Highlights */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Why Students Love MicroLearning</h2>
-            
+
             <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-green-100 hover:shadow-lg transition-all group">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <BookOpen className="w-6 h-6 text-white" />
@@ -240,8 +281,8 @@ export default function LoginPage() {
 
               {/* Forgot Password Link */}
               <div className="flex justify-end">
-                <Link 
-                  href="/auth/forgot-password" 
+                <Link
+                  href="/auth/forgot-password"
                   className="text-sm font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors"
                 >
                   Forgot Password?
@@ -266,6 +307,18 @@ export default function LoginPage() {
                   </>
                 )}
               </button>
+
+              <div className="mt-4 w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={() => toast.error("Google Login Failed")}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="signin_with"
+                  shape="circle"
+                />
+              </div>
 
               {/* Divider */}
               <div className="relative py-2">

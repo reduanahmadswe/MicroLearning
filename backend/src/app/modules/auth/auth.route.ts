@@ -5,6 +5,7 @@ import {
   registerValidation,
   loginValidation,
   refreshTokenValidation,
+  googleLoginValidation,
 } from './auth.validation';
 import { authGuard } from '../../../middleware/authGuard';
 
@@ -13,6 +14,7 @@ const router = Router();
 // Public routes
 router.post('/register', validateRequest(registerValidation), authController.register);
 router.post('/login', validateRequest(loginValidation), authController.login);
+router.post('/google-login', validateRequest(googleLoginValidation), authController.googleLogin);
 router.post(
   '/refresh-token',
   validateRequest(refreshTokenValidation),
