@@ -2,10 +2,5 @@ services:
   - type: web
     name: microlearning-backend
     env: node
-    buildCommand: npm install --include=dev && npm run build
-    startCommand: node dist/server.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
+    buildCommand: npm ci && npm run build
+    startCommand: NODE_ENV=production PORT=10000 node dist/server.js
