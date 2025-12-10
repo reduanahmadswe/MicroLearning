@@ -85,7 +85,7 @@ class LessonService {
   async generateLesson(userId: string, generateData: IGenerateLessonRequest) {
     // TODO: Integrate with OpenAI/Claude API to generate content
     // For now, creating a template lesson
-    
+
     const aiContent = {
       title: `Introduction to ${generateData.topic}`,
       description: `A ${generateData.estimatedTime}-minute micro-lesson on ${generateData.topic}`,
@@ -189,13 +189,13 @@ class LessonService {
     // Check completion status for each lesson if userId provided
     if (userId) {
       const lessonIds = lessons.map((l: any) => l._id);
-      const progressRecords = await UserProgress.find({ 
-        user: userId, 
+      const progressRecords = await UserProgress.find({
+        user: userId,
         lesson: { $in: lessonIds },
         status: 'completed'
       }).lean();
       const completedLessonIds = progressRecords.map((p) => p.lesson.toString());
-      
+
       const lessonsWithStatus = lessons.map((lesson: any) => ({
         ...lesson,
         isCompleted: completedLessonIds.includes(lesson._id.toString()),
@@ -252,13 +252,13 @@ class LessonService {
           user: userId,
           course: lesson.course,
         }).lean();
-        
+
         if (enrollment && enrollment.completedLessons) {
           isCompleted = enrollment.completedLessons.some(
             (id: any) => id.toString() === lesson._id.toString()
           );
         }
-        
+
       } catch (error) {
         console.error('Error checking lesson completion:', error);
       }
@@ -312,15 +312,15 @@ class LessonService {
     // All lessons with order > deletedLessonOrder should have their order decreased by 1
     if (courseId && deletedLessonOrder) {
       await Lesson.updateMany(
-        { 
+        {
           course: courseId,
           order: { $gt: deletedLessonOrder }
         },
-        { 
+        {
           $inc: { order: -1 }
         }
       );
-      
+
     }
 
     return { message: 'Lesson deleted successfully' };
@@ -341,7 +341,7 @@ class LessonService {
       // Unlike
       const updated = await Lesson.findByIdAndUpdate(
         lessonId,
-        { 
+        {
           $pull: { likedBy: userId },
           $inc: { likes: -1 }
         },
@@ -352,7 +352,7 @@ class LessonService {
       // Like
       const updated = await Lesson.findByIdAndUpdate(
         lessonId,
-        { 
+        {
           $addToSet: { likedBy: userId },
           $inc: { likes: 1 }
         },
@@ -364,7 +364,7 @@ class LessonService {
 
   // Mark lesson as completed
   async completeLesson(lessonId: string, userId: string) {
-    
+
     const lesson = await Lesson.findByIdAndUpdate(
       lessonId,
       { $inc: { completions: 1 } },
@@ -379,13 +379,13 @@ class LessonService {
 
     // Award XP to user
     const xpAmount = 50;
-    
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { 
-        $inc: { 
+      {
+        $inc: {
           xp: xpAmount
-        } 
+        }
       },
       { new: true }
     );
@@ -397,10 +397,10 @@ class LessonService {
 
 
     // Create or update individual lesson progress entry
-    const lessonProgress = await UserProgress.findOneAndUpdate(
-      { 
+    await UserProgress.findOneAndUpdate(
+      {
         user: userId,
-        lesson: lessonId 
+        lesson: lessonId
       },
       {
         status: 'completed',
@@ -418,8 +418,8 @@ class LessonService {
       try {
         const { Enrollment } = require('../course/course.model');
         const courseId = typeof lesson.course === 'object' ? lesson.course._id : lesson.course;
-        
-        
+
+
         const enrollment = await Enrollment.findOne({
           user: userId,
           course: courseId,
@@ -427,8 +427,8 @@ class LessonService {
 
         if (!enrollment) {
           console.error('❌ NO ENROLLMENT FOUND! User must enroll in course first.');
-          return { 
-            lesson, 
+          return {
+            lesson,
             xpEarned: xpAmount,
             totalXP: updatedUser.xp,
             level: updatedUser.level
@@ -438,7 +438,7 @@ class LessonService {
         if (enrollment) {
           // Add lesson to completed if not already there
           const alreadyCompleted = enrollment.completedLessons.some((id: any) => id.toString() === lessonId);
-          
+
           if (!alreadyCompleted) {
             enrollment.completedLessons.push(lessonId);
           }
@@ -466,7 +466,7 @@ class LessonService {
 
             // Generate certificate for course completion
             await this.generateCourseCertificate(userId, courseId.toString());
-            
+
           }
 
           await enrollment.save();
@@ -477,8 +477,8 @@ class LessonService {
       }
     }
 
-    return { 
-      lesson, 
+    return {
+      lesson,
       xpEarned: xpAmount,
       totalXP: updatedUser.xp,
       level: updatedUser.level
@@ -542,7 +542,7 @@ class LessonService {
   async getRecommendedLessons(_userId: string, limit: number = 10) {
     // TODO: Implement AI-based recommendations
     // For now, returning popular lessons in user's preferred topics
-    
+
     const lessons = await Lesson.find({ isPublished: true })
       .populate('author', 'name profilePicture')
       .sort({ completions: -1, likes: -1 })
@@ -565,21 +565,21 @@ class LessonService {
   // Get instructor lesson analytics
   async getInstructorLessonAnalytics(userId: string) {
     const lessons = await Lesson.find({ author: userId }).lean();
-    
+
     const totalLessons = lessons.length;
     const totalViews = lessons.reduce((sum, lesson) => sum + (lesson.views || 0), 0);
     const totalLikes = lessons.reduce((sum, lesson) => sum + (lesson.likes || 0), 0);
     const totalCompletions = lessons.reduce((sum, lesson) => sum + (lesson.completions || 0), 0);
-    
+
     // Get completion rate
     const completionRate = totalViews > 0 ? (totalCompletions / totalViews) * 100 : 0;
-    
+
     // Get lessons by difficulty
     const byDifficulty = lessons.reduce((acc: any, lesson) => {
       acc[lesson.difficulty] = (acc[lesson.difficulty] || 0) + 1;
       return acc;
     }, {});
-    
+
     // Top performing lessons
     const topLessons = lessons
       .sort((a, b) => (b.completions || 0) - (a.completions || 0))
@@ -606,7 +606,7 @@ class LessonService {
   // Check if lesson is unlocked for user
   async checkLessonAccess(lessonId: string, userId: string) {
     const lesson = await Lesson.findById(lessonId);
-    
+
     if (!lesson) {
       throw new ApiError(404, 'Lesson not found');
     }
@@ -681,7 +681,7 @@ class LessonService {
     if (!isPreviousCompleted) {
       // Get previous lesson details
       const prevLessonData = await Lesson.findById(previousLesson.lesson).lean();
-      
+
       return {
         isUnlocked: false,
         requiresPreviousCompletion: true,

@@ -26,7 +26,7 @@ interface MailConfig {
 // Create transporter based on environment
 const createTransporter = () => {
   const emailProvider = process.env.EMAIL_PROVIDER || 'gmail';
-  
+
   let config: MailConfig;
 
   if (emailProvider === 'gmail') {
@@ -116,7 +116,7 @@ class NodemailerProvider implements EmailProvider {
 
 // Console Provider (for development/testing)
 class ConsoleProvider implements EmailProvider {
-  async send(to: string, subject: string, html: string, text: string) {
+  async send(_to: string, _subject: string, _html: string, _text: string) {
 
     return {
       messageId: `console-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -128,11 +128,11 @@ class ConsoleProvider implements EmailProvider {
 // Provider Factory
 const getEmailProvider = (): EmailProvider => {
   const useConsole = process.env.NODE_ENV === 'development' && process.env.EMAIL_PROVIDER === 'console';
-  
+
   if (useConsole) {
     return new ConsoleProvider();
   }
-  
+
   return new NodemailerProvider();
 };
 

@@ -29,8 +29,8 @@ const AI_CONFIG = {
 /**
  * Make AI API Request (OpenRouter or OpenAI)
  *//**
- * Make AI API Request (OpenRouter or OpenAI)
- */
+* Make AI API Request (OpenRouter or OpenAI)
+*/
 const makeOpenAIRequest = async (messages: any[], temperature: number = 0.7) => {
 
   if (!AI_CONFIG.apiKey) {
@@ -194,7 +194,7 @@ Make it comprehensive, practical, and achievable!`;
     );
 
     const content = response.choices[0].message.content;
-    
+
     // Extract JSON from markdown code blocks if present
     let jsonContent = content;
     const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
@@ -205,7 +205,7 @@ Make it comprehensive, practical, and achievable!`;
     let parsedContent;
     try {
       parsedContent = JSON.parse(jsonContent);
-      
+
       // Sanitize data to match schema
       if (parsedContent.milestones) {
         parsedContent.milestones.forEach((milestone: any) => {
@@ -216,7 +216,7 @@ Make it comprehensive, practical, and achievable!`;
               if (!validTypes.includes(assessment.type)) {
                 assessment.type = 'quiz';
               }
-              
+
               // Fix non-numeric passingScore
               if (typeof assessment.passingScore !== 'number' || isNaN(assessment.passingScore)) {
                 assessment.passingScore = 70;
@@ -225,7 +225,7 @@ Make it comprehensive, practical, and achievable!`;
           }
         });
       }
-      
+
     } catch (parseError) {
       console.error('❌ [Roadmap] JSON parse failed:', parseError);
       throw new ApiError(500, 'Failed to parse AI response as JSON');
@@ -246,7 +246,7 @@ Make it comprehensive, practical, and achievable!`;
     };
 
     // Save roadmap for user
-    const savedRoadmap = await UserRoadmap.create({
+    await UserRoadmap.create({
       user: userId,
       roadmap: generatedRoadmap,
       status: 'not_started',
@@ -290,7 +290,7 @@ export const getUserRoadmaps = async (
   limit: number = 20,
   status?: RoadmapStatus
 ) => {
-  
+
   const filter: any = { user: userId };
   if (status) filter.status = status;
 
@@ -361,7 +361,7 @@ export const getRoadmapById = async (userId: Types.ObjectId, roadmapId: string) 
     progress: roadmap.progress?.percentageComplete || 0,
     status: roadmap.status,
     estimatedWeeks: roadmap.roadmap?.estimatedWeeks || 0,
-    
+
     // Transform milestones to nodes
     nodes: roadmap.roadmap?.milestones?.map((milestone: any, index: number) => ({
       id: milestone.id,

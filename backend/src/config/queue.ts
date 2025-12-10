@@ -99,14 +99,14 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // Log queue events
-paymentProcessingQueue.on('completed', (job: QueueJob) => {
+paymentProcessingQueue.on('completed', (_job: QueueJob) => {
 });
 
 paymentProcessingQueue.on('failed', (job: QueueJob, err: Error) => {
   console.error(`❌ Payment job ${job.id} failed:`, err.message);
 });
 
-enrollmentQueue.on('completed', (job: QueueJob) => {
+enrollmentQueue.on('completed', (_job: QueueJob) => {
 });
 
 enrollmentQueue.on('failed', (job: QueueJob, err: Error) => {

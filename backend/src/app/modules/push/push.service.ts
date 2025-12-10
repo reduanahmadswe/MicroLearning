@@ -85,7 +85,7 @@ const unregisterDevice = async (userId: string, token: string) => {
 
 // Send push notification to a single user
 const sendNotification = async (payload: IPushNotificationPayload) => {
-  const { userId, title, body: _body, data: _data } = payload;
+  const { userId, title: _title, body: _body, data: _data } = payload;
 
   // Get user's active device tokens
   const deviceTokens = await DeviceToken.find({
