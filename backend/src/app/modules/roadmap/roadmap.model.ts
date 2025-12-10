@@ -130,7 +130,7 @@ const userRoadmapSchema = new Schema<IUserRoadmap>(
 
 // Indexes
 userRoadmapSchema.index({ user: 1, status: 1 });
-userRoadmapSchema.index({ 'roadmap.goal': 1 });
+
 userRoadmapSchema.index({ createdAt: -1 });
 
 export const UserRoadmap = model<IUserRoadmap>('UserRoadmap', userRoadmapSchema);

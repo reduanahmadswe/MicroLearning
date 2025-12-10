@@ -58,13 +58,13 @@ export default function CertificatesPage() {
       setLoading(true);
 
       // Fetch earned certificates
-      const certRes = await axios.get('https://microlearnignbackend.vercel.app/api/v1/certificates/me', {
+      const certRes = await axios.get('https://microlearning-backend-reduan.onrender.com/api/v1/certificates/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCertificates(certRes.data.data);
 
       // Fetch enrolled courses
-      const enrollRes = await axios.get('https://microlearnignbackend.vercel.app/api/v1/courses/enrollments/me', {
+      const enrollRes = await axios.get('https://microlearning-backend-reduan.onrender.com/api/v1/courses/enrollments/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEnrolledCourses(enrollRes.data.data);
@@ -86,7 +86,7 @@ export default function CertificatesPage() {
       } else {
         // Certificate doesn't exist, generate it
         const generateRes = await axios.post(
-          'https://microlearnignbackend.vercel.app/api/v1/certificates/generate',
+          'https://microlearning-backend-reduan.onrender.com/api/v1/certificates/generate',
           { courseId },
           { headers: { Authorization: `Bearer ${token}` } }
         );

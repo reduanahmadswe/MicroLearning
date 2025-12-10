@@ -83,7 +83,7 @@ export default function QuizResultsPage() {
       const token = localStorage.getItem('token');
 
       // Get current lesson details
-      const lessonResponse = await fetch(`https://microlearnignbackend.vercel.app/api/v1/lessons/${result.quiz.lesson}`, {
+      const lessonResponse = await fetch(`https://microlearning-backend-reduan.onrender.com/api/v1/lessons/${result.quiz.lesson}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -102,7 +102,7 @@ export default function QuizResultsPage() {
 
       // Get next lesson
       const nextResponse = await fetch(
-        `https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
+        `https://microlearning-backend-reduan.onrender.com/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -425,10 +425,10 @@ export default function QuizResultsPage() {
                             <div
                               key={optIndex}
                               className={`p-2.5 sm:p-3 rounded-lg border-2 ${isCorrectAnswer
-                                  ? 'border-green-500 bg-green-50 shadow-sm'
-                                  : isUserAnswer
-                                    ? 'border-red-500 bg-red-50 shadow-sm'
-                                    : 'border-gray-200'
+                                ? 'border-green-500 bg-green-50 shadow-sm'
+                                : isUserAnswer
+                                  ? 'border-red-500 bg-red-50 shadow-sm'
+                                  : 'border-gray-200'
                                 }`}
                             >
                               <div className="flex items-center justify-between gap-2">

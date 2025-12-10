@@ -66,7 +66,7 @@ const ttsLibrarySchema = new Schema<ITTSLibraryItem>(
 
 // Indexes
 ttsLibrarySchema.index({ user: 1, createdAt: -1 });
-ttsLibrarySchema.index({ lessonId: 1 });
+
 ttsLibrarySchema.index({ voice: 1 });
 
 export const TTSLibrary = model<ITTSLibraryItem>('TTSLibrary', ttsLibrarySchema);

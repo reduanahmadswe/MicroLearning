@@ -276,8 +276,7 @@ const forumCommentSchema = new Schema<IForumComment>(
 
 // Indexes
 forumCommentSchema.index({ post: 1, createdAt: -1 });
-forumCommentSchema.index({ parentComment: 1 });
-forumCommentSchema.index({ author: 1 });
+
 forumCommentSchema.index({ isAcceptedAnswer: 1 });
 
 /**

@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-https://microlearnignbackend.vercel.app/api/v1/lessons
+https://microlearning-backend-reduan.onrender.com/api/v1/lessons
 ```
 
 ---
@@ -425,7 +425,7 @@ Authorization: Bearer <access_token>
 
 ### Environment Variables
 ```
-baseUrl: https://microlearnignbackend.vercel.app/api/v1
+baseUrl: https://microlearning-backend-reduan.onrender.com/api/v1
 accessToken: (auto-populated after login)
 ```
 

@@ -545,7 +545,7 @@ if (quiz.timeLimit) {
 
 ### Environment Variables
 ```
-base_url=https://microlearnignbackend.vercel.app/
+base_url=https://microlearning-backend-reduan.onrender.com/
 access_token={{your_jwt_token}}
 quiz_id={{quiz_id}}
 attempt_id={{attempt_id}}

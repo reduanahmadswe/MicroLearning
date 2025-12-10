@@ -76,7 +76,7 @@ export default function ManageLessonsPage() {
       setLoading(true);
 
       // Fetch all lessons by instructor
-      const res = await axios.get('https://microlearnignbackend.vercel.app/api/v1/lessons/instructor/my-lessons', {
+      const res = await axios.get('https://microlearning-backend-reduan.onrender.com/api/v1/lessons/instructor/my-lessons', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -141,7 +141,7 @@ export default function ManageLessonsPage() {
 
   const handleDeleteLesson = async (lessonId: string, courseId: string) => {
     toast.promise(
-      axios.delete(`https://microlearnignbackend.vercel.app/api/v1/lessons/${lessonId}`, {
+      axios.delete(`https://microlearning-backend-reduan.onrender.com/api/v1/lessons/${lessonId}`, {
         headers: { Authorization: `Bearer ${token}` }
       }),
       {

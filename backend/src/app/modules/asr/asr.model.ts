@@ -64,8 +64,7 @@ const transcriptionHistorySchema = new Schema<ITranscriptionHistory>(
 
 // Indexes
 transcriptionHistorySchema.index({ user: 1, createdAt: -1 });
-transcriptionHistorySchema.index({ lessonId: 1 });
-transcriptionHistorySchema.index({ language: 1 });
+
 
 export const TranscriptionHistory = model<ITranscriptionHistory>(
   'TranscriptionHistory',

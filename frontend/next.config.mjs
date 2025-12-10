@@ -9,7 +9,7 @@ const nextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://microlearnignbackend.vercel.app/api/v1',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://microlearning-backend-reduan.onrender.com/api/v1',
   },
   async headers() {
     return [

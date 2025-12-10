@@ -27,6 +27,7 @@ const bookmarkSchema = new Schema<IBookmark>(
   },
   {
     timestamps: true,
+    suppressReservedKeysWarning: true,
   }
 );
 

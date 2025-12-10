@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-https://microlearnignbackend.vercel.app/api/v1/progress
+https://microlearning-backend-reduan.onrender.com/api/v1/progress
 ```
 
 ---

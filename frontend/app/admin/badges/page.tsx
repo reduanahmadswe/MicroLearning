@@ -78,7 +78,7 @@ export default function AdminBadgesPage() {
       const token = localStorage.getItem('token');
 
 
-      const res = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/admin/users`, {
+      const res = await axios.get(`https://microlearning-backend-reduan.onrender.com/api/v1/admin/users`, {
         params: { search: query, limit: 20 },
         headers: { Authorization: `Bearer ${token}` }
       });

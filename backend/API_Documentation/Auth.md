@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-https://microlearnignbackend.vercel.app/api/v1/auth
+https://microlearning-backend-reduan.onrender.com/api/v1/auth
 ```
 
 ---
@@ -389,7 +389,7 @@ Client -> Clear stored tokens
 Create an environment in Postman with these variables:
 
 ```
-baseUrl: https://microlearnignbackend.vercel.app/api/v1
+baseUrl: https://microlearning-backend-reduan.onrender.com/api/v1
 accessToken: (will be set automatically)
 refreshToken: (will be set automatically)
 ```
