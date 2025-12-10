@@ -579,7 +579,7 @@ export default function ForumPage() {
 
                               {/* Tags - Horizontal scroll on mobile */}
                               <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-hide">
-                                {post.tags.slice(0, 3).map((tag, idx) => (
+                                {post.tags.slice(0, 3).map((tag: string, idx: number) => (
                                   <span
                                     key={idx}
                                     className="px-1.5 sm:px-2 py-0.5 bg-secondary text-muted-foreground rounded text-[10px] sm:text-xs whitespace-nowrap flex items-center gap-0.5 sm:gap-1"

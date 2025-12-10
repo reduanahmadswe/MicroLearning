@@ -9,7 +9,7 @@ import { Heart, ThumbsUp, PartyPopper, Lightbulb, Sparkles } from 'lucide-react'
 interface IReaction {
   user: string;
   type: 'like' | 'love' | 'celebrate' | 'insightful' | 'curious';
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface IPost {
@@ -54,7 +54,7 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
       ? post.reactions.filter((r) => getUserId(r.user) !== user?._id)
       : [
         ...post.reactions.filter((r) => getUserId(r.user) !== user?._id),
-        { user: user!._id, type, createdAt: new Date() }, // Optimistically add as string ID
+        { user: user!._id, type, createdAt: new Date().toISOString() }, // Optimistically add as string ID
       ];
 
     const newReactionCount = isRemoving ? post.reactionCount - 1 : (userReaction ? post.reactionCount : post.reactionCount + 1);

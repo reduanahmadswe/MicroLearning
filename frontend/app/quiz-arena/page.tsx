@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import {
   Trophy,
   Clock,
@@ -14,93 +13,57 @@ import {
   Play,
   CheckCircle,
   BarChart3,
-  Filter
 } from 'lucide-react';
-
-interface Quiz {
-  _id: string;
-  title: string;
-  description: string;
-  course: {
-    _id: string;
-    title: string;
-    thumbnail: string;
-  };
-  questions: any[];
-  passingScore: number;
-  timeLimit: number;
-  attempts: number;
-  averageScore: number;
-  isPublished: boolean;
-  difficulty: string;
-  author: {
-    _id: string;
-    name: string;
-  };
-}
-
-interface QuizAttempt {
-  _id: string;
-  quiz: string;
-  score: number;
-  passed: boolean;
-  answers: any[];
-  createdAt: string;
-}
+import { useQuizzes, useQuizAttempts, useIsInitializing } from '@/store/hooks';
 
 export default function QuizArenaPage() {
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [myAttempts, setMyAttempts] = useState<QuizAttempt[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Redux state
+  const quizzes = useQuizzes();
+  const myAttempts = useQuizAttempts();
+  const isInitializing = useIsInitializing();
+
+  // Local state
   const [filter, setFilter] = useState<'all' | 'available' | 'completed'>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (!user || !token) {
-      router.push('/auth/login');
-      return;
-    }
-    fetchQuizzes();
-    fetchMyAttempts();
-  }, [user, token, router]);
+  // Derived state
+  const filteredQuizzes = useMemo(() => {
+    return quizzes
+      .filter((quiz) => {
+        const hasAttempt = myAttempts.some((a) => a.quiz === quiz._id);
+        if (filter === 'available') return !hasAttempt;
+        if (filter === 'completed') return hasAttempt;
+        return true;
+      })
+      .filter((quiz) => {
+        if (difficultyFilter === 'all') return true;
+        return quiz.difficulty === difficultyFilter;
+      })
+      .filter((quiz) =>
+        quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        quiz.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Note: course title filtering might need adjustment if course object structure differs
+        (typeof quiz.course === 'object' && 'title' in (quiz.course as any) && (quiz.course as any).title?.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+  }, [quizzes, myAttempts, filter, difficultyFilter, searchQuery]);
 
-  const fetchQuizzes = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz?courseOnly=true`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setQuizzes(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch quizzes:', error);
-      toast.error('Failed to load quizzes');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchMyAttempts = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/attempts/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setMyAttempts(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch attempts:', error);
-    }
-  };
+  // Stats calculation
+  const stats = useMemo(() => {
+    return {
+      available: quizzes.filter(q => !myAttempts.some(a => a.quiz === q._id)).length,
+      completed: myAttempts.length,
+      avgScore: myAttempts.length > 0
+        ? Math.round(myAttempts.reduce((sum, a) => sum + a.score, 0) / myAttempts.length)
+        : 0,
+      passRate: myAttempts.length > 0
+        ? Math.round((myAttempts.filter(a => a.passed).length / myAttempts.length) * 100)
+        : 0,
+    };
+  }, [quizzes, myAttempts]);
 
   const hasAttempted = (quizId: string) => {
     return myAttempts.some(attempt => attempt.quiz === quizId);
@@ -112,35 +75,8 @@ export default function QuizArenaPage() {
     return Math.max(...attempts.map(a => a.score));
   };
 
-  const filteredQuizzes = quizzes
-    .filter(quiz => {
-      if (filter === 'available') return !hasAttempted(quiz._id);
-      if (filter === 'completed') return hasAttempted(quiz._id);
-      return true;
-    })
-    .filter(quiz => {
-      if (difficultyFilter === 'all') return true;
-      return quiz.difficulty === difficultyFilter;
-    })
-    .filter(quiz =>
-      quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      quiz.course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      quiz.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
   const handleStartQuiz = (quizId: string) => {
     router.push(`/quiz/${quizId}`);
-  };
-
-  const stats = {
-    available: quizzes.filter(q => !hasAttempted(q._id)).length,
-    completed: myAttempts.length,
-    avgScore: myAttempts.length > 0
-      ? Math.round(myAttempts.reduce((sum, a) => sum + a.score, 0) / myAttempts.length)
-      : 0,
-    passRate: myAttempts.length > 0
-      ? Math.round((myAttempts.filter(a => a.passed).length / myAttempts.length) * 100)
-      : 0,
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -152,7 +88,7 @@ export default function QuizArenaPage() {
     }
   };
 
-  if (loading) {
+  if (isInitializing) {
     return (
       <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
@@ -161,6 +97,11 @@ export default function QuizArenaPage() {
         </div>
       </div>
     );
+  }
+
+  // Auth check handled by layout protection usually, but extra safety:
+  if (!user) {
+    return null; // Or redirect
   }
 
   return (
@@ -258,8 +199,8 @@ export default function QuizArenaPage() {
                       key={f}
                       onClick={() => setFilter(f)}
                       className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === f
-                          ? 'bg-primary text-primary-foreground shadow-md'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                     >
                       {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -277,8 +218,8 @@ export default function QuizArenaPage() {
                       key={d}
                       onClick={() => setDifficultyFilter(d)}
                       className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${difficultyFilter === d
-                          ? 'bg-primary text-primary-foreground shadow-md'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                     >
                       {d === 'all' ? 'All' : d.charAt(0).toUpperCase() + d.slice(1)}
@@ -311,10 +252,11 @@ export default function QuizArenaPage() {
                   >
                     {/* Course Header */}
                     <div className="relative h-40 bg-gradient-to-br from-green-500 to-teal-600 overflow-hidden">
-                      {quiz.course?.thumbnail ? (
+                      {/* Check if course is object and has thumbnail */}
+                      {typeof quiz.course === 'object' && (quiz.course as any)?.thumbnail ? (
                         <img
-                          src={quiz.course.thumbnail}
-                          alt={quiz.course.title}
+                          src={(quiz.course as any).thumbnail}
+                          alt={(quiz.course as any).title || 'Course'}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       ) : (
@@ -329,7 +271,9 @@ export default function QuizArenaPage() {
                       <div className="absolute bottom-3 left-3 right-3">
                         <p className="text-white text-sm font-medium flex items-center gap-2">
                           <BookOpen className="w-4 h-4" />
-                          <span className="truncate">{quiz.course?.title || 'Course'}</span>
+                          <span className="truncate">
+                            {typeof quiz.course === 'object' ? (quiz.course as any).title : 'General Quiz'}
+                          </span>
                         </p>
                       </div>
 
@@ -422,4 +366,3 @@ export default function QuizArenaPage() {
     </div>
   );
 }
-

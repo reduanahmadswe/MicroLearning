@@ -116,6 +116,31 @@ export const useForumPostById = (postId: string | undefined) => {
     );
 };
 
+// Quiz hooks
+export const useQuizzes = () => {
+    return useAppSelector((state) => {
+        const quizzes = state.global.quizzes || { byId: {}, allIds: [], attemptedIds: [] };
+        return quizzes.allIds.map(id => quizzes.byId[id]).filter(Boolean);
+    });
+};
+
+export const useQuizById = (quizId: string | undefined) => {
+    return useAppSelector((state) =>
+        quizId ? state.global.quizzes?.byId?.[quizId] : null
+    );
+};
+
+export const useQuizAttempts = () => {
+    return useAppSelector((state) => {
+        const attempts = state.global.quizAttempts || { byId: {}, allIds: [] };
+        return attempts.allIds.map(id => attempts.byId[id]).filter(Boolean);
+    });
+};
+
+export const useQuizStats = () => {
+    return useAppSelector((state) => state.global.quizStats);
+};
+
 
 // Cache metadata
 export const useCacheTimestamp = (key: keyof RootState['global']['cache']) =>

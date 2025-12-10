@@ -33,11 +33,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import ReactionButtons from '@/components/feed/ReactionButtons';
 import CommentSection from '@/components/feed/CommentSection';
+import { useAppDispatch } from '@/store/hooks';
+import { addPost } from '@/store/globalSlice';
 
 interface IReaction {
   user: string;
   type: 'like' | 'love' | 'celebrate' | 'insightful' | 'curious';
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface IComment {
@@ -48,7 +50,7 @@ interface IComment {
     profilePicture?: string;
   };
   content: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface IPost {
@@ -76,8 +78,8 @@ interface IPost {
   reactionCount: number;
   commentCount: number;
   shareCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface PostCardProps {
@@ -89,6 +91,7 @@ interface PostCardProps {
 export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   const { user } = useAuthStore();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [showMenu, setShowMenu] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -142,18 +145,23 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       setIsSharing(false);
       setShareMessage('');
 
-      // Update share count
+      // Update share count locally
       onUpdate({
         ...post,
         shareCount: post.shareCount + 1,
         shares: [...post.shares, user!._id],
       });
+
+      // Add the new shared post to the feed immediately
+      if (response.data?.data) {
+        dispatch(addPost(response.data.data));
+      }
     } catch (error) {
       toast.error('Failed to share post');
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     const now = new Date();
     const diffMs = now.getTime() - new Date(date).getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -326,33 +334,80 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
 
       {/* Shared Post */}
       {post.sharedPost && post.sharedPost.user && (
-        <div className="mx-4 mb-3 border border-border rounded-lg p-3 bg-muted/50">
-          <div className="flex items-center gap-2 mb-2">
-            <div
-              onClick={() => router.push(`/profile/${post.sharedPost?.user?._id}`)}
-              className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              {post.sharedPost.user?.profilePicture ? (
-                <img
-                  src={post.sharedPost.user.profilePicture}
-                  alt={post.sharedPost.user.name}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                post.sharedPost.user?.name?.charAt(0)?.toUpperCase() || 'U'
-              )}
-            </div>
-            <div>
-              <p
-                onClick={() => router.push(`/profile/${post.sharedPost?.user?._id}`)}
-                className="font-semibold text-sm text-gray-900 cursor-pointer hover:underline"
+        <div className="mx-4 mb-3 border border-border/80 rounded-xl overflow-hidden mt-2">
+          {/* Shared Post Header */}
+          <div className="p-3 pb-0 flex items-start justify-between bg-muted/5">
+            <div className="flex items-center gap-2">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/profile/${post.sharedPost?.user?._id}`);
+                }}
+                className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
               >
-                {post.sharedPost.user?.name || 'Unknown'}
-              </p>
-              <p className="text-xs text-gray-500">{formatDate(post.sharedPost.createdAt)}</p>
+                {post.sharedPost.user?.profilePicture ? (
+                  <img
+                    src={post.sharedPost.user.profilePicture}
+                    alt={post.sharedPost.user.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  post.sharedPost.user?.name?.charAt(0)?.toUpperCase() || 'U'
+                )}
+              </div>
+              <div className="min-w-0">
+                <p
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/profile/${post.sharedPost?.user?._id}`);
+                  }}
+                  className="font-bold text-sm text-foreground cursor-pointer hover:underline truncate"
+                >
+                  {post.sharedPost.user?.name || 'Unknown'}
+                </p>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>{formatDate(post.sharedPost.createdAt)}</span>
+                  <span>•</span>
+                  {post.sharedPost.visibility && (
+                    <span className="capitalize">{post.sharedPost.visibility}</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-          <p className="text-sm text-gray-700">{post.sharedPost.content}</p>
+
+          {/* Shared Post Content */}
+          <div className="p-3 pt-2">
+            <p className="text-sm text-foreground whitespace-pre-wrap mb-3">
+              {post.sharedPost.content}
+            </p>
+
+            {/* Shared Post Images */}
+            {post.sharedPost.images && post.sharedPost.images.length > 0 && (
+              <div className={`grid gap-1 rounded-lg overflow-hidden ${post.sharedPost.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                {post.sharedPost.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Shared post image ${idx + 1}`}
+                    className="w-full h-48 object-cover hover:scale-[1.02] transition-transform duration-300"
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Shared Post Video */}
+            {post.sharedPost.video && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-black/5 mt-2">
+                <iframe
+                  src={getEmbedUrl(post.sharedPost.video)}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 

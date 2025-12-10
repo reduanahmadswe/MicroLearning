@@ -37,7 +37,7 @@ interface Badge {
         icon: string;
         category: string;
     };
-    earnedAt: Date;
+    earnedAt: string;
 }
 
 interface LeaderboardEntry {
@@ -127,19 +127,72 @@ interface Post {
     reactionCount: number;
     commentCount: number;
     shareCount: number;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface QuizQuestion {
+    _id: string;
+    question: string;
+    type: 'mcq' | 'true_false' | 'fill_blank';
+    options?: string[];
+    correctAnswer: string | number;
+    explanation?: string;
+    points: number;
 }
 
 interface Quiz {
     _id: string;
     title: string;
     description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    category: string;
     course?: string;
     lesson?: string;
-    questions: any[];
+    questions: QuizQuestion[];
     passingScore: number;
-    timeLimit: number;
+    timeLimit?: number;
+    author: {
+        _id: string;
+        name: string;
+        profilePicture?: string;
+    };
+    attempts: number;
+    averageScore: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface QuizAttempt {
+    _id: string;
+    quiz: string;
+    user: string;
+    answers: {
+        questionId: string;
+        answer: string | number;
+        isCorrect: boolean;
+        points: number;
+    }[];
+    score: number;
+    percentage: number;
+    passed: boolean;
+    timeSpent: number;
+    completedAt: string;
+}
+
+interface QuizStats {
+    totalQuizzes: number;
+    totalAttempts: number;
+    averageScore: number;
+    passedQuizzes: number;
+    failedQuizzes: number;
+    totalTimeSpent: number;
+    byDifficulty: {
+        beginner: number;
+        intermediate: number;
+        advanced: number;
+    };
+    recentAttempts: QuizAttempt[];
 }
 
 interface Notification {
@@ -246,6 +299,13 @@ interface GlobalState {
         attemptedIds: string[];
     };
 
+    quizAttempts: {
+        byId: Record<string, QuizAttempt>;
+        allIds: string[];
+    };
+
+    quizStats: QuizStats | null;
+
     notifications: {
         byId: Record<string, Notification>;
         allIds: string[];
@@ -315,6 +375,11 @@ const initialState: GlobalState = {
         allIds: [],
         attemptedIds: [],
     },
+    quizAttempts: {
+        byId: {},
+        allIds: [],
+    },
+    quizStats: null,
     notifications: {
         byId: {},
         allIds: [],
@@ -362,6 +427,8 @@ export const preloadAllData = createAsyncThunk(
                 dispatch(fetchNotifications()).unwrap(),
                 dispatch(fetchForumPosts()).unwrap(),
                 dispatch(fetchForumGroups()).unwrap(),
+                dispatch(fetchQuizzes()).unwrap(),
+                dispatch(fetchQuizStats()).unwrap(),
             ]);
 
             return { success: true, results };
@@ -446,7 +513,7 @@ export const fetchFriends = createAsyncThunk(
 export const fetchFeedPosts = createAsyncThunk(
     'global/fetchFeedPosts',
     async (page: number = 1) => {
-        const response = await postAPI.getFeed({ page, limit: 50 });
+        const response = await postAPI.getFeed({ page, limit: 1000 });
         return response.data.data || [];
     }
 );
@@ -501,6 +568,50 @@ export const markForumPostSolved = createAsyncThunk(
     'global/markForumPostSolved',
     async ({ postId, isSolved }: { postId: string; isSolved: boolean }) => {
         const response = await api.patch(`/forum/posts/${postId}`, { isSolved });
+        return response.data.data;
+    }
+);
+
+// ============================================
+// QUIZ THUNKS
+// ============================================
+
+export const fetchQuizzes = createAsyncThunk(
+    'global/fetchQuizzes',
+    async (params?: { difficulty?: string; category?: string; search?: string }) => {
+        const response = await api.get('/quiz', { params });
+        return response.data.data || [];
+    }
+);
+
+export const fetchQuizById = createAsyncThunk(
+    'global/fetchQuizById',
+    async (quizId: string) => {
+        const response = await api.get(`/quiz/${quizId}`);
+        return response.data.data;
+    }
+);
+
+export const submitQuizAttempt = createAsyncThunk(
+    'global/submitQuizAttempt',
+    async ({ quizId, answers, timeTaken }: { quizId: string; answers: any[]; timeTaken: number }) => {
+        const response = await api.post(`/quiz/${quizId}/submit`, { answers, timeTaken });
+        return response.data.data;
+    }
+);
+
+export const fetchQuizStats = createAsyncThunk(
+    'global/fetchQuizStats',
+    async () => {
+        const response = await api.get('/quiz/stats');
+        return response.data.data;
+    }
+);
+
+export const generateAIQuiz = createAsyncThunk(
+    'global/generateAIQuiz',
+    async (params: { topic: string; difficulty: string; questionCount: number }) => {
+        const response = await api.post('/ai/generate-quiz', params);
         return response.data.data;
     }
 );
@@ -755,6 +866,79 @@ const globalSlice = createSlice({
             const updatedPost = action.payload;
             if (updatedPost) {
                 state.forumPosts.byId[updatedPost._id] = updatedPost;
+            }
+        });
+
+        // Quiz reducers
+        builder.addCase(fetchQuizzes.fulfilled, (state, action) => {
+            if (!state.quizzes) {
+                state.quizzes = { byId: {}, allIds: [], attemptedIds: [] };
+            }
+            const quizzes = Array.isArray(action.payload) ? action.payload : [];
+            quizzes.forEach((quiz: Quiz) => {
+                state.quizzes.byId[quiz._id] = quiz;
+                if (!state.quizzes.allIds.includes(quiz._id)) {
+                    state.quizzes.allIds.push(quiz._id);
+                }
+            });
+        });
+
+        builder.addCase(fetchQuizById.fulfilled, (state, action) => {
+            if (!state.quizzes) {
+                state.quizzes = { byId: {}, allIds: [], attemptedIds: [] };
+            }
+            const quiz = action.payload;
+            if (quiz) {
+                state.quizzes.byId[quiz._id] = quiz;
+                if (!state.quizzes.allIds.includes(quiz._id)) {
+                    state.quizzes.allIds.push(quiz._id);
+                }
+            }
+        });
+
+        builder.addCase(submitQuizAttempt.fulfilled, (state, action) => {
+            if (!state.quizAttempts) {
+                state.quizAttempts = { byId: {}, allIds: [] };
+            }
+            const attempt = action.payload;
+            if (attempt) {
+                state.quizAttempts.byId[attempt._id] = attempt;
+                if (!state.quizAttempts.allIds.includes(attempt._id)) {
+                    state.quizAttempts.allIds.unshift(attempt._id);
+                }
+
+                // Mark quiz as attempted
+                if (!state.quizzes.attemptedIds.includes(attempt.quiz)) {
+                    state.quizzes.attemptedIds.push(attempt.quiz);
+                }
+
+                // Update quiz stats
+                if (state.quizStats) {
+                    state.quizStats.totalAttempts++;
+                    if (attempt.passed) {
+                        state.quizStats.passedQuizzes++;
+                    } else {
+                        state.quizStats.failedQuizzes++;
+                    }
+                    state.quizStats.totalTimeSpent += attempt.timeSpent;
+                }
+            }
+        });
+
+        builder.addCase(fetchQuizStats.fulfilled, (state, action) => {
+            state.quizStats = action.payload;
+        });
+
+        builder.addCase(generateAIQuiz.fulfilled, (state, action) => {
+            if (!state.quizzes) {
+                state.quizzes = { byId: {}, allIds: [], attemptedIds: [] };
+            }
+            const quiz = action.payload;
+            if (quiz) {
+                state.quizzes.byId[quiz._id] = quiz;
+                if (!state.quizzes.allIds.includes(quiz._id)) {
+                    state.quizzes.allIds.unshift(quiz._id); // Add to beginning
+                }
             }
         });
     },

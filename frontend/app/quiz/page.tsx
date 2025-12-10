@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -13,22 +13,26 @@ import {
   Filter,
   Search,
   PlayCircle,
-  CheckCircle2,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { quizAPI, aiAPI } from '@/services/api.service';
+import { useQuizzes, useQuizStats, useIsInitializing, useAppDispatch } from '@/store/hooks';
+import { generateAIQuiz } from '@/store/globalSlice';
 import { toast } from 'sonner';
-import { Quiz } from '@/types';
 
 export default function QuizListPage() {
   const router = useRouter();
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Redux state
+  const allQuizzes = useQuizzes();
+  const stats = useQuizStats();
+  const isInitializing = useIsInitializing();
+  const dispatch = useAppDispatch();
+
+  // Local UI state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [showAIModal, setShowAIModal] = useState(false);
@@ -38,7 +42,6 @@ export default function QuizListPage() {
     difficulty: 'beginner',
     questionCount: 10,
   });
-  const [userStats, setUserStats] = useState<any>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,40 +49,28 @@ export default function QuizListPage() {
 
   const difficulties = ['beginner', 'intermediate', 'advanced'];
 
-  useEffect(() => {
-    loadQuizzes();
-    loadUserStats();
-  }, [selectedDifficulty]);
+  // Client-side filtering - INSTANT!
+  const filteredQuizzes = useMemo(() => {
+    return allQuizzes.filter(quiz => {
+      const matchesSearch = !searchQuery ||
+        quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        quiz.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const loadQuizzes = async () => {
-    try {
-      setLoading(true);
-      const params: any = {};
-      if (selectedDifficulty !== 'all') params.difficulty = selectedDifficulty;
-      if (searchQuery) params.search = searchQuery;
+      const matchesDifficulty = selectedDifficulty === 'all' || quiz.difficulty === selectedDifficulty;
 
-      const response = await quizAPI.getQuizzes(params);
-      setQuizzes(response.data.data || []);
-    } catch (error: any) {
-      toast.error('Failed to load quizzes');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return matchesSearch && matchesDifficulty;
+    });
+  }, [allQuizzes, searchQuery, selectedDifficulty]);
 
-  const loadUserStats = async () => {
-    try {
-      const response = await quizAPI.getUserStats();
-      setUserStats(response.data.data);
-    } catch (error: any) {
-      console.error('Failed to load stats:', error);
-    }
-  };
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredQuizzes.length / quizzesPerPage);
+  const startIndex = (currentPage - 1) * quizzesPerPage;
+  const endIndex = startIndex + quizzesPerPage;
+  const paginatedQuizzes = filteredQuizzes.slice(startIndex, endIndex);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    loadQuizzes();
+    // No API call needed - filtering is instant!
   };
 
   const handleGenerateAIQuiz = async () => {
@@ -90,35 +81,21 @@ export default function QuizListPage() {
 
     setAiGenerating(true);
     try {
-      const response = await aiAPI.generateQuiz({
+      await dispatch(generateAIQuiz({
         topic: aiForm.topic,
         difficulty: aiForm.difficulty,
         questionCount: aiForm.questionCount,
-      });
+      })).unwrap();
 
       toast.success('AI Quiz generated successfully!');
       setShowAIModal(false);
       setAiForm({ topic: '', difficulty: 'beginner', questionCount: 10 });
-      loadQuizzes();
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to generate quiz');
+      toast.error(error?.message || 'Failed to generate quiz');
     } finally {
       setAiGenerating(false);
     }
   };
-
-  const filteredQuizzes = quizzes.filter(quiz => {
-    if (searchQuery && !quiz.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredQuizzes.length / quizzesPerPage);
-  const startIndex = (currentPage - 1) * quizzesPerPage;
-  const endIndex = startIndex + quizzesPerPage;
-  const paginatedQuizzes = filteredQuizzes.slice(startIndex, endIndex);
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -138,8 +115,8 @@ export default function QuizListPage() {
         key={1}
         onClick={() => goToPage(1)}
         className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${currentPage === 1
-            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-            : 'bg-card text-foreground hover:bg-accent border-2 border-border'
+          ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+          : 'bg-card text-foreground hover:bg-accent border-2 border-border'
           }`}
       >
         1
@@ -161,8 +138,8 @@ export default function QuizListPage() {
           key={i}
           onClick={() => goToPage(i)}
           className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${currentPage === i
-              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-              : 'bg-card text-foreground hover:bg-accent border-2 border-border'
+            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+            : 'bg-card text-foreground hover:bg-accent border-2 border-border'
             }`}
         >
           {i}
@@ -182,8 +159,8 @@ export default function QuizListPage() {
           key={totalPages}
           onClick={() => goToPage(totalPages)}
           className={`px-3 py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition-all ${currentPage === totalPages
-              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-              : 'bg-card text-foreground hover:bg-accent border-2 border-border'
+            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+            : 'bg-card text-foreground hover:bg-accent border-2 border-border'
             }`}
         >
           {totalPages}
@@ -216,6 +193,17 @@ export default function QuizListPage() {
     );
   };
 
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-page-gradient flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-base text-gray-600">Loading quizzes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-page-gradient">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -237,6 +225,7 @@ export default function QuizListPage() {
             Generate Quiz with AI
           </Button>
         </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
           <Card className="shadow-sm hover:shadow-md transition-shadow bg-card border border-border/50">
@@ -245,7 +234,7 @@ export default function QuizListPage() {
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Quizzes Taken</p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
-                    {userStats?.totalQuizzes || 0}
+                    {stats?.totalAttempts || 0}
                   </p>
                 </div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-teal-50 dark:bg-teal-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -261,7 +250,7 @@ export default function QuizListPage() {
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Average Score</p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
-                    {userStats?.averageScore || 0}%
+                    {Math.round(stats?.averageScore || 0)}%
                   </p>
                 </div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -277,7 +266,7 @@ export default function QuizListPage() {
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Pass Rate</p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
-                    {userStats?.passRate || 0}%
+                    {stats?.totalAttempts ? Math.round((stats.passedQuizzes / stats.totalAttempts) * 100) : 0}%
                   </p>
                 </div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -291,9 +280,9 @@ export default function QuizListPage() {
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Best Streak</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Quizzes</p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
-                    {userStats?.bestStreak || 0}
+                    {allQuizzes.length}
                   </p>
                 </div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -316,7 +305,6 @@ export default function QuizListPage() {
                 className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm sm:text-base bg-background text-foreground"
               />
             </div>
-            <Button type="submit" className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white h-10 sm:h-11 text-sm sm:text-base">Search</Button>
           </form>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 bg-card p-3 sm:p-4 rounded-xl border border-border/50 shadow-sm">
@@ -351,14 +339,7 @@ export default function QuizListPage() {
         </div>
 
         {/* Quizzes Grid */}
-        {loading ? (
-          <div className="flex justify-center items-center py-12 sm:py-16 lg:py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-600">Loading quizzes...</p>
-            </div>
-          </div>
-        ) : filteredQuizzes.length === 0 ? (
+        {filteredQuizzes.length === 0 ? (
           <Card className="p-8 sm:p-10 lg:p-12 text-center shadow-md bg-card border-border/50">
             <Brain className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">No quizzes found</h3>
@@ -382,8 +363,8 @@ export default function QuizListPage() {
                   <CardHeader className="pb-3 sm:pb-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border ${quiz.difficulty === 'beginner' ? 'bg-green-50 text-green-700 border-green-200' :
-                          quiz.difficulty === 'intermediate' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                            'bg-red-50 text-red-700 border-red-200'
+                        quiz.difficulty === 'intermediate' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                          'bg-red-50 text-red-700 border-red-200'
                         }`}>
                         {quiz.difficulty}
                       </div>
@@ -410,7 +391,7 @@ export default function QuizListPage() {
 
                     <div className="flex items-center justify-between mb-3 sm:mb-4">
                       <div className="text-xs text-muted-foreground">
-                        {quiz.totalAttempts || 0} attempts
+                        {quiz.attempts || 0} attempts
                       </div>
                     </div>
 
