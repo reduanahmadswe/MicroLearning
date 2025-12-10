@@ -127,11 +127,8 @@ class CourseService {
       .sort({ order: 1 })
       .lean();
 
-    console.log('📚 Course:', course.title, '- ID:', course._id.toString());
-    console.log('📚 Published lessons found:', lessons.length);
     
     if (lessons.length > 0) {
-      console.log('📖 Lessons:', lessons.map((l: any) => `${l.order}. ${l.title}`).join(', '));
     }
 
     // Check enrollment status if user is provided
@@ -280,10 +277,6 @@ class CourseService {
       throw new ApiError(404, 'Not enrolled in this course');
     }
 
-    console.log('📚 Getting enrollment for user:', userId);
-    console.log('📚 Course:', courseId);
-    console.log('📚 Completed lessons:', enrollment.completedLessons);
-    console.log('📚 Completed lessons count:', enrollment.completedLessons?.length || 0);
 
     return enrollment;
   }

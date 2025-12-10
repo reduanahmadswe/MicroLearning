@@ -401,7 +401,6 @@ class QuizService {
 
   // Get instructor's quizzes
   async getInstructorQuizzes(instructorId: string) {
-    console.log('🔍 Fetching quizzes for instructor:', instructorId);
 
     const quizzes = await Quiz.find({ author: instructorId })
       .populate('course', 'title thumbnail')
@@ -409,7 +408,6 @@ class QuizService {
       .sort('-createdAt')
       .lean();
 
-    console.log('📚 Found quizzes:', quizzes.length);
 
     // Get stats for each quiz
     const quizzesWithStats = await Promise.all(
@@ -429,7 +427,6 @@ class QuizService {
       })
     );
 
-    console.log('✅ Returning quizzes with stats:', quizzesWithStats.length);
     return quizzesWithStats;
   }
 

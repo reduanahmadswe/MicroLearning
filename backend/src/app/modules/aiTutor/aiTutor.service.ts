@@ -14,12 +14,8 @@ export class AITutorService {
    */
   private async callOpenRouterAPI(message: string, conversationHistory: any[] = []): Promise<string> {
     try {
-      console.log('🎯 AI Tutor: Attempting to call OpenRouter API...');
-      console.log('🔑 API Key present:', !!process.env.OPENROUTER_API_KEY);
-      console.log('🌐 Base URL:', process.env.OPENAI_API_BASE_URL);
       return await this.tryOpenRouter(message, conversationHistory);
     } catch (error: any) {
-      console.log('📢 OpenRouter failed, using fallback response...');
       console.error('❌ Full error:', error);
       return this.generateFallbackResponse(message);
     }
@@ -36,8 +32,6 @@ export class AITutorService {
       throw new Error('OpenRouter API not configured');
     }
 
-    console.log('🤖 Starting OpenRouter API call for AI Tutor...');
-    console.log('📝 Message length:', message.length);
 
     // Try different models in order of preference
     const models = [
@@ -51,7 +45,6 @@ export class AITutorService {
 
     for (let i = 0; i < models.length; i++) {
       const model = models[i];
-      console.log(`🔄 Trying model ${i + 1}/${models.length}: ${model}`);
 
       try {
         const systemPrompt = this.buildSystemPrompt();
@@ -80,7 +73,6 @@ export class AITutorService {
         );
 
         const result = response.data.choices[0]?.message?.content || 'No response generated';
-        console.log(`✅ Success with model: ${model}`);
         return result;
       } catch (error: any) {
         console.error(`❌ Error with model ${model}:`, error.response?.data || error.message);
@@ -230,7 +222,6 @@ Thank you for your patience! 🙏`;
    */
   async chat(userId: Types.ObjectId, data: IChatRequest): Promise<IChatResponse> {
     try {
-      console.log('🚀 AI Tutor chat request:', { userId, hasSession: !!data.sessionId });
 
       let session;
 

@@ -307,11 +307,9 @@ export default function ForumPostPage() {
             }
           );
           if (joinResponse.ok) {
-            console.log('Successfully joined group');
           }
         } catch (joinError) {
           // Ignore if already a member
-          console.log('Group join attempt:', joinError);
         }
       }
 

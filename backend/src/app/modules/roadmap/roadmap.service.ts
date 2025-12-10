@@ -16,11 +16,6 @@ import ApiError from '../../../utils/ApiError';
 // Force reload environment variables
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
-console.log('🔍 [Roadmap Service] Environment check:', {
-  cwd: process.cwd(),
-  openrouterKey: process.env.OPENROUTER_API_KEY?.substring(0, 20),
-  openaiKey: process.env.OPENAI_API_KEY?.substring(0, 20),
-});
 
 /**
  * AI Config for Roadmap (OpenRouter or OpenAI)
@@ -37,14 +32,6 @@ const AI_CONFIG = {
  * Make AI API Request (OpenRouter or OpenAI)
  */
 const makeOpenAIRequest = async (messages: any[], temperature: number = 0.7) => {
-  console.log('🔑 AI API Key check:', {
-    openrouterExists: !!process.env.OPENROUTER_API_KEY,
-    openaiExists: !!process.env.OPENAI_API_KEY,
-    usingKey: AI_CONFIG.apiKey ? 'Found' : 'Missing',
-    keyLength: AI_CONFIG.apiKey?.length || 0,
-    baseURL: AI_CONFIG.baseURL,
-    model: AI_CONFIG.model,
-  });
 
   if (!AI_CONFIG.apiKey) {
     console.error('❌ AI API key not configured!');
@@ -52,7 +39,6 @@ const makeOpenAIRequest = async (messages: any[], temperature: number = 0.7) => 
   }
 
   try {
-    console.log('🚀 Calling AI API...');
     const response = await axios.post(
       `${AI_CONFIG.baseURL}/chat/completions`,
       {
@@ -72,7 +58,6 @@ const makeOpenAIRequest = async (messages: any[], temperature: number = 0.7) => 
       }
     );
 
-    console.log('✅ AI API call successful!');
     return response.data;
   } catch (error: any) {
     console.error('❌ AI API call failed:', {
@@ -95,12 +80,6 @@ export const generateRoadmap = async (
   userId: Types.ObjectId,
   data: IGenerateRoadmapRequest
 ): Promise<IGeneratedRoadmap> => {
-  console.log('🤖 [Roadmap] Starting generation:', {
-    userId,
-    goal: data.goal,
-    currentLevel: data.currentLevel,
-    timeCommitment: data.timeCommitment,
-  });
 
   await User.findById(userId).select('name interests');
 
@@ -215,20 +194,17 @@ Make it comprehensive, practical, and achievable!`;
     );
 
     const content = response.choices[0].message.content;
-    console.log('📝 [Roadmap] Raw AI response length:', content.length);
     
     // Extract JSON from markdown code blocks if present
     let jsonContent = content;
     const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
       jsonContent = jsonMatch[1];
-      console.log('✂️ [Roadmap] Extracted JSON from code block');
     }
 
     let parsedContent;
     try {
       parsedContent = JSON.parse(jsonContent);
-      console.log('✅ [Roadmap] JSON parsed successfully');
       
       // Sanitize data to match schema
       if (parsedContent.milestones) {
@@ -238,13 +214,11 @@ Make it comprehensive, practical, and achievable!`;
               // Fix invalid assessment types
               const validTypes = ['quiz', 'coding_challenge', 'project', 'certification'];
               if (!validTypes.includes(assessment.type)) {
-                console.log(`⚠️ Fixing invalid assessment type: ${assessment.type} -> quiz`);
                 assessment.type = 'quiz';
               }
               
               // Fix non-numeric passingScore
               if (typeof assessment.passingScore !== 'number' || isNaN(assessment.passingScore)) {
-                console.log(`⚠️ Fixing invalid passingScore: ${assessment.passingScore} -> 70`);
                 assessment.passingScore = 70;
               }
             });
@@ -254,7 +228,6 @@ Make it comprehensive, practical, and achievable!`;
       
     } catch (parseError) {
       console.error('❌ [Roadmap] JSON parse failed:', parseError);
-      console.log('📄 Content preview:', jsonContent.substring(0, 500));
       throw new ApiError(500, 'Failed to parse AI response as JSON');
     }
 
@@ -287,11 +260,6 @@ Make it comprehensive, practical, and achievable!`;
       lastAccessedAt: new Date(),
     });
 
-    console.log('💾 [Roadmap] Saved to database:', {
-      id: savedRoadmap._id,
-      title: generatedRoadmap.title,
-      milestonesCount: generatedRoadmap.milestones.length,
-    });
 
     return generatedRoadmap;
   } catch (error: any) {
@@ -322,7 +290,6 @@ export const getUserRoadmaps = async (
   limit: number = 20,
   status?: RoadmapStatus
 ) => {
-  console.log('📋 [Roadmap] Getting user roadmaps:', { userId, page, limit, status });
   
   const filter: any = { user: userId };
   if (status) filter.status = status;
@@ -335,7 +302,6 @@ export const getUserRoadmaps = async (
 
   const total = await UserRoadmap.countDocuments(filter);
 
-  console.log('📋 [Roadmap] Found roadmaps:', { count: roadmaps.length, total });
 
   // Transform roadmaps to flatten structure for frontend
   const transformedRoadmaps = roadmaps.map((rm: any) => ({
@@ -414,11 +380,6 @@ export const getRoadmapById = async (userId: Types.ObjectId, roadmapId: string) 
     })) || [],
   };
 
-  console.log('📖 [Roadmap] Returning roadmap detail:', {
-    id: transformed._id,
-    title: transformed.title,
-    nodesCount: transformed.nodes.length,
-  });
 
   return transformed;
 };

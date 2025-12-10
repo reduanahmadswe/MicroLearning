@@ -44,10 +44,7 @@ export default function AnalyticsPage() {
     try {
       setLoading(true);
       const response = await analyticsAPI.getAnalytics({ timeRange });
-      console.log('Analytics Response:', response.data.data);
-      console.log('Learning Activity:', response.data.data?.learningActivity);
       const activeDays = response.data.data?.learningActivity?.filter((day: any) => day.count > 0) || [];
-      console.log('Active Days:', activeDays.length, activeDays);
       setAnalytics(response.data.data || {});
     } catch (error: any) {
       toast.error('Failed to load analytics');

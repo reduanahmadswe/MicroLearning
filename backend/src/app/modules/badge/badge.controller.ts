@@ -133,12 +133,10 @@ class BadgeController {
 
   // Admin: Manually award badge
   manuallyAwardBadge = catchAsync(async (req: Request, res: Response) => {
-    console.log('🎯 [Award Badge] Request body:', JSON.stringify(req.body, null, 2));
     const { userId, badgeId, reason } = req.body;
 
     try {
       const result = await badgeService.manuallyAwardBadge(userId, badgeId, reason);
-      console.log('✅ [Award Badge] Success');
 
       sendResponse(res, {
         statusCode: 200,

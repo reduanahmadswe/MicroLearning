@@ -30,10 +30,8 @@ export default function InstructorCoursesPage() {
   const fetchCourses = async () => {
     try {
       const response = await coursesAPI.getInstructorCourses();
-      console.log('Instructor courses response:', response.data);
       // API returns { data: { success: true, message: '...', data: [...courses] } }
       const coursesData = response.data?.data || response.data || [];
-      console.log('Courses data:', coursesData);
       setCourses(coursesData);
     } catch (error: any) {
       console.error('Error fetching courses:', error);

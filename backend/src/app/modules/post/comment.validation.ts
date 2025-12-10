@@ -13,4 +13,3 @@ export const updateCommentSchema = z.object({
   }),
 });
 
-console.log('Comment validation schemas loaded successfully');

@@ -21,7 +21,6 @@ const createPost = async (userId: string, postData: any) => {
     ...postData,
   };
 
-  console.log('📝 Creating post with data:', JSON.stringify(postToCreate, null, 2));
 
   try {
     const post = await FeedPost.create(postToCreate);

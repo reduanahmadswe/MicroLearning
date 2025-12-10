@@ -19,7 +19,6 @@ export interface NotificationPayload {
 export const sendNotification = (userId: string, notification: NotificationPayload) => {
   try {
     io.to(`user_${userId}`).emit('notification', notification);
-    console.log(`📬 Notification sent to user ${userId}:`, notification.type);
   } catch (error) {
     console.error('Error sending notification:', error);
   }

@@ -78,9 +78,7 @@ export default function UserManagementPage() {
         params.role = roleFilter;
       }
 
-      console.log('Loading users with params:', params);
       const response = await adminAPI.getUsers(params);
-      console.log('Users response:', response.data);
 
       // Backend returns: data: result.users
       setUsers(response.data.data || []);

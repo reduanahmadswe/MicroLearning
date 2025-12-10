@@ -149,7 +149,6 @@ export const generateLesson = async (
   userId: Types.ObjectId,
   data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
-  console.log('✅ Using REAL OpenAI API for lesson generation');
 
   const systemPrompt = `You are an expert educational content creator specializing in micro-learning. 
 Create concise, engaging, and well-structured lessons that are easy to understand and remember.
@@ -224,7 +223,6 @@ export const generateQuiz = async (
   userId: Types.ObjectId,
   data: IGenerateQuizRequest
 ): Promise<IGeneratedQuiz> => {
-  console.log('✅ Using REAL OpenAI API for quiz generation');
 
   const systemPrompt = `You are an expert quiz creator.
 Create challenging yet fair questions that test understanding, not just memorization.
@@ -310,15 +308,7 @@ export const generateFlashcards = async (
   data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
   // Log configuration for debugging
-  console.log('🤖 AI Config:', {
-    provider: AI_CONFIG.provider,
-    hasApiKey: !!AI_CONFIG.openai.apiKey,
-    apiKeyLength: AI_CONFIG.openai.apiKey?.length,
-    apiKeyPrefix: AI_CONFIG.openai.apiKey?.substring(0, 20),
-    model: AI_CONFIG.openai.model,
-  });
 
-  console.log('✅ Attempting to use REAL OpenAI API for flashcard generation');
 
   const systemPrompt = `You are an expert at creating effective flashcards for spaced repetition learning.
 Create concise cards with clear questions and comprehensive answers.
@@ -390,10 +380,8 @@ Format your response as a JSON object:
     return generatedFlashcardSet;
   } catch (error: any) {
     // If quota exceeded or API error, fallback to mock service
-    console.log('⚠️ OpenAI API Error - Falling back to MOCK service:', error.response?.data?.error?.code || error.message);
     
     if (error.response?.data?.error?.code === 'insufficient_quota') {
-      console.log('💡 Tip: Your OpenAI API quota is exhausted. Get a new key from https://platform.openai.com/api-keys');
     }
     
     const mockService = await import('./ai.mock.service');

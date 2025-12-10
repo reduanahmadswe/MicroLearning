@@ -61,12 +61,6 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
   const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
   const is_live = process.env.SSLCOMMERZ_IS_LIVE === 'true';
 
-  console.log('🔧 SSLCommerz Config:', {
-    store_id: store_id ? `${store_id.substring(0, 10)}...` : 'MISSING',
-    has_password: !!store_passwd,
-    is_live,
-    backend_url: process.env.BACKEND_URL,
-  });
 
   if (!store_id || !store_passwd) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'SSLCommerz credentials not configured');
@@ -106,16 +100,10 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
     value_c: payment._id.toString(), // Payment ID
   };
 
-  console.log('💳 Payment Data:', {
-    ...paymentData,
-    cus_phone: paymentData.cus_phone,
-    total_amount: paymentData.total_amount,
-  });
 
   try {
     const apiResponse = await sslcz.init(paymentData);
 
-    console.log('✅ SSLCommerz Response:', apiResponse);
 
     if (apiResponse.status === 'SUCCESS') {
       // Update payment with session ID
@@ -151,7 +139,6 @@ export const initiateCoursePayment = async (userId: string, courseId: string) =>
 export const handlePaymentSuccess = async (paymentData: any) => {
   const { tran_id, val_id, card_type, card_brand, bank_tran_id } = paymentData;
 
-  console.log(`🔔 Payment success callback received for transaction: ${tran_id}`);
 
   // Find payment record
   const payment = await CoursePayment.findById(tran_id);
@@ -161,7 +148,6 @@ export const handlePaymentSuccess = async (paymentData: any) => {
 
   // Check if already processed
   if (payment.paymentStatus === 'completed') {
-    console.log(`✓ Payment ${tran_id} already processed`);
     const enrollment = await Enrollment.findOne({
       user: payment.user,
       course: payment.course,
@@ -187,7 +173,6 @@ export const handlePaymentSuccess = async (paymentData: any) => {
       },
     });
 
-    console.log(`📤 Payment validation queued with job ID: ${job.id}`);
 
     // Try immediate validation (best effort)
     // If this fails, queue will retry automatically
@@ -226,10 +211,8 @@ export const handlePaymentSuccess = async (paymentData: any) => {
               $inc: { enrolledCount: 1 },
             });
 
-            console.log(`✅ Payment and enrollment completed immediately`);
             return { success: true, enrollment, payment };
           } else {
-            console.log(`✅ Payment completed, user already enrolled`);
             return { success: true, enrollment: existingEnrollment, payment };
           }
         } catch (enrollError) {

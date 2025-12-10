@@ -47,10 +47,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const { token } = useAuthStore.getState();
-    console.log('Dashboard useEffect - user:', user, 'token:', token ? 'exists' : 'missing');
 
     if (!user || !token) {
-      console.log('No user or token, redirecting to login');
       setLoading(false);
       router.push('/auth/login');
       return;
@@ -62,7 +60,6 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('Loading dashboard data...');
       const [progressRes, badgesRes, leaderboardRes] = await Promise.all([
         progressAPI.getProgress().catch((err) => {
           console.error('Progress API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error');
@@ -78,15 +75,8 @@ export default function DashboardPage() {
         }),
       ]);
 
-      console.log('Dashboard data loaded:', {
-        progressRes: progressRes.data,
-        badgesRes: badgesRes.data,
-        leaderboardRes: leaderboardRes.data
-      });
 
       const statsData = progressRes.data.data || { totalXP: user?.xp || 0, level: user?.level || 1, currentStreak: user?.streak || 0 };
-      console.log('Setting stats:', statsData);
-      console.log('User object:', user);
 
       setStats(statsData);
       setBadges(badgesRes.data.data?.slice(0, 6) || []);

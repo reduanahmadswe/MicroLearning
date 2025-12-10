@@ -44,13 +44,11 @@ export default function InstructorDashboard() {
     try {
       // Fetch instructor's lessons
       const lessonsRes = await lessonsAPI.getInstructorLessons();
-      console.log('Lessons response:', lessonsRes);
       const lessonsList = lessonsRes.data?.data || lessonsRes.data || [];
       setLessons(lessonsList);
 
       // Fetch instructor's courses
       const coursesRes = await coursesAPI.getInstructorCourses();
-      console.log('Courses response:', coursesRes);
       const coursesList = coursesRes.data?.data || coursesRes.data || [];
       setCourses(coursesList);
 
@@ -62,14 +60,12 @@ export default function InstructorDashboard() {
         const lessonsAnalytics = await lessonsAPI.getInstructorAnalytics();
         totalViews = lessonsAnalytics.data?.data?.totalViews || lessonsAnalytics.data?.totalViews || 0;
       } catch (err) {
-        console.log('Analytics not available yet');
       }
 
       try {
         const coursesAnalytics = await coursesAPI.getInstructorAnalytics();
         totalStudents = coursesAnalytics.data?.data?.totalStudents || coursesAnalytics.data?.totalStudents || 0;
       } catch (err) {
-        console.log('Course analytics not available yet');
       }
 
       // Calculate stats

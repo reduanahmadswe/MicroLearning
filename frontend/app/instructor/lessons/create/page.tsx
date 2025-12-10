@@ -112,7 +112,6 @@ export default function InstructorCreateLessonPage() {
       };
 
       const lessonResponse = await lessonsAPI.createLesson(lessonData);
-      console.log('✅ Lesson Response:', lessonResponse);
 
       // Extract lesson ID from response (handle different response structures)
       const createdLesson = lessonResponse.data?.data || lessonResponse.data;
@@ -149,7 +148,6 @@ export default function InstructorCreateLessonPage() {
       };
 
       const token = localStorage.getItem('token');
-      console.log('📝 Creating quiz with data:', quizData);
 
       const quizResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/create`, {
         method: 'POST',
@@ -160,12 +158,9 @@ export default function InstructorCreateLessonPage() {
         body: JSON.stringify(quizData),
       });
 
-      console.log('📊 Quiz Response Status:', quizResponse.status);
-      console.log('📊 Quiz Response OK:', quizResponse.ok);
 
       if (quizResponse.ok) {
         const quizResult = await quizResponse.json();
-        console.log('✅ Quiz created:', quizResult);
         toast.success('Quiz created successfully!');
       } else {
         let errorMessage = 'Unknown error';

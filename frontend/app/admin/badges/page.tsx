@@ -77,17 +77,14 @@ export default function AdminBadgesPage() {
       setSearchingUsers(true);
       const token = localStorage.getItem('token');
 
-      console.log('Searching users with query:', query);
 
       const res = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/admin/users`, {
         params: { search: query, limit: 20 },
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      console.log('User search response:', res.data);
 
       const userList = res.data.data?.users || res.data.data || [];
-      console.log('Extracted users:', userList);
 
       setUsers(userList);
     } catch (error: any) {
@@ -189,12 +186,9 @@ export default function AdminBadgesPage() {
       ...(awardData.reason && awardData.reason.trim() ? { reason: awardData.reason.trim() } : {})
     };
 
-    console.log('Awarding badge with payload:', payload);
-    console.log('Award data before cleaning:', awardData);
 
     try {
       const response = await badgeAdminAPI.awardBadge(payload);
-      console.log('Award response:', response);
       toast.success('Badge awarded successfully!');
       setShowAwardModal(false);
       setAwardData({ userId: '', badgeId: '', reason: '' });
@@ -606,8 +600,6 @@ export default function AdminBadgesPage() {
                               key={user._id}
                               type="button"
                               onClick={() => {
-                                console.log('Selected user:', user);
-                                console.log('Setting userId to:', user._id);
                                 setAwardData({ ...awardData, userId: user._id });
                                 setSearchQuery(`${user.name} (${user.email})`);
                                 setUsers([]);

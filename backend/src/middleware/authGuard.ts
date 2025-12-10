@@ -76,7 +76,6 @@ export const optionalAuth = () => {
         req.user = decoded;
       } catch (error) {
         // Invalid/expired token, continue without user
-        console.log('Optional auth: Invalid token, continuing without user');
       }
 
       next();

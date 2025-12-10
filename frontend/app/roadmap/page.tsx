@@ -83,11 +83,6 @@ export default function RoadmapPage() {
       return;
     }
 
-    console.log('📤 Sending roadmap generation request:', {
-      goal: goal.trim(),
-      currentLevel,
-      timeCommitment,
-    });
 
     try {
       setGenerating(true);

@@ -99,11 +99,6 @@ class NodemailerProvider implements EmailProvider {
 
       const info = await this.transporter.sendMail(mailOptions);
 
-      console.log('[Nodemailer] Email sent:', {
-        messageId: info.messageId,
-        to,
-        subject,
-      });
 
       return {
         messageId: info.messageId,
@@ -122,12 +117,6 @@ class NodemailerProvider implements EmailProvider {
 // Console Provider (for development/testing)
 class ConsoleProvider implements EmailProvider {
   async send(to: string, subject: string, html: string, text: string) {
-    console.log('\n==================== EMAIL ====================');
-    console.log('To:', to);
-    console.log('Subject:', subject);
-    console.log('HTML:', html.substring(0, 200) + '...');
-    console.log('Text:', text.substring(0, 200) + '...');
-    console.log('================================================\n');
 
     return {
       messageId: `console-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

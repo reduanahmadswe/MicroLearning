@@ -55,7 +55,6 @@ export default function CourseDetailPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('refresh') === 'true' && courseId) {
-      console.log('🔄 Refreshing after lesson completion');
       // Remove refresh param from URL
       window.history.replaceState({}, '', `/courses/${courseId}`);
       // Reload everything with fresh data
@@ -77,9 +76,6 @@ export default function CourseDetailPage() {
       setLoading(true);
       const response = await coursesAPI.getCourse(courseId);
       const courseData = response.data.data;
-      console.log('📚 Course Data:', courseData);
-      console.log('📖 Lessons:', courseData.lessons);
-      console.log('📊 Lesson Count:', courseData.lessons?.length || 0);
       setCourse(courseData);
     } catch (error: any) {
       toast.error('Failed to load course');
@@ -115,7 +111,6 @@ export default function CourseDetailPage() {
       const courseData = courseResponse.data.data;
       const enrollmentData = enrollmentResponse?.data?.data || null;
 
-      console.log('🔄 Refreshed enrollment data:', enrollmentData?.completedLessons);
 
       setCourse(courseData);
       if (enrollmentData) {
@@ -132,9 +127,6 @@ export default function CourseDetailPage() {
   };
 
   const checkLessonUnlockStatus = async (lessons: any[], enrollmentData: any) => {
-    console.log('🔓 Checking lesson unlock status...');
-    console.log('📚 Total lessons:', lessons.length);
-    console.log('✅ Completed lessons:', enrollmentData.completedLessons);
 
     const unlockStatus: Record<string, boolean> = {};
     const quizData: Record<string, any> = {};
@@ -142,7 +134,6 @@ export default function CourseDetailPage() {
     // First lesson always unlocked for enrolled students
     if (lessons.length > 0 && lessons[0].order === 1) {
       unlockStatus[lessons[0]._id] = true;
-      console.log('✓ First lesson unlocked:', lessons[0].title);
     }
 
     // Check subsequent lessons
@@ -151,24 +142,20 @@ export default function CourseDetailPage() {
 
       if (lesson.order === 1) continue; // Already handled
 
-      console.log(`\n🔍 Checking lesson ${lesson.order}: ${lesson.title}`);
 
       // Find previous lesson
       const previousLesson = lessons.find((l: any) => l.order === lesson.order - 1);
 
       if (previousLesson) {
-        console.log(`  Previous lesson: ${previousLesson.title}`);
 
         // Check if previous lesson is completed
         const isPreviousCompleted = enrollmentData.completedLessons?.some(
           (lessonId: any) => lessonId.toString() === previousLesson._id.toString()
         );
-        console.log(`  Previous completed:`, isPreviousCompleted);
 
         if (!isPreviousCompleted) {
           // Previous lesson not even completed
           unlockStatus[lesson._id] = false;
-          console.log(`  ❌ Locked - previous not completed`);
           continue;
         }
 
@@ -202,7 +189,6 @@ export default function CourseDetailPage() {
           } else {
             // No quiz exists - lesson completed is enough
             unlockStatus[lesson._id] = true;
-            console.log(`  ✅ Unlocked - no quiz required`);
           }
         } catch (error) {
           console.error('  ❌ Error checking quiz:', error);
@@ -211,7 +197,6 @@ export default function CourseDetailPage() {
       }
     }
 
-    console.log('\n📊 Final unlock status:', unlockStatus);
     setLessonUnlockStatus(unlockStatus);
     setQuizResults(quizData);
   };

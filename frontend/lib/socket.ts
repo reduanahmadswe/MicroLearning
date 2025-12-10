@@ -6,7 +6,6 @@ export const initSocket = (userId: string) => {
   // Disable Socket.io on production (Vercel doesn't support WebSockets)
   const isProduction = process.env.NODE_ENV === 'production';
   if (isProduction) {
-    console.log('Socket.io disabled on production');
     return null;
   }
 
@@ -19,13 +18,11 @@ export const initSocket = (userId: string) => {
     });
 
     socket.on('connect', () => {
-      console.log('✅ Connected to notification server');
       // Join user's notification room
       socket?.emit('join', userId);
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ Disconnected from notification server');
     });
 
     socket.on('error', (error) => {

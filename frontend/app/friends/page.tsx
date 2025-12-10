@@ -91,7 +91,6 @@ export default function FriendsPage() {
       setLoading(true);
       const response = await friendsAPI.getFriends();
       const responseData = response.data.data;
-      console.log('👥 Friends response:', responseData);
 
       // Backend now returns { friends: [], pagination: {} }
       const friendsData = responseData?.friends || responseData;
@@ -116,7 +115,6 @@ export default function FriendsPage() {
       setLoading(true);
       const response = await friendsAPI.getFriendRequests();
       const requestsData = response.data.data;
-      console.log('📬 Friend requests:', requestsData);
       setRequests(Array.isArray(requestsData) ? requestsData : []);
     } catch (error: any) {
       toast.error('Failed to load requests');
@@ -134,8 +132,6 @@ export default function FriendsPage() {
       const suggestionsData = response.data.data;
       const meta = response.data.meta;
 
-      console.log('📊 Suggestions data:', suggestionsData);
-      console.log('📊 Pagination meta:', meta);
 
       // Extract user from nested structure
       const users = Array.isArray(suggestionsData)

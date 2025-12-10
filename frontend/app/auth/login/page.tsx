@@ -78,7 +78,6 @@ export default function LoginPage() {
 
     try {
       const response = await api.post("/auth/login", formData);
-      console.log('Login response:', response.data);
       const { data } = response.data;
 
       // Backend returns: { user: {id, email, name, role, xp, level, streak}, accessToken, refreshToken }
@@ -93,15 +92,12 @@ export default function LoginPage() {
         streak: data.user.streak || 0,
       };
 
-      console.log('Calling login with:', userData, 'token:', data.accessToken);
       login(userData, data.accessToken);
 
       // Verify token was stored
       setTimeout(() => {
         const storedToken = localStorage.getItem('token');
         const storeState = useAuthStore.getState();
-        console.log('After login - localStorage token:', storedToken);
-        console.log('After login - store state:', storeState);
       }, 100);
 
       // Redirect based on user role

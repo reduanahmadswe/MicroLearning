@@ -1,6 +1,12 @@
 import axios from "axios";
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://microlearnignbackend.vercel.app/api/v1";
+// Use localhost in development, production URL in production
+const isDevelopment = process.env.NODE_ENV === 'development';
+const defaultUrl = isDevelopment
+  ? "http://localhost:5000/api/v1"
+  : "https://microlearning-backend-reduan.onrender.com/api/v1";
+
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || defaultUrl;
 const API_URL = rawApiUrl.replace(/([^:]\/)\/+/g, "$1");
 
 export const api = axios.create({

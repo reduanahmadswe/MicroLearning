@@ -12,7 +12,6 @@ const mockRedisClient = {
     flushall: async () => 'OK',
     on: () => { },
     connect: async () => {
-        console.log('⚠️ Redis disabled - using in-memory cache');
     },
     disconnect: async () => { },
     quit: async () => { },

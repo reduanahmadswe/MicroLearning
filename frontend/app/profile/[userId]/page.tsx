@@ -104,7 +104,6 @@ export default function UserProfilePage() {
   const checkFriendStatus = async () => {
     try {
       const response = await friendsAPI.getFriends();
-      console.log('Full response:', response.data);
 
       // Handle both array and object responses
       let friends = response.data.data || [];
@@ -116,23 +115,17 @@ export default function UserProfilePage() {
 
       // If still not an array, convert to array or use empty array
       if (!Array.isArray(friends)) {
-        console.log('Friends is not an array, received:', friends);
         friends = [];
       }
 
-      console.log('Current userId:', userId);
-      console.log('Friends array:', friends);
-      console.log('First friend structure:', friends[0]);
 
       // Check if already friends (check both friend._id and friend.friend._id)
       const isFriend = friends.some((f: any) => {
         // Handle both possible structures
         const friendId = f.friend?._id || f._id;
-        console.log('Checking friendId:', friendId, 'against userId:', userId);
         return friendId === userId;
       });
 
-      console.log('Is friend?', isFriend);
 
       if (isFriend) {
         setFriendStatus('friends');

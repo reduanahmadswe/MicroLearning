@@ -13,7 +13,6 @@ class SimpleQueue {
   private jobIdCounter = 0;
 
   constructor(private name: string) {
-    console.log(`📊 ${name} queue initialized (in-memory)`);
   }
 
   async add(data: any): Promise<QueueJob> {
@@ -101,7 +100,6 @@ setInterval(() => {
 
 // Log queue events
 paymentProcessingQueue.on('completed', (job: QueueJob) => {
-  console.log(`✅ Payment job ${job.id} completed`);
 });
 
 paymentProcessingQueue.on('failed', (job: QueueJob, err: Error) => {
@@ -109,7 +107,6 @@ paymentProcessingQueue.on('failed', (job: QueueJob, err: Error) => {
 });
 
 enrollmentQueue.on('completed', (job: QueueJob) => {
-  console.log(`✅ Enrollment job ${job.id} completed`);
 });
 
 enrollmentQueue.on('failed', (job: QueueJob, err: Error) => {

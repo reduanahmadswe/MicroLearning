@@ -134,7 +134,6 @@ export default function QuizPlayerPage() {
         } else if (q.type === 'mcq' && typeof answer === 'number' && q.options) {
           // For MCQ, convert option index to actual option text
           answer = q.options[answer] || answer.toString();
-          console.log(`Q${index + 1}: Selected option index ${answers[index]} → "${answer}"`);
         } else if (typeof answer === 'number') {
           // For other types, convert to string
           answer = answer.toString();
@@ -178,8 +177,6 @@ export default function QuizPlayerPage() {
       }
 
       const result = await response.json();
-      console.log('Quiz submission successful:', result);
-      console.log('📊 Full result structure:', JSON.stringify(result, null, 2));
 
       // Extract data from response
       const attemptData = result.data?.attempt;
@@ -187,15 +184,11 @@ export default function QuizPlayerPage() {
       const score = result.data?.results?.score || attemptData?.score || 0;
       const passed = result.data?.results?.passed || attemptData?.passed || false;
 
-      console.log('📊 Attempt ID:', resultId);
-      console.log('🎯 Score:', score, '%');
-      console.log('✅ Passed:', passed);
 
       toast.success(`Quiz submitted! Score: ${score}%`);
 
       // Navigate to results page
       if (resultId) {
-        console.log('🔄 Redirecting to results page:', `/quiz/${quizId}/results/${resultId}`);
         router.push(`/quiz/${quizId}/results/${resultId}`);
       } else {
         console.error('❌ No result ID found in response:', result);

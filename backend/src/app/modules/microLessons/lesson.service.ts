@@ -120,25 +120,20 @@ class LessonService {
   async getLessons(filters: ILessonFilterQuery, page: number, limit: number, userId?: string) {
     const query: any = {};
 
-    console.log('🔍 getLessons called with:', { filters, userId });
 
     // Check if user is author of the course (for viewing unpublished lessons)
     let isOwnCourse = false;
     if (filters.course && userId) {
       const { Course } = require('../course/course.model');
       const course = await Course.findById(filters.course);
-      console.log('📚 Course found:', course ? `Yes (author: ${course.author})` : 'No');
-      console.log('👤 User ID:', userId);
       if (course && course.author.toString() === userId) {
         isOwnCourse = true;
-        console.log('✅ User is course author - showing all lessons');
       }
     }
 
     // Only show published lessons unless it's the course author viewing their own lessons
     if (!isOwnCourse) {
       query.isPublished = true;
-      console.log('🔒 Not own course - filtering by isPublished: true');
     }
 
     // Apply filters
@@ -178,8 +173,6 @@ class LessonService {
 
     const skip = (page - 1) * limit;
 
-    console.log('🔎 Final MongoDB query:', JSON.stringify(query));
-    console.log('📄 Pagination:', { page, limit, skip });
 
     const [lessons, total] = await Promise.all([
       Lesson.find(query)
@@ -192,7 +185,6 @@ class LessonService {
       Lesson.countDocuments(query),
     ]);
 
-    console.log('✅ Found lessons:', lessons.length, 'Total:', total);
 
     // Check completion status for each lesson if userId provided
     if (userId) {
@@ -267,7 +259,6 @@ class LessonService {
           );
         }
         
-        console.log(`📖 Lesson ${lesson._id} completed status for user ${userId}:`, isCompleted);
       } catch (error) {
         console.error('Error checking lesson completion:', error);
       }
@@ -330,7 +321,6 @@ class LessonService {
         }
       );
       
-      console.log(`✅ Updated lesson orders after deleting lesson at position ${deletedLessonOrder}`);
     }
 
     return { message: 'Lesson deleted successfully' };
@@ -374,7 +364,6 @@ class LessonService {
 
   // Mark lesson as completed
   async completeLesson(lessonId: string, userId: string) {
-    console.log('Service - Complete lesson:', { lessonId, userId });
     
     const lesson = await Lesson.findByIdAndUpdate(
       lessonId,
@@ -387,7 +376,6 @@ class LessonService {
       throw new ApiError(404, 'Lesson not found');
     }
 
-    console.log('Lesson found, awarding XP to user:', userId);
 
     // Award XP to user
     const xpAmount = 50;
@@ -407,7 +395,6 @@ class LessonService {
       throw new ApiError(404, 'User not found');
     }
 
-    console.log('User XP updated:', { oldXP: updatedUser.xp - xpAmount, newXP: updatedUser.xp });
 
     // Create or update individual lesson progress entry
     const lessonProgress = await UserProgress.findOneAndUpdate(
@@ -424,26 +411,20 @@ class LessonService {
       { upsert: true, new: true }
     );
 
-    console.log('Lesson progress updated:', lessonProgress);
 
-    console.log('📚 Lesson.course exists?', !!lesson.course);
-    console.log('📚 Lesson.course value:', lesson.course);
 
     // Update course enrollment progress if lesson belongs to a course
     if (lesson.course) {
-      console.log('✅ Entering enrollment update block');
       try {
         const { Enrollment } = require('../course/course.model');
         const courseId = typeof lesson.course === 'object' ? lesson.course._id : lesson.course;
         
-        console.log('🔍 Looking for enrollment - User:', userId, 'Course:', courseId);
         
         const enrollment = await Enrollment.findOne({
           user: userId,
           course: courseId,
         });
 
-        console.log('📝 Enrollment found:', enrollment ? 'Yes' : 'No');
         if (!enrollment) {
           console.error('❌ NO ENROLLMENT FOUND! User must enroll in course first.');
           return { 
@@ -453,16 +434,13 @@ class LessonService {
             level: updatedUser.level
           };
         }
-        console.log('📝 Current completedLessons:', enrollment?.completedLessons);
 
         if (enrollment) {
           // Add lesson to completed if not already there
           const alreadyCompleted = enrollment.completedLessons.some((id: any) => id.toString() === lessonId);
-          console.log('📝 Already completed?', alreadyCompleted);
           
           if (!alreadyCompleted) {
             enrollment.completedLessons.push(lessonId);
-            console.log('✅ Added lesson to completedLessons:', lessonId);
           }
 
           // Update last accessed lesson
@@ -473,11 +451,6 @@ class LessonService {
           const completedLessons = enrollment.completedLessons.length;
           enrollment.progress = Math.round((completedLessons / totalLessons) * 100);
 
-          console.log('📊 Enrollment progress:', { 
-            completedLessons, 
-            totalLessons, 
-            progress: enrollment.progress 
-          });
 
           // Check if course is 100% complete
           if (enrollment.progress === 100 && !enrollment.completedAt) {
@@ -494,11 +467,9 @@ class LessonService {
             // Generate certificate for course completion
             await this.generateCourseCertificate(userId, courseId.toString());
             
-            console.log('🎓 Course completed! Certificate generated.');
           }
 
           await enrollment.save();
-          console.log('💾 Enrollment saved! completedLessons:', enrollment.completedLessons);
         }
       } catch (error) {
         console.error('Error updating enrollment:', error);
@@ -549,7 +520,6 @@ class LessonService {
         instructorName: course.author?.name || 'Unknown Instructor',
       });
 
-      console.log('Certificate created:', certificateId);
       return certificate;
     } catch (error) {
       console.error('Error generating certificate:', error);

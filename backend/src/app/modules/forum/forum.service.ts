@@ -728,7 +728,6 @@ export const togglePostLike = async (postId: string, userId: string) => {
           link: `/forum/${postId}`,
         },
       });
-      console.log('✅ Like notification created for user:', (postWithAuthor.author as any)._id);
     }
 
     return { liked: true, likeCount: post.likeCount };
@@ -1030,7 +1029,6 @@ export const toggleCommentLike = async (commentId: string, userId: string) => {
           link: `/forum/${comment.post}` 
         },
       });
-      console.log('✅ Comment like notification created for user:', (comment.author as any)._id);
     }
 
     return { liked: true, likeCount: comment.likeCount };

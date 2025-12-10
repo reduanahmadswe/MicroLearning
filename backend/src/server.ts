@@ -8,12 +8,6 @@ import connectDatabase from './config/database';
 // Load environment variables with explicit path
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
-console.log('🔑 Environment loaded:', {
-  nodeEnv: process.env.NODE_ENV,
-  port: process.env.PORT,
-  openaiKeyExists: !!process.env.OPENAI_API_KEY,
-  openaiKeyLength: process.env.OPENAI_API_KEY?.length || 0,
-});
 
 // Import queue configuration BEFORE workers
 import './config/queue';
@@ -35,16 +29,13 @@ const io = new Server(httpServer, {
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log('👤 User connected:', socket.id);
 
   // Join user's personal room for notifications
   socket.on('join', (userId) => {
     socket.join(`user_${userId}`);
-    console.log(`✅ User ${userId} joined their notification room`);
   });
 
   socket.on('disconnect', () => {
-    console.log('👋 User disconnected:', socket.id);
   });
 });
 
@@ -56,11 +47,6 @@ connectDatabase();
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
-  console.log(`📚 API Base URL: http://localhost:${PORT}/api/v1`);
-  console.log(`🔌 Socket.IO is ready for real-time notifications`);
 });
 
 // Handle unhandled promise rejections

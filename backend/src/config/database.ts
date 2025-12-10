@@ -11,14 +11,12 @@ const connectDatabase = async (): Promise<void> => {
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     });
 
-    console.log('✅ Database connected successfully');
 
     mongoose.connection.on('error', (error) => {
       console.error('❌ MongoDB connection error:', error);
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.log('⚠️ MongoDB disconnected');
     });
 
   } catch (error) {

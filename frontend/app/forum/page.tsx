@@ -229,7 +229,6 @@ export default function ForumPage() {
         });
       } catch (joinError) {
         // Ignore if already a member
-        console.log('Group join attempt:', joinError);
       }
 
       const payload = {

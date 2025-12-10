@@ -110,7 +110,6 @@ class LessonController {
     const { id } = req.params;
     const userId = req.user?.userId;
     
-    console.log('Complete lesson request:', { id, userId, user: req.user });
     
     if (!userId) {
       throw new ApiError(401, 'User not authenticated');
@@ -118,7 +117,6 @@ class LessonController {
     
     const result = await lessonService.completeLesson(id, userId);
     
-    console.log('Lesson completion result:', result);
 
     sendResponse(res, {
       statusCode: 200,

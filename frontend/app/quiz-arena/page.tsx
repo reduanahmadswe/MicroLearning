@@ -75,7 +75,6 @@ export default function QuizArenaPage() {
         },
       });
       const data = await response.json();
-      console.log('Quiz Arena - Fetched course-level quizzes:', data);
       if (data.success) {
         setQuizzes(data.data);
       }

@@ -21,7 +21,6 @@ interface EnrollmentJob {
 paymentProcessingQueue.process(async (job: any) => {
   const { paymentId, transactionId, validationData } = job.data as PaymentValidationJob;
 
-  console.log(`🔄 Processing payment validation for payment: ${paymentId}`);
 
   try {
     // Find payment record
@@ -32,7 +31,6 @@ paymentProcessingQueue.process(async (job: any) => {
 
     // Skip if already processed
     if (payment.paymentStatus === 'completed') {
-      console.log(`⏭️ Payment ${paymentId} already completed, skipping`);
       return { success: true, message: 'Already processed' };
     }
 
@@ -61,7 +59,6 @@ paymentProcessingQueue.process(async (job: any) => {
         paymentId: payment._id.toString(),
       });
 
-      console.log(`✅ Payment ${paymentId} validated successfully`);
       return { success: true, paymentId, enrollmentQueued: true };
     } else {
       throw new Error('Payment validation failed: ' + validation.status);
@@ -91,7 +88,6 @@ paymentProcessingQueue.process(async (job: any) => {
 enrollmentQueue.process(async (job: any) => {
   const { userId, courseId } = job.data as EnrollmentJob;
 
-  console.log(`🔄 Creating enrollment for user ${userId}, course ${courseId}`);
 
   try {
     // Check if already enrolled
@@ -101,7 +97,6 @@ enrollmentQueue.process(async (job: any) => {
     });
 
     if (existingEnrollment) {
-      console.log(`⏭️ User ${userId} already enrolled in ${courseId}, skipping`);
       return { success: true, message: 'Already enrolled', enrollmentId: existingEnrollment._id };
     }
 
@@ -116,7 +111,6 @@ enrollmentQueue.process(async (job: any) => {
       $inc: { enrolledCount: 1 },
     });
 
-    console.log(`✅ Enrollment created: ${enrollment._id}`);
     return { success: true, enrollmentId: enrollment._id };
   } catch (error: any) {
     console.error(`❌ Enrollment creation error:`, error.message);
@@ -124,4 +118,3 @@ enrollmentQueue.process(async (job: any) => {
   }
 });
 
-console.log('🚀 Payment queue workers started');

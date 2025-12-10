@@ -138,7 +138,6 @@ const sendNotification = async (payload: IPushNotificationPayload) => {
   // }
 
   // Placeholder response (remove after Firebase setup)
-  console.log(`[PUSH] Would send to ${tokens.length} devices: ${title}`);
   return {
     success: tokens.length,
     failure: 0,
@@ -201,7 +200,6 @@ const sendBulkNotification = async (payload: IBulkNotificationPayload) => {
   // }
 
   // Placeholder response (remove after Firebase setup)
-  console.log(`[PUSH BULK] Would send to ${tokens.length} devices: ${payload.title}`);
   return {
     success: tokens.length,
     failure: 0,

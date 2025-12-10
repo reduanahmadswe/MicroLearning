@@ -20,7 +20,6 @@ class NotificationService {
         isRead: notification.isRead,
         createdAt: notification.createdAt,
       });
-      console.log(`📬 Notification sent to user ${data.user}`);
     } catch (error) {
       console.error('Error sending real-time notification:', error);
     }

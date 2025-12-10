@@ -352,22 +352,18 @@ class BadgeService {
 
   // Admin: Manually award badge
   async manuallyAwardBadge(userId: string, badgeId: string, reason?: string) {
-    console.log('🔍 [Service] Looking for user:', userId);
     const user = await User.findById(userId);
     if (!user) {
       console.error('❌ [Service] User not found:', userId);
       throw new ApiError(404, 'User not found');
     }
-    console.log('✅ [Service] User found:', user.name);
 
-    console.log('🔍 [Service] Looking for badge:', badgeId);
     // Use lean() to get plain object and bypass validation on existing data
     const badge = await Badge.findById(badgeId).lean();
     if (!badge) {
       console.error('❌ [Service] Badge not found:', badgeId);
       throw new ApiError(404, 'Badge not found');
     }
-    console.log('✅ [Service] Badge found:', badge.name);
 
     // Check if user already has this badge
     if (user.badges.includes(badgeId as any)) {
@@ -376,20 +372,16 @@ class BadgeService {
     }
 
     try {
-      console.log('🎯 [Service] Awarding badge to user...');
       user.badges.push(badgeId as any);
       await user.save({ validateBeforeSave: false });
-      console.log('✅ [Service] Badge saved to user');
 
       // Create notification
-      console.log('📨 [Service] Creating notification...');
       await Notification.create({
         user: userId,
         type: 'badge_earned',
         title: 'Badge Awarded!',
         message: `You have been awarded the "${badge.name}" badge! ${reason ? `Reason: ${reason}` : ''}`,
       });
-      console.log('✅ [Service] Notification created');
 
       return { user, badge };
     } catch (error) {
@@ -397,7 +389,6 @@ class BadgeService {
       console.error('❌ [Service] Error occurred, rolling back...');
       user.badges = user.badges.filter((b: any) => b.toString() !== badgeId);
       await user.save({ validateBeforeSave: false });
-      console.log('↩️ [Service] Badge removed from user');
       throw error;
     }
   }

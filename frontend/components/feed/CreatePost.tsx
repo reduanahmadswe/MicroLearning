@@ -60,11 +60,9 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
         postData.video = videoUrl.trim();
       }
 
-      console.log('Creating post with data:', postData);
 
       const response = await postAPI.createPost(postData);
 
-      console.log('Post created successfully:', response.data);
       onPostCreated(response.data.data);
 
       // Reset form

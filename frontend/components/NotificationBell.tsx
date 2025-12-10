@@ -71,28 +71,29 @@ export default function NotificationBell() {
       // Fetch existing notifications
       fetchNotifications();
 
-      // Listen for new real-time notifications
-      socket.on('notification', (notification: Notification) => {
-        console.log('📬 Received notification:', notification);
+      // Listen for new real-time notifications only if socket is available
+      if (socket) {
+        socket.on('notification', (notification: Notification) => {
 
-        // Add to notifications list at the beginning
-        setNotifications((prev) => [notification, ...prev]);
-        setUnreadCount((prev) => prev + 1);
+          // Add to notifications list at the beginning
+          setNotifications((prev) => [notification, ...prev]);
+          setUnreadCount((prev) => prev + 1);
 
-        // Show toast notification
-        toast.success(notification.title, {
-          description: notification.message,
-          duration: 5000,
-          action: notification.data?.link ? {
-            label: 'View',
-            onClick: () => router.push(notification.data!.link!),
-          } : undefined,
+          // Show toast notification
+          toast.success(notification.title, {
+            description: notification.message,
+            duration: 5000,
+            action: notification.data?.link ? {
+              label: 'View',
+              onClick: () => router.push(notification.data!.link!),
+            } : undefined,
+          });
         });
-      });
 
-      return () => {
-        socket.off('notification');
-      };
+        return () => {
+          socket.off('notification');
+        };
+      }
     }
   }, [user, token]);
 

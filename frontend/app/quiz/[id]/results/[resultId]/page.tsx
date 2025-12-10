@@ -46,24 +46,18 @@ export default function QuizResultsPage() {
 
   // Auto redirect to next lesson after 3 seconds if passed
   useEffect(() => {
-    console.log('🔍 Redirect check - Passed:', result?.passed, '| Next Lesson:', nextLesson);
 
     if (result?.passed && nextLesson) {
-      console.log('✅ Quiz passed! Setting 3-second timer for redirect to:', nextLesson.title);
       const timer = setTimeout(() => {
-        console.log('🚀 Redirecting to next lesson:', `/lessons/${nextLesson._id}`);
         toast.success('Redirecting to next lesson...', { duration: 2000 });
         router.push(`/lessons/${nextLesson._id}`);
       }, 3000);
 
       return () => {
-        console.log('⏹️ Cleaning up redirect timer');
         clearTimeout(timer);
       };
     } else if (result?.passed && !nextLesson) {
-      console.log('🎉 Course completed! No more lessons.');
     } else if (!result?.passed) {
-      console.log('❌ Quiz not passed. No redirect.');
     }
   }, [result, nextLesson, router]);
 
@@ -83,11 +77,9 @@ export default function QuizResultsPage() {
   const loadNextLesson = async () => {
     try {
       if (!result?.quiz.lesson) {
-        console.log('⚠️ No lesson attached to this quiz');
         return;
       }
 
-      console.log('📚 Loading next lesson for:', result.quiz.lesson);
       const token = localStorage.getItem('token');
 
       // Get current lesson details
@@ -96,21 +88,17 @@ export default function QuizResultsPage() {
       });
 
       if (!lessonResponse.ok) {
-        console.log('❌ Failed to fetch current lesson');
         return;
       }
 
       const lessonData = await lessonResponse.json();
       const currentLesson = lessonData.data;
-      console.log('📖 Current lesson:', currentLesson.title, '| Order:', currentLesson.order);
 
       if (!currentLesson.course) {
-        console.log('⚠️ Current lesson has no course');
         return;
       }
 
       const courseId = typeof currentLesson.course === 'string' ? currentLesson.course : currentLesson.course._id;
-      console.log('🎓 Course ID:', courseId, '| Looking for order:', (currentLesson.order || 0) + 1);
 
       // Get next lesson
       const nextResponse = await fetch(
@@ -120,15 +108,11 @@ export default function QuizResultsPage() {
 
       if (nextResponse.ok) {
         const nextData = await nextResponse.json();
-        console.log('📦 Next lesson response:', nextData);
         if (nextData.data && nextData.data.length > 0) {
-          console.log('✅ Found next lesson:', nextData.data[0].title);
           setNextLesson(nextData.data[0]);
         } else {
-          console.log('🏁 No more lessons - course completed!');
         }
       } else {
-        console.log('❌ Failed to fetch next lesson');
       }
     } catch (error) {
       console.error('❌ Error loading next lesson:', error);

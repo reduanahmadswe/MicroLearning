@@ -40,53 +40,38 @@ export default function CourseLessonsPage() {
     try {
       setLoading(true);
 
-      console.log('🔍 Fetching course:', courseId);
-      console.log('🔑 Token:', token ? 'Present' : 'Missing');
 
       // Fetch course
       const courseRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('✅ Course response:', courseRes.data);
       setCourse(courseRes.data.data || courseRes.data);
 
       // Fetch lessons for this course
-      console.log('🔍 Fetching lessons with URL:', `https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}`);
       const lessonsRes = await axios.get(`https://microlearnignbackend.vercel.app/api/v1/lessons?course=${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log('✅ Lessons API full response:', lessonsRes);
-      console.log('📦 Lessons data:', lessonsRes.data);
-      console.log('📦 Lessons data.data:', lessonsRes.data?.data);
-      console.log('📦 Type of data.data:', Array.isArray(lessonsRes.data?.data) ? 'Array' : typeof lessonsRes.data?.data);
 
       // Handle different response structures
       let lessonsList = [];
       if (lessonsRes.data?.data?.lessons) {
-        console.log('📚 Using data.data.lessons path');
         lessonsList = lessonsRes.data.data.lessons;
       } else if (Array.isArray(lessonsRes.data?.data)) {
-        console.log('📚 Using data.data array path');
         lessonsList = lessonsRes.data.data;
       } else if (Array.isArray(lessonsRes.data)) {
-        console.log('📚 Using data array path');
         lessonsList = lessonsRes.data;
       }
 
-      console.log('✅ Final parsed lessons list:', lessonsList);
-      console.log('📊 Lessons count:', lessonsList.length);
 
       // Check if each lesson has a quiz
       const lessonsWithQuizStatus = await Promise.all(
         lessonsList.map(async (lesson: Lesson) => {
           try {
-            console.log(`🔍 Checking quiz for lesson ${lesson._id}:`, lesson.title);
             const quizRes = await axios.get(
               `${process.env.NEXT_PUBLIC_API_URL}/quiz?lesson=${lesson._id}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
-            console.log(`📊 Quiz response for ${lesson.title}:`, quizRes.data);
 
             // Check both data and data.data for quizzes array
             const quizzes = Array.isArray(quizRes.data.data)
@@ -94,7 +79,6 @@ export default function CourseLessonsPage() {
               : (Array.isArray(quizRes.data) ? quizRes.data : []);
 
             const hasQuiz = quizzes.length > 0;
-            console.log(`✅ Lesson "${lesson.title}" has quiz:`, hasQuiz, '| Quiz count:', quizzes.length);
 
             return {
               ...lesson,
