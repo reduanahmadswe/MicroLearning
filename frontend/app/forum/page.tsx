@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
+import { useForumPosts, useForumGroups, useAllCourses, useIsInitializing, useAppDispatch } from '@/store/hooks';
+import { createForumPost, voteOnForumPost, markForumPostSolved } from '@/store/globalSlice';
+import { api } from '@/lib/api';
 import {
   MessageSquare,
   Plus,
@@ -81,10 +84,15 @@ interface ForumGroup {
 export default function ForumPage() {
   const router = useRouter();
   const { user, token } = useAuthStore();
-  const [posts, setPosts] = useState<ForumPost[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [groups, setGroups] = useState<ForumGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+
+  // INSTANT DATA FROM REDUX
+  const allPosts = useForumPosts();
+  const groups = useForumGroups();
+  const courses = useAllCourses();
+  const isInitializing = useIsInitializing();
+
+  // UI state only
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -101,6 +109,9 @@ export default function ForumPage() {
     isHelpNeeded: false,
   });
 
+  // Track voting state to prevent rapid clicks
+  const [votingPosts, setVotingPosts] = useState<Set<string>>(new Set());
+
   const categories = [
     { value: 'all', label: 'All Topics', icon: Globe },
     { value: 'programming', label: 'Programming', icon: BookOpen },
@@ -108,102 +119,34 @@ export default function ForumPage() {
     { value: 'general', label: 'General', icon: MessageSquare },
   ];
 
-  useEffect(() => {
-    loadPosts();
-    loadCourses();
-    loadGroups();
-  }, [selectedCategory, selectedStatus, sortBy]);
-
-  const loadPosts = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('query', searchQuery);
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
-      if (selectedStatus === 'solved') params.append('isSolved', 'true');
-      if (selectedStatus === 'unsolved') params.append('isSolved', 'false');
-      if (selectedStatus === 'help-needed') params.append('isHelpNeeded', 'true');
-      params.append('sortBy', sortBy);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch posts');
-
-      const data = await response.json();
-      setPosts(data.data || []);
-    } catch (error) {
-      console.error('Error loading posts:', error);
-      toast.error('Failed to load forum posts');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCourses(data.data || []);
+  // Client-side filtering (instant!)
+  const filteredPosts = useMemo(() => {
+    return allPosts.filter(post => {
+      // Search filter
+      if (searchQuery && !post.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
       }
-    } catch (error) {
-      console.error('Error loading courses:', error);
-    }
-  };
+      // Status filter
+      if (selectedStatus === 'solved' && !post.isSolved) return false;
+      if (selectedStatus === 'unsolved' && post.isSolved) return false;
+      if (selectedStatus === 'help-needed' && !post.isHelpNeeded) return false;
 
-  const loadGroups = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/groups`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        let groupsList = data.data || [];
-
-        // Create default group if none exist
-        if (groupsList.length === 0) {
-          try {
-            const createResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/groups`, {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                name: 'General Discussion',
-                description: 'A place for general questions and discussions',
-                category: 'general',
-                privacy: 'public',
-              }),
-            });
-
-            if (createResponse.ok) {
-              const newGroupData = await createResponse.json();
-              groupsList = [newGroupData.data];
-              toast.success('Created default forum group');
-            }
-          } catch (createError) {
-            console.error('Error creating default group:', createError);
-          }
-        }
-
-        setGroups(groupsList);
-
-        // Set first group as default if available
-        if (groupsList.length > 0 && !createForm.groupId) {
-          setCreateForm(prev => ({ ...prev, groupId: groupsList[0]._id }));
-        }
+      return true;
+    }).sort((a, b) => {
+      if (sortBy === 'recent') {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
-    } catch (error) {
-      console.error('Error loading groups:', error);
-    }
-  };
+      if (sortBy === 'votes') {
+        const scoreA = a.upvotes.length - a.downvotes.length;
+        const scoreB = b.upvotes.length - b.downvotes.length;
+        return scoreB - scoreA;
+      }
+      if (sortBy === 'unanswered') {
+        return a.commentCount - b.commentCount;
+      }
+      return 0;
+    });
+  }, [allPosts, searchQuery, selectedStatus, sortBy]);
 
   const handleCreatePost = async () => {
     if (!createForm.title || !createForm.content) {
@@ -219,16 +162,10 @@ export default function ForumPage() {
     try {
       // First, try to join the group if not already a member
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/groups/${createForm.groupId}/join`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        });
+        await api.post(`/forum/groups/${createForm.groupId}/join`, {});
       } catch (joinError) {
         // Ignore if already a member
+        console.log('Group join:', joinError);
       }
 
       const payload = {
@@ -242,20 +179,7 @@ export default function ForumPage() {
         isHelpNeeded: createForm.isHelpNeeded,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create post');
-      }
-
+      await dispatch(createForumPost(payload)).unwrap();
       toast.success('Post created successfully!');
       setShowCreateModal(false);
       setCreateForm({
@@ -268,7 +192,6 @@ export default function ForumPage() {
         tags: '',
         isHelpNeeded: false,
       });
-      loadPosts();
     } catch (error: any) {
       console.error('Error creating post:', error);
       toast.error(error.message || 'Failed to create post');
@@ -276,40 +199,53 @@ export default function ForumPage() {
   };
 
   const handleVote = async (postId: string, voteType: 'upvote' | 'downvote') => {
+    // Prevent rapid clicks on same post
+    if (votingPosts.has(postId)) {
+      return; // Silently ignore rapid clicks
+    }
+
+    // Debug: Get current post state
+    const currentPost = allPosts.find(p => p._id === postId);
+    console.log('🗳️ BEFORE VOTE:', {
+      postId,
+      voteType,
+      userId: user?._id,
+      upvotes: currentPost?.upvotes,
+      downvotes: currentPost?.downvotes,
+      hasUpvoted: currentPost?.upvotes?.includes(user?._id || ''),
+      hasDownvoted: currentPost?.downvotes?.includes(user?._id || '')
+    });
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts/${postId}/vote`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ voteType }),
+      // Mark as voting
+      setVotingPosts(prev => new Set(prev).add(postId));
+
+      const result = await dispatch(voteOnForumPost({ postId, voteType })).unwrap();
+
+      console.log('✅ AFTER VOTE:', {
+        upvotes: result?.upvotes,
+        downvotes: result?.downvotes,
+        hasUpvoted: result?.upvotes?.includes(user?._id || ''),
+        hasDownvoted: result?.downvotes?.includes(user?._id || '')
       });
-
-      if (!response.ok) throw new Error('Failed to vote');
-
-      loadPosts();
-      toast.success('Vote recorded!');
-    } catch (error) {
-      console.error('Error voting:', error);
-      toast.error('Failed to vote');
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to vote';
+      toast.error(`Vote failed: ${errorMessage}`);
+    } finally {
+      // Remove from voting set after delay
+      setTimeout(() => {
+        setVotingPosts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(postId);
+          return newSet;
+        });
+      }, 500); // 500ms cooldown
     }
   };
 
   const handleMarkSolved = async (postId: string, currentStatus: boolean) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts/${postId}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isSolved: !currentStatus }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update status');
-
-      loadPosts();
+      await dispatch(markForumPostSolved({ postId, isSolved: !currentStatus })).unwrap();
       toast.success(currentStatus ? 'Marked as unsolved' : 'Marked as solved!');
     } catch (error) {
       console.error('Error updating status:', error);
@@ -382,7 +318,7 @@ export default function ForumPage() {
               <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Questions</p>
-                  <p className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">{posts.length}</p>
+                  <p className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">{allPosts.length}</p>
                 </div>
                 <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-100 to-teal-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                   <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
@@ -397,7 +333,7 @@ export default function ForumPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Solved</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-green-600">
-                    {posts.filter(p => p.isSolved).length}
+                    {allPosts.filter((p: any) => p.isSolved).length}
                   </p>
                 </div>
                 <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
@@ -413,7 +349,7 @@ export default function ForumPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Need Help</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-orange-600">
-                    {posts.filter(p => p.isHelpNeeded && !p.isSolved).length}
+                    {allPosts.filter((p: any) => p.isHelpNeeded && !p.isSolved).length}
                   </p>
                 </div>
                 <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
@@ -429,7 +365,7 @@ export default function ForumPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Members</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-teal-600">
-                    {new Set(posts.map(p => p.author._id)).size}
+                    {new Set(allPosts.map((p: any) => p.author._id)).size}
                   </p>
                 </div>
                 <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
@@ -454,7 +390,7 @@ export default function ForumPage() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && loadPosts()}
+                      onKeyPress={(e) => e.key === 'Enter' && setSearchQuery(searchQuery)}
                       placeholder="Search discussions..."
                       className="w-full pl-7 sm:pl-10 pr-2.5 sm:pr-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-background text-foreground"
                     />
@@ -469,8 +405,8 @@ export default function ForumPage() {
                           key={cat.value}
                           onClick={() => setSelectedCategory(cat.value)}
                           className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg whitespace-nowrap text-xs font-medium transition-all flex-shrink-0 ${selectedCategory === cat.value
-                              ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                              : 'bg-card text-muted-foreground hover:bg-accent border border-border'
+                            ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                            : 'bg-card text-muted-foreground hover:bg-accent border border-border'
                             }`}
                         >
                           <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -507,7 +443,7 @@ export default function ForumPage() {
               </CardContent>
             </Card>
             {/* Posts List */}
-            {loading ? (
+            {isInitializing ? (
               <Card className="border border-border shadow-lg bg-card">
                 <CardContent className="p-8 sm:p-12 lg:p-16">
                   <div className="flex flex-col justify-center items-center">
@@ -519,7 +455,7 @@ export default function ForumPage() {
                   </div>
                 </CardContent>
               </Card>
-            ) : posts.length === 0 ? (
+            ) : filteredPosts.length === 0 ? (
               <Card className="border border-border shadow-lg bg-card">
                 <CardContent className="p-8 sm:p-12 text-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -540,7 +476,7 @@ export default function ForumPage() {
               </Card>
             ) : (
               <div className="space-y-3 sm:space-y-4">
-                {posts.map((post) => {
+                {filteredPosts.map((post: any) => {
                   const voteScore = getVoteScore(post);
                   const hasUpvoted = hasUserVoted(post, 'up');
                   const hasDownvoted = hasUserVoted(post, 'down');
@@ -560,8 +496,8 @@ export default function ForumPage() {
                                 handleVote(post._id, 'upvote');
                               }}
                               className={`p-1 sm:p-1.5 lg:p-2 rounded-lg transition-all ${hasUpvoted
-                                  ? 'bg-green-100 dark:bg-green-900/30 text-green-600'
-                                  : 'hover:bg-green-50 dark:hover:bg-green-900/20 text-muted-foreground hover:text-green-600'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-600'
+                                : 'hover:bg-green-50 dark:hover:bg-green-900/20 text-muted-foreground hover:text-green-600'
                                 }`}
                             >
                               <ThumbsUp className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 ${hasUpvoted ? 'fill-green-600' : ''}`} />
@@ -576,8 +512,8 @@ export default function ForumPage() {
                                 handleVote(post._id, 'downvote');
                               }}
                               className={`p-1 sm:p-1.5 lg:p-2 rounded-lg transition-all ${hasDownvoted
-                                  ? 'bg-destructive/10 text-destructive'
-                                  : 'hover:bg-destructive/10 text-muted-foreground hover:text-destructive'
+                                ? 'bg-destructive/10 text-destructive'
+                                : 'hover:bg-destructive/10 text-muted-foreground hover:text-destructive'
                                 }`}
                             >
                               <ThumbsDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 ${hasDownvoted ? 'fill-destructive' : ''}`} />
@@ -674,8 +610,8 @@ export default function ForumPage() {
                                     handleMarkSolved(post._id, post.isSolved);
                                   }}
                                   className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs lg:text-sm font-medium transition-all flex-shrink-0 ${post.isSolved
-                                      ? 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                                      : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-sm'
+                                    ? 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                                    : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-sm'
                                     }`}
                                 >
                                   <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
@@ -749,15 +685,15 @@ export default function ForumPage() {
                   <div className="space-y-1.5 sm:space-y-3 mb-3 sm:mb-6">
                     <div className="flex items-center justify-between p-1.5 sm:p-3 bg-white/10 rounded-lg backdrop-blur-sm">
                       <span className="text-[10px] sm:text-sm text-white/90">Total Members</span>
-                      <span className="font-bold text-xs sm:text-base">{posts.length * 2}+</span>
+                      <span className="font-bold text-xs sm:text-base">{allPosts.length * 2}+</span>
                     </div>
                     <div className="flex items-center justify-between p-1.5 sm:p-3 bg-white/10 rounded-lg backdrop-blur-sm">
                       <span className="text-[10px] sm:text-sm text-white/90">Today's Posts</span>
-                      <span className="font-bold text-xs sm:text-base">{Math.floor(posts.length / 7)}</span>
+                      <span className="font-bold text-xs sm:text-base">{Math.floor(allPosts.length / 7)}</span>
                     </div>
                     <div className="flex items-center justify-between p-1.5 sm:p-3 bg-white/10 rounded-lg backdrop-blur-sm">
                       <span className="text-[10px] sm:text-sm text-white/90">Active Now</span>
-                      <span className="font-bold text-xs sm:text-base">{new Set(posts.map(p => p.author._id)).size}</span>
+                      <span className="font-bold text-xs sm:text-base">{new Set(allPosts.map((p: any) => p.author._id)).size}</span>
                     </div>
                   </div>
 

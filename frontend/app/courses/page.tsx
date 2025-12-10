@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -25,15 +25,28 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { Course } from '@/types';
+// ============================================
+// REDUX HOOKS - INSTANT DATA ACCESS!
+// ============================================
+import {
+  useAllCourses,
+  useEnrolledCourses,
+  useIsInitializing,
+} from '@/store/hooks';
 
 export default function CoursesPage() {
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // ============================================
+  // INSTANT DATA FROM REDUX - NO API CALLS!
+  // ============================================
+  const allCourses = useAllCourses(); // Instant!
+  const enrolledCourses = useEnrolledCourses(); // Instant!
+  const isInitializing = useIsInitializing();
+
+  // UI state only
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
@@ -43,56 +56,28 @@ export default function CoursesPage() {
   const topics = ['Programming', 'Mathematics', 'Science', 'Business', 'Language', 'Design'];
   const difficulties = ['beginner', 'intermediate', 'advanced'];
 
-  useEffect(() => {
-    if (activeTab === 'browse') {
-      loadCourses();
-    } else {
-      loadEnrolledCourses();
-    }
-  }, [selectedDifficulty, selectedTopic, activeTab]);
-
-  const loadCourses = async () => {
-    try {
-      setLoading(true);
-      const params: any = {};
-      if (selectedDifficulty !== 'all') params.difficulty = selectedDifficulty;
-      if (selectedTopic !== 'all') params.topic = selectedTopic;
-      if (searchQuery) params.search = searchQuery;
-
-      const response = await coursesAPI.getCourses(params);
-      setCourses(response.data.data || []);
-    } catch (error: any) {
-      toast.error('Failed to load courses');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadEnrolledCourses = async () => {
-    try {
-      setLoading(true);
-      const response = await coursesAPI.getEnrolledCourses();
-      setEnrolledCourses(response.data.data || []);
-    } catch (error: any) {
-      toast.error('Failed to load enrolled courses');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    loadCourses();
   };
 
-  const filteredCourses = courses.filter(course => {
-    if (searchQuery && !course.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  // Client-side filtering (instant!)
+  const filteredCourses = useMemo(() => {
+    return allCourses.filter(course => {
+      // Search filter
+      if (searchQuery && !course.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      // Difficulty filter
+      if (selectedDifficulty !== 'all' && (course as any).difficulty !== selectedDifficulty) {
+        return false;
+      }
+      // Topic filter
+      if (selectedTopic !== 'all' && (course as any).topic !== selectedTopic) {
+        return false;
+      }
+      return true;
+    });
+  }, [allCourses, searchQuery, selectedDifficulty, selectedTopic]);
 
   return (
     <div className="min-h-screen bg-page-gradient">
@@ -120,7 +105,7 @@ export default function CoursesPage() {
                     <BookOpen className="w-4 h-4 text-green-200" />
                     <p className="text-xs sm:text-sm text-green-100">Total Courses</p>
                   </div>
-                  <p className="text-xl sm:text-2xl font-bold">{courses.length}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{allCourses.length}</p>
                 </div>
                 <div className="bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                   <div className="flex items-center gap-2 mb-1">
@@ -135,7 +120,7 @@ export default function CoursesPage() {
                     <p className="text-xs sm:text-sm text-green-100">Completed</p>
                   </div>
                   <p className="text-xl sm:text-2xl font-bold">
-                    {enrolledCourses.filter(e => e.progress === 100).length}
+                    {enrolledCourses.filter((e: any) => e.progress === 100).length}
                   </p>
                 </div>
               </div>
@@ -305,7 +290,7 @@ export default function CoursesPage() {
             </Card>
 
             {/* Courses Grid */}
-            {loading ? (
+            {isInitializing ? (
               <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
@@ -449,7 +434,7 @@ export default function CoursesPage() {
         ) : (
           <>
             {/* Enrolled Courses */}
-            {loading ? (
+            {isInitializing ? (
               <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
@@ -477,7 +462,7 @@ export default function CoursesPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {enrolledCourses.map((enrollment) => {
+                {enrolledCourses.map((enrollment: any) => {
                   const course = enrollment.course;
                   return (
                     <Link key={enrollment._id} href={`/courses/${course._id}`}>

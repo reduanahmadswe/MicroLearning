@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -32,15 +32,39 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { lessonsAPI, aiAPI } from '@/services/api.service';
+import { aiAPI, lessonsAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import { Lesson } from '@/types';
+// ============================================
+// REDUX HOOKS - INSTANT DATA ACCESS!
+// ============================================
+import {
+  useAllLessons,
+  useEnrolledCourses,
+  useIsInitializing,
+  useAppDispatch,
+} from '@/store/hooks';
+import { fetchAllLessons } from '@/store/globalSlice';
 
 export default function LessonsPage() {
   const router = useRouter();
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+
+  // ============================================
+  // INSTANT DATA FROM REDUX - NO API CALLS!
+  // ============================================
+  const allLessons = useAllLessons(); // Instant!
+  const enrolledCourses = useEnrolledCourses(); // Instant!
+  const isInitializing = useIsInitializing();
+
+  // Extract enrolled course IDs
+  const enrolledCourseIds = useMemo(() => {
+    return enrolledCourses.map((enrollment: any) =>
+      typeof enrollment.course === 'string' ? enrollment.course : enrollment.course?._id
+    ).filter(Boolean);
+  }, [enrolledCourses]);
+
+  // UI state only
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
@@ -51,12 +75,6 @@ export default function LessonsPage() {
     difficulty: 'beginner',
   });
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalLessons, setTotalLessons] = useState(0);
-  const lessonsPerPage = 9;
-
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<{ id: string; title: string } | null>(null);
@@ -65,60 +83,8 @@ export default function LessonsPage() {
   const topics = ['Programming', 'Mathematics', 'Science', 'Business', 'Language', 'Design'];
   const difficulties = ['beginner', 'intermediate', 'advanced'];
 
-  useEffect(() => {
-    loadEnrolledCourses();
-    loadLessons();
-  }, [selectedDifficulty, selectedTopic, currentPage]);
-
-  const loadEnrolledCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/enrollments/me`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const courseIds = data.data.map((enrollment: any) => enrollment.course._id);
-        setEnrolledCourseIds(courseIds);
-      }
-    } catch (error) {
-      console.error('Error loading enrolled courses:', error);
-    }
-  };
-
-  const loadLessons = async () => {
-    try {
-      setLoading(true);
-      const params: any = {
-        page: currentPage,
-        limit: lessonsPerPage,
-      };
-      if (selectedDifficulty !== 'all') params.difficulty = selectedDifficulty;
-      if (selectedTopic !== 'all') params.topic = selectedTopic;
-      if (searchQuery) params.search = searchQuery;
-
-      const response = await lessonsAPI.getLessons(params);
-      setLessons(response.data.data || []);
-
-      // Update pagination info from response
-      const meta = response.data.meta;
-      if (meta) {
-        setTotalPages(meta.totalPages || 1);
-        setTotalLessons(meta.total || 0);
-      }
-    } catch (error: any) {
-      toast.error('Failed to load lessons');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to first page on new search
-    loadLessons();
   };
 
   const handleGenerateAILesson = async () => {
@@ -134,21 +100,13 @@ export default function LessonsPage() {
         difficulty: aiForm.difficulty,
       });
 
-      // Show success message
       toast.success('🎉 AI Lesson generated successfully!');
-
-      // Close modal and reset form
       setShowAIModal(false);
       setAiForm({ topic: '', difficulty: 'beginner' });
 
-      // Reload enrolled courses to include AI Generated Lessons course
-      await loadEnrolledCourses();
+      // Reload lessons from API to get the new one
+      await dispatch(fetchAllLessons()).unwrap();
 
-      // Reset to first page and reload lessons to show the new lesson
-      setCurrentPage(1);
-      await loadLessons();
-
-      // Optional: Navigate to the new lesson if you want
       if (response.data?.data?._id) {
         setTimeout(() => {
           toast.info('Click on the new lesson to start learning!');
@@ -176,12 +134,11 @@ export default function LessonsPage() {
       await lessonsAPI.deleteLesson(lessonToDelete.id);
       toast.success('Lesson deleted successfully!');
 
-      // Close modal and reset
       setShowDeleteModal(false);
       setLessonToDelete(null);
 
       // Reload lessons
-      await loadLessons();
+      await dispatch(fetchAllLessons()).unwrap();
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Failed to delete lesson';
       toast.error(errorMessage);
@@ -196,17 +153,29 @@ export default function LessonsPage() {
     setLessonToDelete(null);
   };
 
-  const filteredLessons = lessons.filter(lesson => {
-    // Only show lessons from enrolled courses
-    const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course?._id;
-    if (courseId && enrolledCourseIds.length > 0 && !enrolledCourseIds.includes(courseId)) {
-      return false;
-    }
-    if (searchQuery && !lesson.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  // Client-side filtering (instant!)
+  const filteredLessons = useMemo(() => {
+    return allLessons.filter(lesson => {
+      // Only show lessons from enrolled courses
+      const courseId = typeof lesson.course === 'string' ? lesson.course : lesson.course?._id;
+      if (courseId && enrolledCourseIds.length > 0 && !enrolledCourseIds.includes(courseId)) {
+        return false;
+      }
+      // Search filter
+      if (searchQuery && !lesson.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      // Difficulty filter
+      if (selectedDifficulty !== 'all' && lesson.difficulty !== selectedDifficulty) {
+        return false;
+      }
+      // Topic filter
+      if (selectedTopic !== 'all' && lesson.topic !== selectedTopic) {
+        return false;
+      }
+      return true;
+    });
+  }, [allLessons, enrolledCourseIds, searchQuery, selectedDifficulty, selectedTopic]);
 
   return (
     <div className="min-h-screen bg-page-gradient">
@@ -254,7 +223,7 @@ export default function LessonsPage() {
                       <Target className="w-4 h-4 text-green-200" />
                       <span className="text-xs sm:text-sm text-green-100 font-medium">Total</span>
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-white">{lessons.length}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-white">{allLessons.length}</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                     <div className="flex items-center gap-2 mb-1">
@@ -275,7 +244,7 @@ export default function LessonsPage() {
                       <Eye className="w-4 h-4 text-blue-200" />
                       <span className="text-xs sm:text-sm text-green-100 font-medium">Total Views</span>
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-white">{lessons.reduce((sum, l) => sum + (l.views || 0), 0)}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-white">{allLessons.reduce((sum: number, l: any) => sum + (l.views || 0), 0)}</p>
                   </div>
                 </div>
               </div>
@@ -331,7 +300,6 @@ export default function LessonsPage() {
                     size="sm"
                     onClick={() => {
                       setSelectedDifficulty('all');
-                      setCurrentPage(1);
                     }}
                     className={selectedDifficulty === 'all' ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'border-gray-300 hover:border-green-300 hover:bg-green-50'}
                   >
@@ -350,7 +318,6 @@ export default function LessonsPage() {
                         size="sm"
                         onClick={() => {
                           setSelectedDifficulty(diff);
-                          setCurrentPage(1);
                         }}
                         className={selectedDifficulty === diff ? colorMap[diff] : 'bg-background text-foreground border-border hover:border-green-300 hover:bg-secondary'}
                       >
@@ -372,7 +339,6 @@ export default function LessonsPage() {
                   value={selectedTopic}
                   onChange={(e) => {
                     setSelectedTopic(e.target.value);
-                    setCurrentPage(1);
                   }}
                   className="px-3 py-1.5 border border-border rounded-xl text-sm text-foreground focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none bg-background"
                 >
@@ -389,7 +355,7 @@ export default function LessonsPage() {
         </Card>
 
         {/* Lessons Grid */}
-        {loading ? (
+        {isInitializing ? (
           <Card className="border-0 shadow-xl bg-card">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
@@ -564,85 +530,6 @@ export default function LessonsPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        )}
-
-        {/* Pagination Controls */}
-        {!loading && filteredLessons.length > 0 && totalPages > 1 && (
-          <div className="mt-6 sm:mt-8">
-            <Card className="border-0 shadow-xl bg-card">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  {/* Page Info */}
-                  <div className="text-sm text-muted-foreground font-medium">
-                    Showing <span className="font-bold text-foreground">{((currentPage - 1) * lessonsPerPage) + 1}</span> to{' '}
-                    <span className="font-bold text-foreground">
-                      {Math.min(currentPage * lessonsPerPage, totalLessons)}
-                    </span>{' '}
-                    of <span className="font-bold text-foreground">{totalLessons}</span> lessons
-                  </div>
-
-                  {/* Pagination Buttons */}
-                  <div className="flex items-center gap-2">
-                    {/* Previous Button */}
-                    <Button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      variant="outline"
-                      size="sm"
-                      className="border-border hover:bg-secondary hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed bg-card text-foreground"
-                    >
-                      <ChevronLeft className="w-4 h-4 mr-1" />
-                      <span className="hidden sm:inline">Previous</span>
-                    </Button>
-
-                    {/* Page Numbers */}
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNumber;
-                        if (totalPages <= 5) {
-                          pageNumber = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNumber = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNumber = totalPages - 4 + i;
-                        } else {
-                          pageNumber = currentPage - 2 + i;
-                        }
-
-                        return (
-                          <Button
-                            key={pageNumber}
-                            onClick={() => setCurrentPage(pageNumber)}
-                            variant={currentPage === pageNumber ? 'default' : 'outline'}
-                            size="sm"
-                            className={
-                              currentPage === pageNumber
-                                ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white min-w-[2.5rem]'
-                                : 'border-border hover:bg-secondary hover:border-green-300 min-w-[2.5rem] bg-card text-foreground'
-                            }
-                          >
-                            {pageNumber}
-                          </Button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Next Button */}
-                    <Button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      variant="outline"
-                      size="sm"
-                      className="border-border hover:bg-secondary hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed bg-card text-foreground"
-                    >
-                      <span className="hidden sm:inline">Next</span>
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
       </div>

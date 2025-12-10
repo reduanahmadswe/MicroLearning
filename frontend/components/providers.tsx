@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { ReduxProvider } from "@/store/ReduxProvider";
 
 export function Providers({ children }: { children: ReactNode }) {
   // Use environment variable or fallback placeholder
@@ -11,7 +12,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        {children}
+        <ReduxProvider>
+          {children}
+        </ReduxProvider>
       </ThemeProvider>
     </GoogleOAuthProvider>
   );

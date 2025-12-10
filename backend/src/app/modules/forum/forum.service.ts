@@ -21,7 +21,7 @@ import {
   IGroupStats,
   ICreatePollRequest,
   IReportRequest,
-  } from './forum.types';
+} from './forum.types';
 import ApiError from '../../../utils/ApiError';
 import httpStatus from 'http-status';
 import Notification from '../notification/notification.model';
@@ -713,7 +713,7 @@ export const togglePostLike = async (postId: string, userId: string) => {
     // Send real-time notification to post author
     const postWithAuthor = await Post.findById(postId).populate('author', '_id name profilePicture');
     const userWhoLiked = await User.findById(userId).select('name profilePicture');
-    
+
     if (postWithAuthor && userWhoLiked && postWithAuthor.author._id.toString() !== userId) {
       await Notification.create({
         user: (postWithAuthor.author as any)._id,
@@ -1015,18 +1015,18 @@ export const toggleCommentLike = async (commentId: string, userId: string) => {
     const userWhoLiked = await User.findById(userId).select('name profilePicture');
     if (comment.author && userWhoLiked && (comment.author as any)._id.toString() !== userId) {
       const commentSnippet = comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '');
-      
+
       await Notification.create({
         user: (comment.author as any)._id,
         type: 'like',
         title: 'New Like on Your Comment',
         message: `${userWhoLiked.name} liked your comment: "${commentSnippet}"`,
-        data: { 
-          commentId, 
-          userId, 
-          senderName: userWhoLiked.name, 
-          senderImage: userWhoLiked.profilePicture, 
-          link: `/forum/${comment.post}` 
+        data: {
+          commentId,
+          userId,
+          senderName: userWhoLiked.name,
+          senderImage: userWhoLiked.profilePicture,
+          link: `/forum/${comment.post}`
         },
       });
     }
@@ -1061,7 +1061,7 @@ export const acceptAnswer = async (commentId: string, userId: string) => {
   if (comment.isAcceptedAnswer) {
     await comment.populate('author', '_id name profilePicture');
     await post.populate('author', 'name profilePicture');
-    
+
     if ((comment.author as any)._id.toString() !== userId) {
       await Notification.create({
         user: (comment.author as any)._id,
@@ -1080,9 +1080,9 @@ export const acceptAnswer = async (commentId: string, userId: string) => {
     }
   }
 
-  return { 
-    message: comment.isAcceptedAnswer ? 'Answer accepted successfully' : 'Answer unaccepted successfully', 
-    isAccepted: comment.isAcceptedAnswer 
+  return {
+    message: comment.isAcceptedAnswer ? 'Answer accepted successfully' : 'Answer unaccepted successfully',
+    isAccepted: comment.isAcceptedAnswer
   };
 };
 
@@ -1342,12 +1342,12 @@ export const votePost = async (postId: string, userId: string, voteType: 'upvote
 
   await post.save();
 
-  return {
-    upvotes: post.upvotes.length,
-    downvotes: post.downvotes.length,
-    userVote: upvoteIndex > -1 || (voteType === 'upvote' && upvoteIndex === -1) ? 'upvote' : 
-              downvoteIndex > -1 || (voteType === 'downvote' && downvoteIndex === -1) ? 'downvote' : null,
-  };
+  // Populate author and group for complete post data
+  await post.populate('author', 'name email profilePicture level xp');
+  await post.populate('group', 'name');
+
+  // Return full post object for Redux state update
+  return post.toObject();
 };
 
 /**
@@ -1370,7 +1370,7 @@ export const voteComment = async (commentId: string, userId: string, voteType: '
         comment.downvotes.splice(downvoteIndex, 1);
       }
       comment.upvotes.push(userId as any);
-      
+
       // Award XP for helpful answer
       const User = require('../auth/auth.model').default;
       await User.findByIdAndUpdate(comment.author, { $inc: { xp: 5 } });

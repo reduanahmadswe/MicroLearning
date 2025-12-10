@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -18,75 +18,45 @@ import {
   Star,
   TrendingUp,
   Award,
-  Bell,
-  Settings,
-  LogOut,
-  Home,
   GraduationCap,
   Zap,
   Map,
   Video,
   Newspaper,
-  Play,
-  Eye,
-  Heart,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { progressAPI, badgesAPI, leaderboardAPI } from '@/services/api.service';
 import { toast } from 'sonner';
+// ============================================
+// REDUX HOOKS - INSTANT DATA ACCESS!
+// ============================================
+import {
+  useCurrentUser,
+  useProgressStats,
+  useUserBadges,
+  useGlobalLeaderboard,
+  useIsInitializing,
+} from '@/store/hooks';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-  const [badges, setBadges] = useState<any[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const { logout } = useAuthStore();
+
+  // ============================================
+  // INSTANT DATA FROM REDUX - NO API CALLS!
+  // ============================================
+  const user = useCurrentUser();
+  const stats = useProgressStats();
+  const badges = useUserBadges();
+  const leaderboard = useGlobalLeaderboard();
+  const isInitializing = useIsInitializing();
 
   useEffect(() => {
-    const { token } = useAuthStore.getState();
-
-    if (!user || !token) {
-      setLoading(false);
+    if (!user) {
       router.push('/auth/login');
-      return;
     }
-
-    loadDashboardData();
   }, [user, router]);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [progressRes, badgesRes, leaderboardRes] = await Promise.all([
-        progressAPI.getProgress().catch((err) => {
-          console.error('Progress API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error');
-          return { data: { data: null } };
-        }),
-        badgesAPI.getUserBadges().catch((err) => {
-          console.error('Badges API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error');
-          return { data: { data: [] } };
-        }),
-        leaderboardAPI.getGlobalLeaderboard({ limit: 5 }).catch((err) => {
-          console.error('Leaderboard API error:', err?.response?.status || 'No response', err?.response?.data || err?.message || 'Unknown error');
-          return { data: { data: [] } };
-        }),
-      ]);
-
-
-      const statsData = progressRes.data.data || { totalXP: user?.xp || 0, level: user?.level || 1, currentStreak: user?.streak || 0 };
-
-      setStats(statsData);
-      setBadges(badgesRes.data.data?.slice(0, 6) || []);
-      setLeaderboard(leaderboardRes.data.data || []);
-    } catch (error: any) {
-      console.error('Dashboard loading error:', error?.message || error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -120,7 +90,7 @@ export default function DashboardPage() {
     { icon: Clock, label: 'Study Time', value: `${Math.floor((stats?.studyTimeMinutes || 0) / 60)}h`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20', iconBg: 'bg-gradient-to-br from-emerald-500 to-green-600' },
   ];
 
-  if (loading) {
+  if (isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -129,6 +99,10 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
   }
 
   return (
