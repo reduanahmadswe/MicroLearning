@@ -21,10 +21,19 @@ const getPostComments = async (postId: string, page = 1, limit = 20) => {
     .limit(limit)
     .lean();
 
+  // Filter out comments with deleted/invalid users
+  const validComments = comments
+    .filter(comment => comment.user && comment.user._id)
+    .map(comment => ({
+      ...comment,
+      // Also filter out invalid replies
+      replies: comment.replies?.filter((reply: any) => reply.user && reply.user._id) || []
+    }));
+
   const total = await PostComment.countDocuments({ post: postId, parentComment: null });
 
   return {
-    comments,
+    comments: validComments,
     pagination: {
       total,
       page,
@@ -52,10 +61,13 @@ const getCommentReplies = async (commentId: string, page = 1, limit = 20) => {
     .limit(limit)
     .lean();
 
+  // Filter out comments with deleted/invalid users
+  const validReplies = replies.filter(reply => reply.user && reply.user._id);
+
   const total = await PostComment.countDocuments({ parentComment: commentId });
 
   return {
-    replies,
+    replies: validReplies,
     pagination: {
       total,
       page,

@@ -127,7 +127,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     }
   };
 
-  if (!user) return null;
+  // Don't render if user is not authenticated or user data is not loaded
+  if (!user || !user._id) return null;
 
   return (
     <div className="p-4 bg-muted/30 border-t border-border">
@@ -188,9 +189,9 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             No comments yet. Be the first to comment!
           </p>
         ) : (
-          comments.map((comment) => (
+          comments.map((comment, index) => (
             <NestedComment
-              key={comment._id}
+              key={comment._id || `comment-${postId}-${index}`}
               comment={comment}
               postId={postId}
               currentUserId={user._id}

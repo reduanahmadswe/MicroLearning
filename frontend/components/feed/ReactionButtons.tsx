@@ -48,13 +48,18 @@ export default function ReactionButtons({ post, onUpdate }: ReactionButtonsProps
   const handleReaction = async (type: 'like' | 'love' | 'celebrate' | 'insightful' | 'curious') => {
     if (isUpdating) return;
 
+    if (!user?._id) {
+      toast.error('You must be logged in to react to posts');
+      return;
+    }
+
     // Optimistic Update Data
     const isRemoving = userReaction?.type === type;
     const newReactions = isRemoving
-      ? post.reactions.filter((r) => getUserId(r.user) !== user?._id)
+      ? post.reactions.filter((r) => getUserId(r.user) !== user._id)
       : [
-        ...post.reactions.filter((r) => getUserId(r.user) !== user?._id),
-        { user: user!._id, type, createdAt: new Date().toISOString() }, // Optimistically add as string ID
+        ...post.reactions.filter((r) => getUserId(r.user) !== user._id),
+        { user: user._id, type, createdAt: new Date().toISOString() }, // Optimistically add as string ID
       ];
 
     const newReactionCount = isRemoving ? post.reactionCount - 1 : (userReaction ? post.reactionCount : post.reactionCount + 1);

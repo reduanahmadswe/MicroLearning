@@ -139,6 +139,11 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   };
 
   const handleShare = async () => {
+    if (!user?._id) {
+      toast.error('You must be logged in to share posts');
+      return;
+    }
+
     try {
       const response = await postAPI.sharePost(post._id, shareMessage || undefined);
       toast.success('Post shared successfully!');
@@ -149,7 +154,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       onUpdate({
         ...post,
         shareCount: post.shareCount + 1,
-        shares: [...post.shares, user!._id],
+        shares: [...post.shares, user._id],
       });
 
       // Add the new shared post to the feed immediately

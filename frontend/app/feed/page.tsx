@@ -205,9 +205,9 @@ export default function FeedPage() {
                 </Card>
               ) : (
                 <>
-                  {filteredPosts.map((post) => (
+                  {filteredPosts.map((post, index) => (
                     <PostCard
-                      key={`${post._id}-${post.reactionCount || 0}`}
+                      key={post._id || `post-${index}`}
                       post={post}
                       onDelete={handlePostDeleted}
                       onUpdate={handlePostUpdated}

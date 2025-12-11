@@ -66,6 +66,12 @@ export default function NestedComment({
   const [showReplies, setShowReplies] = useState(depth < 2); // Auto-show first 2 levels
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Safety check: Don't render if comment data is incomplete
+  if (!comment.user || !comment.user._id) {
+    console.warn('NestedComment: Invalid comment data', comment);
+    return null;
+  }
+
   const isOwner = comment.user._id === currentUserId;
   const hasLiked = comment.likes?.includes(currentUserId);
 
@@ -299,9 +305,9 @@ export default function NestedComment({
           {/* Nested Replies */}
           {showReplies && comment.replies && comment.replies.length > 0 && (
             <div className="mt-2">
-              {comment.replies.map((reply) => (
+              {comment.replies.map((reply, index) => (
                 <NestedComment
-                  key={reply._id}
+                  key={reply._id || `reply-${comment._id}-${index}`}
                   comment={reply}
                   postId={postId}
                   currentUserId={currentUserId}
