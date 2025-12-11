@@ -74,7 +74,7 @@ export default function InstructorCoursesPage() {
 
   const handleTogglePublish = async (courseId: string, currentStatus: boolean) => {
     try {
-      await api.patch(`/courses/${courseId}/toggle-publish`);
+      await api.patch(`/courses/${courseId}/publish`);
       toast.success(`Course ${!currentStatus ? 'published' : 'unpublished'} successfully`);
       // Force refresh after toggle
       dispatch(fetchInstructorCourses({ force: true }));
