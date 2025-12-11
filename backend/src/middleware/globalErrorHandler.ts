@@ -15,10 +15,15 @@ const globalErrorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
-  console.log('Global Error Handler:', error);
   let statusCode = error.statusCode || 500;
   let message = error.message || 'Internal Server Error';
   let errorDetails = null;
+
+  // Only log non-operational errors (like 500s) or critical issues
+  // Skip logging 404s and 400s to avoid console noise for expected client errors (e.g. "Not enrolled")
+  if (statusCode >= 500) {
+    console.log('Global Error Handler:', error);
+  }
 
   // Handle Zod validation errors
   if (error instanceof ZodError) {

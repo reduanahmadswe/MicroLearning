@@ -20,6 +20,7 @@ router.get('/instructor', authGuard('instructor', 'admin'), quizController.getIn
 router.get('/attempts/me', authGuard(), quizController.getUserAttempts);
 router.get('/attempt/:id', authGuard(), quizController.getAttemptDetails);
 router.get('/lesson/:lessonId', quizController.getQuizByLesson);
+router.get('/stats', authGuard(), quizController.getQuizStatistics);
 
 // Dynamic ID routes (MUST be after specific routes)
 router.get('/:id', quizController.getQuizById);

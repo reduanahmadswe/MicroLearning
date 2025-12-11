@@ -45,16 +45,29 @@ class QuizController {
     });
   });
 
+  // Get quiz statistics
+  getQuizStatistics = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+    const result = await quizService.getQuizStatistics(userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Quiz statistics retrieved successfully',
+      data: result,
+    });
+  });
+
   // Get quiz by ID - with enrollment check for students
   getQuizById = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId;
-    
+
     // Check enrollment access for students taking the quiz
     if (userId) {
       await quizService.checkQuizAccess(userId, id);
     }
-    
+
     const result = await quizService.getQuizById(id, userId);
 
     sendResponse(res, {
@@ -96,10 +109,10 @@ class QuizController {
   submitQuiz = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;
     const { quizId } = req.body;
-    
+
     // Verify enrollment before allowing quiz submission
     await quizService.checkQuizAccess(userId, quizId);
-    
+
     const result = await quizService.submitQuiz(userId, req.body);
 
     sendResponse(res, {
@@ -142,9 +155,9 @@ class QuizController {
 
   // Get instructor's quizzes
   getInstructorQuizzes = catchAsync(async (req: Request, res: Response) => {
-    
+
     const userId = req.user?.userId as string;
-    
+
     const result = await quizService.getInstructorQuizzes(userId);
 
     sendResponse(res, {

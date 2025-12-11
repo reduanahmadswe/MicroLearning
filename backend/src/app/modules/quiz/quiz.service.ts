@@ -161,6 +161,39 @@ class QuizService {
     };
   }
 
+  // Get overall quiz statistics
+  async getQuizStatistics(userId?: string) {
+    const totalQuizzes = await Quiz.countDocuments({ isPublished: true });
+
+    let userStats = {
+      totalAttempts: 0,
+      passedQuizzes: 0,
+      averageScore: 0,
+    };
+
+    if (userId) {
+      const attempts = await QuizAttempt.find({ user: userId });
+      const passed = attempts.filter((a) => a.passed).length;
+      const averageScore =
+        attempts.length > 0
+          ? Math.round(
+            attempts.reduce((acc, curr) => acc + curr.score, 0) / attempts.length
+          )
+          : 0;
+
+      userStats = {
+        totalAttempts: attempts.length,
+        passedQuizzes: passed,
+        averageScore,
+      };
+    }
+
+    return {
+      totalQuizzes,
+      ...userStats,
+    };
+  }
+
   // Get quiz by ID
   async getQuizById(quizId: string, userId?: string) {
     const quiz = await Quiz.findById(quizId)
