@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Course, CoursePayment, Enrollment } from './course.model';
 import User from '../auth/auth.model';
 import ApiError from '../../../utils/ApiError';
@@ -6,9 +7,26 @@ import SSLCommerzPayment from 'sslcommerz-lts';
 import { paymentProcessingQueue } from '../../../config/queue';
 
 /**
+ * Helper to resolve Course ID (slug or ObjectId)
+ */
+const resolveCourseId = async (identifier: string) => {
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    return identifier;
+  }
+  const course = await Course.findOne({ slug: identifier }).select('_id');
+  if (!course) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Course not found');
+  }
+  return course._id.toString();
+};
+
+/**
  * Initiate Course Payment with SSLCommerz
  */
-export const initiateCoursePayment = async (userId: string, courseId: string) => {
+export const initiateCoursePayment = async (userId: string, identifier: string) => {
+  // Resolve identifier to ID
+  const courseId = await resolveCourseId(identifier);
+
   // Get course details
   const course = await Course.findById(courseId).populate('author', 'name');
   if (!course) {
@@ -284,7 +302,9 @@ export const getUserCoursePayments = async (userId: string) => {
 /**
  * Check if user has purchased a course
  */
-export const hasUserPurchasedCourse = async (userId: string, courseId: string) => {
+export const hasUserPurchasedCourse = async (userId: string, identifier: string) => {
+  const courseId = await resolveCourseId(identifier);
+
   const payment = await CoursePayment.findOne({
     user: userId,
     course: courseId,

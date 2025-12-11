@@ -325,7 +325,7 @@ export default function CoursesPage() {
                 : "space-y-4"
               }>
                 {filteredCourses.map((course) => (
-                  <Link key={course._id} href={`/courses/${course._id}`}>
+                  <Link key={course._id} href={`/courses/${(course as any).slug || course._id}`}>
                     <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer ${viewMode === 'grid' ? '' : 'hover:-translate-y-1'
                       } ${viewMode === 'list' ? 'flex flex-row' : ''}`}>
                       {/* Thumbnail */}
@@ -465,7 +465,7 @@ export default function CoursesPage() {
                 {enrolledCourses.map((enrollment: any) => {
                   const course = enrollment.course;
                   return (
-                    <Link key={enrollment._id} href={`/courses/${course._id}`}>
+                    <Link key={enrollment._id} href={`/courses/${(course as any).slug || course._id}`}>
                       <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer">
                         {/* Thumbnail with Progress */}
                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/20 dark:to-teal-900/20">

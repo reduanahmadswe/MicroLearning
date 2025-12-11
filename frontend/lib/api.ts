@@ -6,7 +6,10 @@ const defaultUrl = isDevelopment
   ? "http://localhost:5000/api/v1"
   : "https://microlearning-backend-reduan.onrender.com/api/v1";
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || defaultUrl;
+// Force localhost in development to ensure we hit the local backend with our fixes
+const rawApiUrl = isDevelopment
+  ? "http://localhost:5000/api/v1"
+  : (process.env.NEXT_PUBLIC_API_URL || defaultUrl);
 const API_URL = rawApiUrl.replace(/([^:]\/)\/+/g, "$1");
 
 export const api = axios.create({

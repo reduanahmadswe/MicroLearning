@@ -9,7 +9,7 @@ const nextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://microlearning-backend-reduan.onrender.com/api/v1',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api/v1' : 'https://microlearning-backend-reduan.onrender.com/api/v1'),
   },
   async headers() {
     return [

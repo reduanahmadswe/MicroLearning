@@ -43,14 +43,21 @@ class CourseController {
   getCourseById = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId;
-    const result = await courseService.getCourseById(id, userId);
+    console.log('CourseController.getCourseById:', { id, userId });
 
-    sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Course retrieved successfully',
-      data: result,
-    });
+    // Explicitly try-catch to see if service throws
+    try {
+      const result = await courseService.getCourseById(id, userId);
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Course retrieved successfully',
+        data: result,
+      });
+    } catch (err) {
+      console.error('CourseService.getCourseById failed:', err);
+      throw err;
+    }
   });
 
   // Update course

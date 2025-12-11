@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Course, Enrollment, CoursePayment } from './course.model';
 import Lesson from '../microLessons/lesson.model';
 import User from '../auth/auth.model';
@@ -8,7 +9,7 @@ class CourseService {
   // Create course
   async createCourse(userId: string, courseData: ICreateCourseRequest) {
     let estimatedDuration = 0;
-    
+
     // Verify all lessons exist if lessons provided
     if (courseData.lessons && courseData.lessons.length > 0) {
       const lessonIds = courseData.lessons.map((l) => l.lesson);
@@ -83,9 +84,9 @@ class CourseService {
     // Add lesson count for each course
     const coursesWithLessonCount = await Promise.all(
       courses.map(async (course) => {
-        const lessonCount = await Lesson.countDocuments({ 
-          course: course._id, 
-          isPublished: true 
+        const lessonCount = await Lesson.countDocuments({
+          course: course._id,
+          isPublished: true
         });
         return {
           ...course,
@@ -108,9 +109,13 @@ class CourseService {
 
   // Get course by ID or slug
   async getCourseById(identifier: string, userId?: string) {
-    const course = await Course.findOne({
-      $or: [{ _id: identifier }, { slug: identifier }],
-    })
+    console.log('CourseService.getCourseById called with:', { identifier, userId });
+    const isObjectId = mongoose.Types.ObjectId.isValid(identifier);
+    const query = isObjectId
+      ? { $or: [{ _id: identifier }, { slug: identifier }] }
+      : { slug: identifier };
+
+    const course = await Course.findOne(query)
       .populate('author', 'name profilePicture bio')
       .lean();
 
@@ -119,15 +124,15 @@ class CourseService {
     }
 
     // Fetch lessons directly from Lesson collection instead of course.lessons array
-    const lessons = await Lesson.find({ 
+    const lessons = await Lesson.find({
       course: course._id,
-      isPublished: true 
+      isPublished: true
     })
       .select('title description estimatedTime difficulty order')
       .sort({ order: 1 })
       .lean();
 
-    
+
     if (lessons.length > 0) {
     }
 
@@ -135,7 +140,7 @@ class CourseService {
     let isEnrolled = false;
     let enrollment = null;
 
-    if (userId) {
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       enrollment = await Enrollment.findOne({
         user: userId,
         course: course._id,
@@ -153,7 +158,8 @@ class CourseService {
   }
 
   // Update course
-  async updateCourse(courseId: string, userId: string, userRole: string, updateData: any) {
+  async updateCourse(identifier: string, userId: string, userRole: string, updateData: any) {
+    const courseId = await this.resolveCourseId(identifier);
     const course = await Course.findById(courseId);
 
     if (!course) {
@@ -192,7 +198,8 @@ class CourseService {
   }
 
   // Delete course
-  async deleteCourse(courseId: string, userId: string, userRole: string) {
+  async deleteCourse(identifier: string, userId: string, userRole: string) {
+    const courseId = await this.resolveCourseId(identifier);
     const course = await Course.findById(courseId);
 
     if (!course) {
@@ -209,8 +216,28 @@ class CourseService {
     return { message: 'Course deleted successfully' };
   }
 
+  // Helper to resolve Course ID (slug or ObjectId)
+  private async resolveCourseId(identifier: string) {
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      return identifier;
+    }
+    const course = await Course.findOne({ slug: identifier }).select('_id');
+    if (!course) {
+      throw new ApiError(404, 'Course not found');
+    }
+    return course._id.toString();
+  }
+
   // Enroll in course
-  async enrollInCourse(userId: string, courseId: string) {
+  async enrollInCourse(userId: string, identifier: string) {
+    // Resolve identifier to ID
+    let courseId = identifier;
+    if (!mongoose.Types.ObjectId.isValid(identifier)) {
+      const course = await Course.findOne({ slug: identifier }).select('_id');
+      if (!course) throw new ApiError(404, 'Course not found');
+      courseId = course._id.toString();
+    }
+
     const course = await Course.findById(courseId);
 
     if (!course) {
@@ -242,7 +269,7 @@ class CourseService {
 
       if (!completedPayment) {
         throw new ApiError(
-          403, 
+          403,
           'Payment required for this premium course. Please initiate payment first.'
         );
       }
@@ -266,9 +293,22 @@ class CourseService {
 
   // Get single enrollment for a course
   async getEnrollment(userId: string, courseId: string) {
+    // Check if courseId is a valid ObjectId
+    const isObjectId = mongoose.Types.ObjectId.isValid(courseId);
+    let targetCourseId = courseId;
+
+    if (!isObjectId) {
+      // It's a slug, find the course first
+      const course = await Course.findOne({ slug: courseId }).select('_id');
+      if (!course) {
+        throw new ApiError(404, 'Course not found');
+      }
+      targetCourseId = course._id.toString();
+    }
+
     const enrollment = await Enrollment.findOne({
       user: userId,
-      course: courseId,
+      course: targetCourseId,
     })
       .populate('course', 'title thumbnailUrl')
       .lean();
@@ -305,7 +345,9 @@ class CourseService {
   }
 
   // Update enrollment progress
-  async updateEnrollmentProgress(userId: string, courseId: string, lessonId: string) {
+  async updateEnrollmentProgress(userId: string, identifier: string, lessonId: string) {
+    const courseId = await this.resolveCourseId(identifier);
+
     const enrollment = await Enrollment.findOne({
       user: userId,
       course: courseId,
@@ -358,7 +400,8 @@ class CourseService {
   }
 
   // Get course statistics
-  async getCourseStatistics(courseId: string) {
+  async getCourseStatistics(identifier: string) {
+    const courseId = await this.resolveCourseId(identifier);
     const enrollments = await Enrollment.find({ course: courseId });
 
     const totalEnrollments = enrollments.length;
@@ -385,10 +428,10 @@ class CourseService {
     const coursesWithStats = await Promise.all(
       courses.map(async (course) => {
         const enrollmentCount = await Enrollment.countDocuments({ course: course._id });
-        
+
         // Count actual lessons in database for this course
         const lessonCount = await Lesson.countDocuments({ course: course._id });
-        
+
         return {
           ...course,
           enrollmentCount,
@@ -638,7 +681,8 @@ class CourseService {
   }
 
   // Get course students
-  async getCourseStudents(courseId: string, userId: string, userRole: string) {
+  async getCourseStudents(identifier: string, userId: string, userRole: string) {
+    const courseId = await this.resolveCourseId(identifier);
     // Verify course exists and belongs to instructor
     const course = await Course.findById(courseId);
     if (!course) {
@@ -668,7 +712,7 @@ class CourseService {
   // Generate certificate for course completion
   private async generateCertificate(userId: string, courseId: string) {
     const Certificate = require('../certificate/certificate.model').default;
-    
+
     // Check if certificate already exists
     const existingCertificate = await Certificate.findOne({
       user: userId,
@@ -681,7 +725,7 @@ class CourseService {
 
     const user = await User.findById(userId);
     const course = await Course.findById(courseId).populate('author', 'name');
-    
+
     if (!user || !course) {
       return null;
     }
@@ -708,7 +752,8 @@ class CourseService {
   }
 
   // Toggle course publish status
-  async togglePublishStatus(courseId: string, userId: string, userRole: string) {
+  async togglePublishStatus(identifier: string, userId: string, userRole: string) {
+    const courseId = await this.resolveCourseId(identifier);
     const course = await Course.findById(courseId);
 
     if (!course) {

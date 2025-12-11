@@ -245,7 +245,7 @@ export default function Navbar() {
                 <span className={`text-base sm:text-xl font-bold bg-gradient-to-r ${getRoleColor()} bg-clip-text text-transparent`}>
                   MicroLearning
                 </span>
-                {user && <p className="text-[10px] text-gray-500 -mt-1">{getRoleLabel()} Portal</p>}
+                {user && <p className="text-[10px] text-muted-foreground -mt-1">{getRoleLabel()} Portal</p>}
               </div>
             </Link>
 
@@ -446,7 +446,7 @@ export default function Navbar() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                className="lg:hidden p-2 rounded-lg text-foreground hover:bg-accent"
               >
                 {mobileMenuOpen ? (
                   <X className="w-6 h-6" />
@@ -461,8 +461,8 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 z-50 bg-white overflow-y-auto">
-          <div className="px-4 py-6 space-y-2">
+        <div className="lg:hidden fixed inset-0 top-16 z-50 bg-background overflow-y-auto overflow-x-hidden animate-in slide-in-from-top-5 w-full">
+          <div className="flex flex-col p-2 space-y-2 pb-20 w-full">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -471,61 +471,66 @@ export default function Navbar() {
                   key={item.path}
                   href={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${active
-                    ? 'bg-green-50 text-green-600'
-                    : 'text-gray-700 hover:bg-gray-100'
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors w-full ${active
+                    ? 'bg-accent text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="truncate">{item.name}</span>
                 </Link>
               );
             })}
 
             {user ? (
               <>
-                <div className="border-t border-gray-200 my-4"></div>
+                <div className="border-t border-border my-2"></div>
 
                 {/* Mobile Profile Section */}
-                <div className="px-4 py-3 bg-gray-50 rounded-lg mx-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold overflow-hidden`}>
-                      {user.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          alt={user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        user.name?.charAt(0).toUpperCase()
-                      )}
+                <div className="w-full bg-muted/50 rounded-xl border border-border overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-12 h-12 flex-shrink-0 bg-gradient-to-br ${getRoleColor()} rounded-full flex items-center justify-center text-white font-bold overflow-hidden shadow-sm border-2 border-background`}>
+                        {user.profilePicture ? (
+                          <img
+                            src={user.profilePicture}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          user.name?.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate text-base">{user.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        <span className={`inline-flex items-center mt-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBgColor()}`}>
+                          {getRoleLabel()}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${getRoleBgColor()}`}>
-                        {getRoleLabel()}
-                      </span>
-                    </div>
+                    {user.xp && (
+                      <div className="mt-2 bg-background/50 rounded-lg p-3 border border-border/50">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
+                          <span className="font-medium">XP Progress</span>
+                          <span className="font-mono">{user.xp} XP</span>
+                        </div>
+                        <div className="h-2.5 bg-secondary rounded-full overflow-hidden ring-1 ring-border/20">
+                          <div
+                            className={`h-full bg-gradient-to-r ${getRoleColor()} transition-all duration-500`}
+                            style={{ width: `${Math.min((user.xp % 1000) / 10, 100)}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1.5 text-right">
+                          {1000 - (user.xp % 1000)} XP to next level
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  {user.xp && (
-                    <div>
-                      <div className="flex justify-between text-xs text-gray-600 mb-1">
-                        <span>XP Progress</span>
-                        <span>{user.xp} XP</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full bg-gradient-to-r ${getRoleColor()}`}
-                          style={{ width: `${Math.min((user.xp % 1000) / 10, 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Mobile Profile Menu Items */}
-                <div className="px-4 py-2 space-y-1">
+                <div className="space-y-1 mt-2">
                   {getProfileMenuItems().map((item) => {
                     const Icon = item.icon;
                     return (
@@ -533,44 +538,46 @@ export default function Navbar() {
                         key={item.path}
                         href={item.path}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors w-full group"
                       >
-                        <Icon className="w-5 h-5 text-gray-500" />
-                        <span className="text-base text-gray-700">{item.label}</span>
+                        <div className={`w-8 h-8 rounded-lg ${getRoleBgColor()} flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-base font-medium">{item.label}</span>
                       </Link>
                     );
                   })}
                 </div>
 
                 {/* Mobile Logout */}
-                <div className="px-4 mt-2">
+                <div className="mt-4 pt-2 border-t border-border">
                   <button
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-base font-medium text-white bg-destructive hover:bg-destructive/90 transition-all shadow-sm active:scale-[0.98]"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
+                    <span>Sign Out</span>
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <div className="border-t border-gray-200 my-4"></div>
+                <div className="border-t border-border my-4"></div>
                 {/* Mobile Auth Buttons */}
-                <div className="px-4 space-y-2">
-                  <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 transition-colors">
+                <div className="space-y-3">
+                  <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className="block w-full">
+                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-base font-medium text-foreground bg-secondary/80 hover:bg-secondary transition-colors">
                       <User className="w-5 h-5" />
-                      <span>Login</span>
+                      <span>Log In</span>
                     </button>
                   </Link>
-                  <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 hover:opacity-90 transition-opacity shadow-md">
+                  <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)} className="block w-full">
+                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-base font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 hover:opacity-90 transition-all shadow-md">
                       <GraduationCap className="w-5 h-5" />
-                      <span>Sign Up Free</span>
+                      <span>Create Account</span>
                     </button>
                   </Link>
                 </div>

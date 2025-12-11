@@ -280,9 +280,9 @@ export default function CourseDetailPage() {
   const isFree = !course.price || course.price === 0;
 
   return (
-    <div className="min-h-screen bg-page-gradient">
+    <div className="min-h-screen bg-page-gradient w-full overflow-x-hidden">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
+      <div className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
           {/* Back Button */}
           <Link
@@ -472,13 +472,13 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 pb-24 lg:pb-12">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 w-full">
           {/* Left Column - Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Tabs */}
-            <div className="border-b border-border overflow-x-auto">
-              <div className="flex gap-2 sm:gap-4 min-w-max sm:min-w-0">
+            <div className="border-b border-border overflow-x-auto w-full scrollbar-hide">
+              <div className="flex gap-2 sm:gap-4 px-1 pb-1">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
@@ -503,7 +503,7 @@ export default function CourseDetailPage() {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 {/* What You'll Learn */}
-                <Card>
+                <Card className="w-full overflow-hidden">
                   <CardContent className="p-4 sm:p-6">
                     <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                       <Target className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
@@ -528,10 +528,10 @@ export default function CourseDetailPage() {
                 </Card>
 
                 {/* Course Description */}
-                <Card>
+                <Card className="w-full overflow-hidden">
                   <CardContent className="p-4 sm:p-6">
                     <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">About This Course</h2>
-                    <div className="prose prose-sm sm:prose max-w-none text-muted-foreground dark:prose-invert">
+                    <div className="prose prose-sm sm:prose w-full max-w-full text-muted-foreground dark:prose-invert break-words">
                       {course.description ? (
                         <MarkdownRenderer content={course.description} />
                       ) : (
@@ -542,7 +542,7 @@ export default function CourseDetailPage() {
                 </Card>
 
                 {/* Requirements */}
-                <Card>
+                <Card className="w-full overflow-hidden">
                   <CardContent className="p-4 sm:p-6">
                     <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Requirements</h2>
                     <ul className="space-y-2 text-sm sm:text-base text-muted-foreground">
@@ -565,7 +565,7 @@ export default function CourseDetailPage() {
             )}
 
             {activeTab === 'curriculum' && (
-              <Card>
+              <Card className="w-full overflow-hidden">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg sm:text-xl font-bold text-foreground">Course Curriculum</h2>

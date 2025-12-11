@@ -110,18 +110,35 @@ const courseSchema = new Schema<ICourse>(
   }
 );
 
-// Create slug from title before saving
-courseSchema.pre('save', function (next) {
-  if (this.isModified('title') && !this.slug) {
-    this.slug = this.title
+// Generate meaningful Course ID (slug) from title
+courseSchema.pre('save', async function (next) {
+  // Update slug if title changed OR slug is missing
+  if (this.isModified('title') || !this.slug) {
+    let baseSlug = this.title
       .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and dashes)
+      .replace(/\s+/g, '-')     // Replace spaces with dashes
+      .replace(/-+/g, '-')      // Replace multiple dashes with single dash
+      .replace(/^-+|-+$/g, '')  // Remove leading/trailing dashes
       .trim();
 
-    // Add random string to ensure uniqueness
-    this.slug = `${this.slug}-${Date.now().toString(36)}`;
+    // Fallback for empty slug (e.g. if title was only special chars)
+    if (!baseSlug) {
+      baseSlug = 'course-' + Date.now();
+    }
+
+    let slug = baseSlug;
+    let counter = 1;
+    const Course = this.constructor as any;
+
+    // Loop to find unique slug
+    // We need to exclude the current document if it's an update
+    while (await Course.findOne({ slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
   }
   next();
 });

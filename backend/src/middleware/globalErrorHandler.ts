@@ -15,6 +15,7 @@ const globalErrorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
+  console.log('Global Error Handler:', error);
   let statusCode = error.statusCode || 500;
   let message = error.message || 'Internal Server Error';
   let errorDetails = null;
