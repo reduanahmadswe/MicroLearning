@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -28,48 +28,70 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
+
+// ============================================
+// REDUX HOOKS - INSTANT DATA ACCESS!
+// ============================================
+import {
+  useEnrolledCourses,
+  useIsInitializing,
+} from '@/store/hooks';
 
 export default function PurchasedCoursesPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [payments, setPayments] = useState<any[]>([]);
+
+  // ============================================
+  // INSTANT DATA FROM REDUX - NO API CALLS!
+  // ============================================
+  const enrolledCourses = useEnrolledCourses(); // Instant!
+  const isInitializing = useIsInitializing();
+
+  // UI state only
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadPaymentHistory();
-  }, []);
+  // Filter and search logic (instant client-side filtering!)
+  const filteredCourses = useMemo(() => {
+    return enrolledCourses.filter((enrollment: any) => {
+      const course = enrollment.course;
+      if (!course) return false;
 
-  const loadPaymentHistory = async () => {
-    try {
-      setLoading(true);
-      const response = await coursesAPI.getPaymentHistory();
-      setPayments(response.data.data || []);
-    } catch (error: any) {
-      toast.error('Failed to load payment history');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Status filter - using enrollment progress
+      if (filterStatus === 'completed' && enrollment.progress !== 100) return false;
+      if (filterStatus === 'pending' && enrollment.progress === 100) return false;
+      // 'all' and 'failed' show everything for now
 
-  // Filter and search logic
-  const filteredPayments = payments.filter((payment) => {
-    const matchesStatus = filterStatus === 'all' || payment.paymentStatus === filterStatus;
-    const matchesSearch = !searchQuery ||
-      payment.course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.course?.topic?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+      // Search filter
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const matchesTitle = course.title?.toLowerCase().includes(searchLower);
+        const matchesTopic = course.topic?.toLowerCase().includes(searchLower);
+        if (!matchesTitle && !matchesTopic) return false;
+      }
 
-  // Calculate stats
-  const completedPayments = payments.filter((p) => p.paymentStatus === 'completed');
-  const totalSpent = completedPayments.reduce((sum, p) => sum + p.amount, 0);
-  const pendingPayments = payments.filter((p) => p.paymentStatus === 'pending').length;
+      return true;
+    });
+  }, [enrolledCourses, filterStatus, searchQuery]);
 
-  if (loading) {
+  // Calculate stats (instant!)
+  const stats = useMemo(() => {
+    const completed = enrolledCourses.filter((e: any) => e.progress === 100).length;
+    const inProgress = enrolledCourses.filter((e: any) => e.progress > 0 && e.progress < 100).length;
+    const totalSpent = enrolledCourses.reduce((sum: number, e: any) => {
+      return sum + (e.course?.price || 0);
+    }, 0);
+
+    return {
+      totalCourses: enrolledCourses.length,
+      completed,
+      inProgress,
+      totalSpent,
+      pending: 0, // We don't have pending payments in enrolled courses
+    };
+  }, [enrolledCourses]);
+
+  if (isInitializing) {
     return (
       <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
         <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm">
@@ -122,14 +144,14 @@ export default function PurchasedCoursesPage() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400 animate-pulse" />
               <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                {completedPayments.length} Course{completedPayments.length !== 1 ? 's' : ''} Active
+                {stats.completed} Course{stats.completed !== 1 ? 's' : ''} Active
               </span>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        {payments.length > 0 && (
+        {enrolledCourses.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Total Courses */}
             <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-teal-600 dark:from-green-600 dark:to-teal-700 overflow-hidden group hover:shadow-xl transition-all duration-300">
@@ -143,7 +165,7 @@ export default function PurchasedCoursesPage() {
                     <TrendingUp className="w-5 h-5 text-white/60" />
                   </div>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-1">
-                    {completedPayments.length}
+                    {stats.totalCourses}
                   </p>
                   <p className="text-xs sm:text-sm text-green-100 font-medium">Total Courses</p>
                 </div>
@@ -162,7 +184,7 @@ export default function PurchasedCoursesPage() {
                     <DollarSign className="w-5 h-5 text-white/60" />
                   </div>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-1">
-                    ৳{totalSpent.toLocaleString()}
+                    ৳{stats.totalSpent.toLocaleString()}
                   </p>
                   <p className="text-xs sm:text-sm text-green-100 font-medium">Total Investment</p>
                 </div>
@@ -181,7 +203,7 @@ export default function PurchasedCoursesPage() {
                     <BarChart3 className="w-5 h-5 text-white/60" />
                   </div>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-1">
-                    {pendingPayments}
+                    {stats.pending}
                   </p>
                   <p className="text-xs sm:text-sm text-teal-100 font-medium">Pending Payments</p>
                 </div>
@@ -200,7 +222,7 @@ export default function PurchasedCoursesPage() {
                     <Award className="w-5 h-5 text-white/60" />
                   </div>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-1">
-                    {payments.length}
+                    {enrolledCourses.length}
                   </p>
                   <p className="text-xs sm:text-sm text-cyan-100 font-medium">Total Transactions</p>
                 </div>
@@ -210,7 +232,7 @@ export default function PurchasedCoursesPage() {
         )}
 
         {/* Search and Filter Section */}
-        {payments.length > 0 && (
+        {enrolledCourses.length > 0 && (
           <Card className="border-0 shadow-lg bg-card backdrop-blur-sm mb-6">
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -257,7 +279,7 @@ export default function PurchasedCoursesPage() {
         )}
 
         {/* Empty State */}
-        {payments.length === 0 ? (
+        {enrolledCourses.length === 0 ? (
           <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm overflow-hidden">
             <CardContent className="p-8 sm:p-12 lg:p-16 text-center">
               <div className="max-w-md mx-auto">
@@ -279,7 +301,7 @@ export default function PurchasedCoursesPage() {
               </div>
             </CardContent>
           </Card>
-        ) : filteredPayments.length === 0 ? (
+        ) : filteredCourses.length === 0 ? (
           <Card className="border-0 shadow-lg bg-card backdrop-blur-sm">
             <CardContent className="p-8 sm:p-12 text-center">
               <Search className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
@@ -294,140 +316,135 @@ export default function PurchasedCoursesPage() {
         ) : (
           /* Course Cards Grid */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {filteredPayments.map((payment: any) => (
-              <Card
-                key={payment._id}
-                className="border-0 shadow-lg hover:shadow-2xl bg-card backdrop-blur-sm transition-all duration-300 overflow-hidden group"
-              >
-                <CardContent className="p-0">
-                  {/* Course Image */}
-                  <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30">
-                    {payment.course?.thumbnail ? (
-                      <img
-                        src={payment.course.thumbnail}
-                        alt={payment.course.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen className="w-16 h-16 text-green-300" />
-                      </div>
-                    )}
+            {filteredCourses.map((enrollment: any) => {
+              const course = enrollment.course;
+              if (!course) return null;
 
-                    {/* Status Badge */}
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm ${payment.paymentStatus === 'completed'
-                          ? 'bg-green-500/90 text-white'
-                          : payment.paymentStatus === 'pending'
-                            ? 'bg-amber-500/90 text-white'
-                            : 'bg-red-500/90 text-white'
-                          }`}
-                      >
-                        {payment.paymentStatus === 'completed' && <CheckCircle className="w-3.5 h-3.5" />}
-                        {payment.paymentStatus === 'pending' && <Clock className="w-3.5 h-3.5" />}
-                        {payment.paymentStatus === 'failed' && <XCircle className="w-3.5 h-3.5" />}
-                        {payment.paymentStatus.charAt(0).toUpperCase() + payment.paymentStatus.slice(1)}
-                      </span>
-                    </div>
-                  </div>
+              const isCompleted = enrollment.progress === 100;
+              const inProgress = enrollment.progress > 0 && enrollment.progress < 100;
 
-                  {/* Course Info */}
-                  <div className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2 line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      {payment.course?.title || 'Course Title'}
-                    </h3>
+              return (
+                <Card
+                  key={enrollment._id}
+                  className="border-0 shadow-lg hover:shadow-2xl bg-card backdrop-blur-sm transition-all duration-300 overflow-hidden group"
+                >
+                  <CardContent className="p-0">
+                    {/* Course Image */}
+                    <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30">
+                      {course.thumbnail ? (
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <BookOpen className="w-16 h-16 text-green-300" />
+                        </div>
+                      )}
 
-                    {payment.course?.topic && (
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-                          {payment.course.topic}
+                      {/* Progress Badge */}
+                      <div className="absolute top-3 right-3">
+                        <span
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm ${isCompleted
+                            ? 'bg-green-500/90 text-white'
+                            : inProgress
+                              ? 'bg-blue-500/90 text-white'
+                              : 'bg-gray-500/90 text-white'
+                            }`}
+                        >
+                          {isCompleted && <CheckCircle className="w-3.5 h-3.5" />}
+                          {isCompleted ? 'Completed' : inProgress ? `${enrollment.progress}%` : 'Not Started'}
                         </span>
                       </div>
-                    )}
-
-                    {/* Meta Info */}
-                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 text-xs sm:text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span>{new Date(payment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 font-semibold text-green-600">
-                        <DollarSign className="w-4 h-4" />
-                        <span>৳{payment.amount} {payment.currency}</span>
-                      </div>
                     </div>
 
-                    {/* Transaction ID */}
-                    {payment.transactionId && (
-                      <div className="mb-4 p-3 bg-secondary rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1 font-medium">Transaction ID</p>
-                        <p className="text-xs font-mono text-foreground break-all">{payment.transactionId}</p>
-                      </div>
-                    )}
+                    {/* Course Info */}
+                    <div className="p-4 sm:p-6">
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2 line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                        {course.title || 'Course Title'}
+                      </h3>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      {payment.paymentStatus === 'completed' ? (
-                        <>
-                          <Link href={`/courses/${payment.course._id}`} className="flex-1">
-                            <Button className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md font-semibold">
-                              <PlayCircle className="w-4 h-4 mr-2" />
-                              Start Learning
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            className="sm:w-auto border-green-200 hover:bg-green-50 hover:border-green-300"
-                            onClick={() => toast.info('Download feature coming soon!')}
-                          >
-                            <Download className="w-4 h-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Receipt</span>
+                      {course.topic && (
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                            {course.topic}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Meta Info */}
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <span>{new Date(enrollment.enrolledAt || enrollment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        {course.price > 0 && (
+                          <div className="flex items-center gap-1.5 font-semibold text-green-600">
+                            <DollarSign className="w-4 h-4" />
+                            <span>৳{course.price}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      {enrollment.progress > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-muted-foreground">Progress</span>
+                            <span className="text-xs font-bold text-green-600">{enrollment.progress}%</span>
+                          </div>
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-green-600 to-teal-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${enrollment.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        <Link href={`/courses/${course._id}`} className="flex-1">
+                          <Button className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md font-semibold">
+                            <PlayCircle className="w-4 h-4 mr-2" />
+                            {isCompleted ? 'Review Course' : inProgress ? 'Continue Learning' : 'Start Learning'}
                           </Button>
-                        </>
-                      ) : payment.paymentStatus === 'pending' ? (
-                        <Button
-                          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold"
-                          onClick={() => toast.info('Complete your payment to access this course')}
-                        >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Complete Payment
-                        </Button>
-                      ) : (
+                        </Link>
                         <Button
                           variant="outline"
-                          className="w-full border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          onClick={() => loadPaymentHistory()}
+                          className="sm:w-auto border-green-200 hover:bg-green-50 hover:border-green-300 dark:border-green-800 dark:hover:bg-green-900/20"
+                          onClick={() => toast.info('Certificate feature coming soon!')}
                         >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Retry Payment
+                          <Award className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Certificate</span>
                         </Button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 
         {/* Results Summary */}
-        {filteredPayments.length > 0 && (
+        {filteredCourses.length > 0 && (
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Showing <span className="font-semibold text-green-600 dark:text-green-400">{filteredPayments.length}</span> of{' '}
-              <span className="font-semibold">{payments.length}</span> purchase{payments.length !== 1 ? 's' : ''}
+              Showing <span className="font-semibold text-green-600 dark:text-green-400">{filteredCourses.length}</span> of{' '}
+              <span className="font-semibold">{enrolledCourses.length}</span> course{enrolledCourses.length !== 1 ? 's' : ''}
             </p>
           </div>
         )}
 
         {/* Help Section */}
-        {payments.length > 0 && (
+        {enrolledCourses.length > 0 && (
           <Card className="mt-8 border-0 shadow-lg bg-gradient-to-br from-green-600 to-teal-600 dark:from-green-700 dark:to-teal-800 overflow-hidden">
             <CardContent className="p-6 sm:p-8 text-center text-white">
               <h3 className="text-lg sm:text-xl font-bold mb-2">Need Help?</h3>
               <p className="text-sm sm:text-base text-green-100 mb-4">
-                Having issues with your purchases or payments? Our support team is here to help.
+                Having issues with your courses or learning journey? Our support team is here to help.
               </p>
               <Button
                 variant="outline"

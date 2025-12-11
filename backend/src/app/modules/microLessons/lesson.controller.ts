@@ -79,6 +79,14 @@ class LessonController {
 
   // Delete lesson
   deleteLesson = catchAsync(async (req: Request, res: Response) => {
+    console.log('🎯 DELETE Controller Hit:', {
+      id: req.params.id,
+      userId: req.user?.userId,
+      userRole: req.user?.role,
+      path: req.path,
+      method: req.method
+    });
+
     const { id } = req.params;
     const userId = req.user?.userId as string;
     const userRole = req.user?.role as string;
@@ -109,14 +117,14 @@ class LessonController {
   completeLesson = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId;
-    
-    
+
+
     if (!userId) {
       throw new ApiError(401, 'User not authenticated');
     }
-    
+
     const result = await lessonService.completeLesson(id, userId);
-    
+
 
     sendResponse(res, {
       statusCode: 200,

@@ -129,6 +129,9 @@ export default function LessonsPage() {
   const confirmDeleteLesson = async () => {
     if (!lessonToDelete) return;
 
+    console.log('Deleting lesson with ID:', lessonToDelete.id);
+    console.log('Lesson to delete:', lessonToDelete);
+
     setIsDeleting(true);
     try {
       await lessonsAPI.deleteLesson(lessonToDelete.id);
@@ -140,9 +143,10 @@ export default function LessonsPage() {
       // Reload lessons
       await dispatch(fetchAllLessons()).unwrap();
     } catch (error: any) {
+      console.error('Delete Error Full:', error);
+      console.error('Error Response:', error?.response);
       const errorMessage = error?.response?.data?.message || 'Failed to delete lesson';
       toast.error(errorMessage);
-      console.error('Delete Error:', error);
     } finally {
       setIsDeleting(false);
     }

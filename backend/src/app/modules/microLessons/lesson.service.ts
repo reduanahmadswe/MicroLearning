@@ -291,22 +291,40 @@ class LessonService {
 
   // Delete lesson
   async deleteLesson(lessonId: string, userId: string, userRole: string) {
+    console.log('🗑️ Delete Lesson Request:', { lessonId, userId, userRole });
+
     const lesson = await Lesson.findById(lessonId);
 
     if (!lesson) {
+      console.error('❌ Lesson not found:', lessonId);
       throw new ApiError(404, 'Lesson not found');
     }
 
+    console.log('✅ Lesson found:', {
+      id: lesson._id,
+      title: lesson.title,
+      author: lesson.author,
+      course: lesson.course
+    });
+
     // Check if user is the author or admin
     if (lesson.author.toString() !== userId && userRole !== 'admin') {
+      console.error('❌ Authorization failed:', {
+        lessonAuthor: lesson.author.toString(),
+        requestUser: userId,
+        userRole
+      });
       throw new ApiError(403, 'You are not authorized to delete this lesson');
     }
+
+    console.log('✅ Authorization passed');
 
     const deletedLessonOrder = lesson.order;
     const courseId = lesson.course;
 
     // Delete the lesson
     await lesson.deleteOne();
+    console.log('✅ Lesson deleted successfully');
 
     // Update order of remaining lessons in the same course
     // All lessons with order > deletedLessonOrder should have their order decreased by 1
@@ -320,7 +338,7 @@ class LessonService {
           $inc: { order: -1 }
         }
       );
-
+      console.log('✅ Updated lesson order for remaining lessons');
     }
 
     return { message: 'Lesson deleted successfully' };

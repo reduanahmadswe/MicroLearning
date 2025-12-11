@@ -510,13 +510,13 @@ class AnalyticsService {
 
   // Admin: Get revenue analytics
   async getRevenueAnalytics(_startDate?: string, _endDate?: string) {
-    // Mock data since Marketplace module is missing
-    return {
-      totalRevenue: 0,
-      totalSales: 0,
-      dailyRevenue: [],
-      topSellingItems: [],
-    };
+    // Marketplace module missing: explicitly error to avoid mock data
+    const ApiError = require('../../utils/ApiError').default;
+    const httpStatus = require('http-status');
+    throw new ApiError(
+      httpStatus.NOT_IMPLEMENTED,
+      'Revenue analytics unavailable: Marketplace module not integrated.'
+    );
   }
 
   // Admin: Get engagement report

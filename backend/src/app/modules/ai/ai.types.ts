@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 /**
  * AI Provider Configuration
  */
-export type AIProvider = 'openai' | 'claude' | 'gemini';
+export type AIProvider = 'openai' | 'claude' | 'gemini' | 'mock';
 
 export interface IAIConfig {
   provider: AIProvider;

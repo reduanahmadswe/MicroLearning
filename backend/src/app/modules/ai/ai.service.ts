@@ -26,16 +26,27 @@ import ApiError from '../../../utils/ApiError';
  * AI Service Configuration
  */
 const AI_CONFIG = {
-  provider: (process.env.AI_PROVIDER as AIProvider) || 'openai',
+  provider: (process.env.AI_PROVIDER as AIProvider) || 'deepseek',
+
+  // Deepseek Configuration (Primary - Cheaper & Faster)
+  deepseek: {
+    apiKey: process.env.DEEPSEEK_API_KEY || 'sk-be8c105bb6c7491081c2720a77c8b541',
+    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    endpoint: 'https://api.deepseek.com/v1/chat/completions',
+  },
+
+  // OpenAI Configuration (Fallback - More Reliable)
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     endpoint: 'https://api.openai.com/v1/chat/completions',
   },
+
   defaultTemperature: 0.7,
   defaultMaxTokens: 2000,
   costPer1kTokens: {
-    'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens (input)
+    'deepseek-chat': 0.00014, // Very cheap!
+    'gpt-4o-mini': 0.00015,
     'gpt-4o': 0.005,
     'gpt-3.5-turbo': 0.0005,
   },
@@ -50,18 +61,51 @@ const calculateCost = (tokens: number, model: string): number => {
 };
 
 /**
- * Helper: Make OpenAI API request
+ * Helper: Make AI API request with automatic fallback
+ * Tries Deepseek first, falls back to OpenAI if it fails
  */
 const makeOpenAIRequest = async (
   messages: IOpenAIRequest['messages'],
   temperature: number = AI_CONFIG.defaultTemperature,
   maxTokens: number = AI_CONFIG.defaultMaxTokens
 ): Promise<IOpenAIResponse> => {
+
+  // Try Deepseek first (Primary)
+  if (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey !== 'your_deepseek_api_key_here') {
+    try {
+      console.log('🚀 Trying Deepseek API...');
+      const response = await axios.post<IOpenAIResponse>(
+        AI_CONFIG.deepseek.endpoint,
+        {
+          model: AI_CONFIG.deepseek.model,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${AI_CONFIG.deepseek.apiKey}`,
+          },
+          timeout: 60000,
+        }
+      );
+
+      console.log('✅ Deepseek API succeeded!');
+      return response.data;
+    } catch (error: any) {
+      console.warn('⚠️ Deepseek API failed, falling back to OpenAI...', error.message);
+      // Continue to OpenAI fallback
+    }
+  }
+
+  // Fallback to OpenAI
   if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
-    throw new ApiError(500, 'OpenAI API key not configured. Please set OPENAI_API_KEY in .env file or use AI_PROVIDER=mock for testing.');
+    throw new ApiError(500, 'Both Deepseek and OpenAI API keys are not configured.');
   }
 
   try {
+    console.log('🔄 Using OpenAI API as fallback...');
     const response = await axios.post<IOpenAIResponse>(
       AI_CONFIG.openai.endpoint,
       {
@@ -75,42 +119,30 @@ const makeOpenAIRequest = async (
           'Content-Type': 'application/json',
           Authorization: `Bearer ${AI_CONFIG.openai.apiKey}`,
         },
-        timeout: 60000, // 60 seconds
+        timeout: 60000,
       }
     );
 
+    console.log('✅ OpenAI API succeeded!');
     return response.data;
   } catch (error: any) {
-    console.error('OpenAI API Error:', error.response?.data || error.message);
-    
+    console.error('❌ Both APIs failed!', error.response?.data || error.message);
+
     if (error.response) {
       const status = error.response.status;
       const errorMessage = error.response.data?.error?.message || 'Unknown error';
-      
-      // Handle specific error codes
+
       if (status === 401) {
-        throw new ApiError(
-          401,
-          'Invalid OpenAI API key. Please check your OPENAI_API_KEY in .env file. Get a new key from https://platform.openai.com/api-keys'
-        );
+        throw new ApiError(401, 'Invalid API key. Please check your API keys.');
       } else if (status === 429) {
-        throw new ApiError(
-          429,
-          'OpenAI API rate limit exceeded or quota exhausted. Please check your usage at https://platform.openai.com/usage'
-        );
+        throw new ApiError(429, 'API rate limit exceeded. Please try again later.');
       } else if (status === 400) {
-        throw new ApiError(
-          400,
-          `Invalid request to OpenAI: ${errorMessage}`
-        );
+        throw new ApiError(400, `Invalid request: ${errorMessage}`);
       }
-      
-      throw new ApiError(
-        status,
-        `OpenAI API Error: ${errorMessage}`
-      );
+
+      throw new ApiError(status, `API Error: ${errorMessage}`);
     }
-    throw new ApiError(500, `Failed to connect to OpenAI: ${error.message}`);
+    throw new ApiError(500, `Failed to connect to AI services: ${error.message}`);
   }
 };
 
@@ -380,10 +412,10 @@ Format your response as a JSON object:
     return generatedFlashcardSet;
   } catch (error: any) {
     // If quota exceeded or API error, fallback to mock service
-    
+
     if (error.response?.data?.error?.code === 'insufficient_quota') {
     }
-    
+
     const mockService = await import('./ai.mock.service');
     return mockService.generateMockFlashcards(userId, data);
   }
