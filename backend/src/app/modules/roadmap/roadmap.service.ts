@@ -51,7 +51,7 @@ const makeOpenAIRequest = async (messages: any[], temperature: number = 0.7) => 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
-          'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+          'HTTP-Referer': process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app/',
           'X-Title': 'MicroLearning Roadmap Generator',
         },
         timeout: 90000,

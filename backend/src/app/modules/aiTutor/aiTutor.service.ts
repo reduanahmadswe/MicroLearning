@@ -65,7 +65,7 @@ export class AITutorService {
             headers: {
               'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
+              'HTTP-Referer': process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app',
               'X-Title': 'MicroLearning AI Tutor',
             },
             timeout: 30000,

@@ -29,7 +29,7 @@ export const paymentSuccess = catchAsync(async (req: Request, res: Response) => 
   const result = await coursePaymentService.handlePaymentSuccess(paymentData);
 
   // Redirect to frontend success page
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app';
   const courseId = result.enrollment?.course || result.payment?.course;
   res.redirect(`${frontendUrl}/courses/payment/success?courseId=${courseId}`);
 });
@@ -43,7 +43,7 @@ export const paymentFail = catchAsync(async (req: Request, res: Response) => {
   await coursePaymentService.handlePaymentFail(paymentData);
 
   // Redirect to frontend fail page
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app/';
   res.redirect(`${frontendUrl}/courses/payment/fail`);
 });
 
@@ -56,7 +56,7 @@ export const paymentCancel = catchAsync(async (req: Request, res: Response) => {
   await coursePaymentService.handlePaymentCancel(paymentData);
 
   // Redirect to frontend cancel page
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app/';
   res.redirect(`${frontendUrl}/courses/payment/cancel`);
 });
 
