@@ -2,6 +2,8 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // localStorage
 import globalReducer from './globalSlice';
+import videosReducer from './videosSlice';
+import adminReducer from './adminSlice';
 
 // ============================================
 // PERSISTENCE CONFIGURATION
@@ -11,8 +13,8 @@ const persistConfig = {
     key: 'microlearning-root',
     version: 1,
     storage,
-    whitelist: ['global'], // Only persist global state
-    blacklist: [], // Don't persist these
+    whitelist: ['global', 'videos'], // Persist global and videos state (not admin for security)
+    blacklist: ['admin'], // Don't persist admin data
     // Throttle writes to localStorage (performance optimization)
     throttle: 1000,
 };
@@ -23,6 +25,8 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
     global: globalReducer,
+    videos: videosReducer,
+    admin: adminReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

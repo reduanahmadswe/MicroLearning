@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Eye, Users, DollarSign, BookOpen, Lock } from 'lucide-react';
 import Link from 'next/link';
-import { coursesAPI } from '@/services/api.service';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -17,37 +16,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useAppDispatch } from '@/store/hooks';
+import {
+  useInstructorCourses,
+  useInstructorCoursesLoading,
+  useInstructorCoursesError,
+} from '@/store/hooks';
+import { fetchInstructorCourses } from '@/store/globalSlice';
+import { api } from '@/lib/api';
+import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
 
 export default function InstructorCoursesPage() {
-  const [courses, setCourses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { token } = useAuthStore();
+  const dispatch = useAppDispatch();
   const [deleteCourseId, setDeleteCourseId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  // Redux state
+  const courses = useInstructorCourses();
+  const loading = useInstructorCoursesLoading();
+  const error = useInstructorCoursesError();
 
-  const fetchCourses = async () => {
-    try {
-      const response = await coursesAPI.getInstructorCourses();
-      // API returns { data: { success: true, message: '...', data: [...courses] } }
-      const coursesData = response.data?.data || response.data || [];
-      setCourses(coursesData);
-    } catch (error: any) {
-      console.error('Error fetching courses:', error);
-      toast.error(error.response?.data?.message || 'Failed to load courses');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!token) {
+      router.push('/auth/login');
+      return;
     }
-  };
+
+    // Fetch courses (will use cache if available)
+    dispatch(fetchInstructorCourses({}));
+  }, [token, dispatch]);
+
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const confirmDelete = async () => {
     if (!deleteCourseId) return;
 
     try {
-      await coursesAPI.deleteCourse(deleteCourseId);
+      await api.delete(`/courses/${deleteCourseId}`);
       toast.success('Course deleted successfully');
-      fetchCourses();
+      // Force refresh after delete
+      dispatch(fetchInstructorCourses({ force: true }));
     } catch (error) {
       console.error('Error deleting course:', error);
       toast.error('Failed to delete course');
@@ -58,13 +74,19 @@ export default function InstructorCoursesPage() {
 
   const handleTogglePublish = async (courseId: string, currentStatus: boolean) => {
     try {
-      await coursesAPI.togglePublish(courseId);
+      await api.patch(`/courses/${courseId}/toggle-publish`);
       toast.success(`Course ${!currentStatus ? 'published' : 'unpublished'} successfully`);
-      fetchCourses();
+      // Force refresh after toggle
+      dispatch(fetchInstructorCourses({ force: true }));
     } catch (error) {
       console.error('Error toggling publish status:', error);
       toast.error('Failed to update course status');
     }
+  };
+
+  const handleRefresh = () => {
+    dispatch(fetchInstructorCourses({ force: true }));
+    toast.success('Refreshing courses...');
   };
 
   return (
@@ -78,18 +100,29 @@ export default function InstructorCoursesPage() {
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">Manage your courses and lessons</p>
           </div>
-          <Link href="/instructor/courses/create" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm sm:text-base">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Course
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+            >
+              {loading ? 'Refreshing...' : 'Refresh'}
             </Button>
-          </Link>
+            <Link href="/instructor/courses/create" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm sm:text-base">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Course
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Courses Grid */}
-        {loading ? (
+        {loading && courses.length === 0 ? (
           <div className="text-center py-8 sm:py-12 lg:py-16">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:h-12 border-b-2 border-green-600 mx-auto"></div>
             <p className="text-sm sm:text-base text-gray-600 mt-4">Loading courses...</p>
           </div>
         ) : courses.length === 0 ? (
@@ -108,7 +141,7 @@ export default function InstructorCoursesPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-            {Array.isArray(courses) && courses.map((course: any) => (
+            {courses.map((course: any) => (
               <Card key={course._id} className="bg-card border-border hover:shadow-xl hover:border-green-200 dark:hover:border-green-800 transition-all">
                 <CardContent className="p-4 sm:p-5 lg:p-6">
                   {/* Thumbnail */}

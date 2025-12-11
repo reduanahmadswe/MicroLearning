@@ -29,6 +29,15 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAppDispatch } from '@/store/hooks';
+import {
+  useInstructorAnalytics,
+  useInstructorAnalyticsLoading,
+  useInstructorAnalyticsError,
+  useInstructorAnalyticsTimeRange,
+} from '@/store/hooks';
+import { fetchInstructorAnalytics } from '@/store/globalSlice';
+import { useAuthStore } from '@/store/authStore';
 
 interface CourseAnalytics {
   _id: string;
@@ -77,123 +86,45 @@ interface Analytics {
 
 export default function InstructorAnalyticsPage() {
   const router = useRouter();
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
-  const [selectedMetric, setSelectedMetric] = useState<'enrollments' | 'revenue' | 'completion'>('enrollments');
+  const { token } = useAuthStore();
+  const dispatch = useAppDispatch();
 
-  // Pagination state
+  // Redux state
+  const analytics = useInstructorAnalytics() as Analytics | null;
+  const loading = useInstructorAnalyticsLoading();
+  const error = useInstructorAnalyticsError();
+  const currentTimeRange = useInstructorAnalyticsTimeRange();
+
+  // Local UI state
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>(currentTimeRange);
+  const [selectedMetric, setSelectedMetric] = useState<'enrollments' | 'revenue' | 'completion'>('enrollments');
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 5;
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [timeRange]);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/courses/instructor/analytics?range=${timeRange}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
-      }
-
-      const data = await response.json();
-      setAnalytics(data.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Failed to load analytics');
-      setAnalytics(null);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      router.push('/auth/login');
+      return;
     }
+
+    // Fetch analytics (will use cache if available)
+    dispatch(fetchInstructorAnalytics({ timeRange }));
+  }, [token, timeRange, dispatch]);
+
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  const handleRefresh = () => {
+    dispatch(fetchInstructorAnalytics({ timeRange, force: true }));
+    toast.success('Refreshing analytics...');
   };
 
-  const generateMockAnalytics_unused = (): Analytics => {
-    return {
-      overview: {
-        totalCourses: 12,
-        totalStudents: 245,
-        totalEnrollments: 487,
-        totalRevenue: 24500,
-        avgProgress: 68,
-        completionRate: 42,
-        activeStudents: 156,
-        recentEnrollments: 28,
-      },
-      courses: [
-        {
-          _id: '1',
-          title: 'React Fundamentals',
-          enrolledCount: 85,
-          completionRate: 65,
-          avgProgress: 72,
-          avgRating: 4.5,
-          totalRevenue: 4250,
-          activeStudents: 52,
-          totalLessons: 20,
-          totalQuizzes: 10,
-        },
-        {
-          _id: '2',
-          title: 'JavaScript Advanced',
-          enrolledCount: 72,
-          completionRate: 58,
-          avgProgress: 65,
-          avgRating: 4.3,
-          totalRevenue: 3600,
-          activeStudents: 45,
-          totalLessons: 18,
-          totalQuizzes: 9,
-        },
-        {
-          _id: '3',
-          title: 'Node.js Backend Development',
-          enrolledCount: 68,
-          completionRate: 48,
-          avgProgress: 60,
-          avgRating: 4.7,
-          totalRevenue: 3400,
-          activeStudents: 38,
-          totalLessons: 25,
-          totalQuizzes: 12,
-        },
-      ],
-      enrollmentTrend: [
-        { month: 'Jan', enrollments: 45 },
-        { month: 'Feb', enrollments: 52 },
-        { month: 'Mar', enrollments: 48 },
-        { month: 'Apr', enrollments: 65 },
-        { month: 'May', enrollments: 72 },
-        { month: 'Jun', enrollments: 68 },
-      ],
-      topPerformingCourses: [
-        { _id: '1', title: 'React Fundamentals', metric: 85 },
-        { _id: '2', title: 'JavaScript Advanced', metric: 72 },
-        { _id: '3', title: 'Node.js Backend', metric: 68 },
-      ],
-      studentEngagement: {
-        active: 156,
-        moderatelyActive: 64,
-        inactive: 25,
-      },
-      revenueByMonth: [
-        { month: 'Jan', revenue: 3200 },
-        { month: 'Feb', revenue: 3800 },
-        { month: 'Mar', revenue: 3500 },
-        { month: 'Apr', revenue: 4200 },
-        { month: 'May', revenue: 4800 },
-        { month: 'Jun', revenue: 4500 },
-      ],
-    };
+  const handleTimeRangeChange = (newRange: '7d' | '30d' | '90d' | 'all') => {
+    setTimeRange(newRange);
   };
 
   const exportAnalyticsToExcel = () => {
@@ -236,35 +167,13 @@ export default function InstructorAnalyticsPage() {
         ]),
       ];
 
-      // Enrollment Trend Sheet
-      const trendData = [
-        ['Enrollment Trend'],
-        [],
-        ['Month', 'Enrollments'],
-        ...analytics.enrollmentTrend.map((item) => [item.month, item.enrollments]),
-      ];
-
-      // Student Engagement Sheet
-      const engagementData = [
-        ['Student Engagement'],
-        [],
-        ['Category', 'Count'],
-        ['Active', analytics.studentEngagement.active],
-        ['Moderately Active', analytics.studentEngagement.moderatelyActive],
-        ['Inactive', analytics.studentEngagement.inactive],
-      ];
-
       // Create workbook and add sheets
       const wb = XLSX.utils.book_new();
       const wsOverview = XLSX.utils.aoa_to_sheet(overviewData);
       const wsCourses = XLSX.utils.aoa_to_sheet(courseData);
-      const wsTrend = XLSX.utils.aoa_to_sheet(trendData);
-      const wsEngagement = XLSX.utils.aoa_to_sheet(engagementData);
 
       XLSX.utils.book_append_sheet(wb, wsOverview, 'Overview');
       XLSX.utils.book_append_sheet(wb, wsCourses, 'Course Performance');
-      XLSX.utils.book_append_sheet(wb, wsTrend, 'Enrollment Trend');
-      XLSX.utils.book_append_sheet(wb, wsEngagement, 'Student Engagement');
 
       // Generate file name with timestamp
       const fileName = `Analytics_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -288,14 +197,14 @@ export default function InstructorAnalyticsPage() {
   const getChangeIndicator = (value: number) => {
     if (value > 0) {
       return (
-        <span className="flex items-center gap-1 text-green-600 text-sm font-semibold">
+        <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
           <ArrowUp className="w-4 h-4" />
           +{value}%
         </span>
       );
     } else if (value < 0) {
       return (
-        <span className="flex items-center gap-1 text-red-600 text-sm font-semibold">
+        <span className="flex items-center gap-1 text-red-600 dark:text-red-400 text-sm font-semibold">
           <ArrowDown className="w-4 h-4" />
           {value}%
         </span>
@@ -304,7 +213,7 @@ export default function InstructorAnalyticsPage() {
     return <span className="text-gray-500 text-sm">No change</span>;
   };
 
-  if (loading) {
+  if (loading && !analytics) {
     return (
       <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
@@ -436,7 +345,7 @@ export default function InstructorAnalyticsPage() {
         <div className="mb-6 sm:mb-8">
           <button
             onClick={() => router.push('/instructor/dashboard')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-green-600 mb-4 text-sm sm:text-base transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-green-600 dark:hover:text-green-400 mb-4 text-sm sm:text-base transition-colors"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Back to Dashboard</span>
@@ -457,7 +366,7 @@ export default function InstructorAnalyticsPage() {
               {/* Time Range Filter */}
               <select
                 value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value as any)}
+                onChange={(e) => handleTimeRangeChange(e.target.value as any)}
                 className="px-3 py-2 sm:px-4 text-xs sm:text-sm border-2 border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-card text-foreground"
               >
                 <option value="7d">Last 7 days</option>
@@ -465,6 +374,13 @@ export default function InstructorAnalyticsPage() {
                 <option value="90d">Last 90 days</option>
                 <option value="all">All time</option>
               </select>
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-3 py-2 sm:px-4 text-xs sm:text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all disabled:opacity-50"
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
               <button
                 onClick={exportAnalyticsToExcel}
                 className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all text-xs sm:text-sm"
@@ -709,7 +625,7 @@ export default function InstructorAnalyticsPage() {
                   <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
                     <p className="text-xs text-muted-foreground mb-1">Completion</p>
                     <p className={`text-sm font-bold ${course.completionRate >= 70 ? 'text-green-600 dark:text-green-400' :
-                        course.completionRate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                      course.completionRate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                       {course.completionRate}%
                     </p>
@@ -787,14 +703,14 @@ export default function InstructorAnalyticsPage() {
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col items-center">
                         <span className={`text-sm font-bold ${course.completionRate >= 70 ? 'text-green-600 dark:text-green-400' :
-                            course.completionRate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                          course.completionRate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                           }`}>
                           {course.completionRate}%
                         </span>
                         <div className="w-20 h-2 bg-secondary rounded-full mt-1 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${course.completionRate >= 70 ? 'bg-green-500' :
-                                course.completionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                              course.completionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
                               }`}
                             style={{ width: `${course.completionRate}%` }}
                           ></div>
@@ -802,21 +718,21 @@ export default function InstructorAnalyticsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-semibold text-foreground">{course.avgProgress}%</span>
+                      <span className="text-sm font-bold text-foreground">{course.avgProgress}%</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-green-500 fill-green-500" />
-                        <span className="text-sm font-semibold text-foreground">{course.avgRating}</span>
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-bold text-foreground">{course.avgRating}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                      <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(course.totalRevenue)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-sm font-semibold">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-teal-100 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 rounded-full text-sm font-semibold">
                         <Activity className="w-4 h-4" />
                         {course.activeStudents}
                       </span>
@@ -829,31 +745,6 @@ export default function InstructorAnalyticsPage() {
 
           {/* Pagination */}
           {renderPagination()}
-        </div>
-
-        {/* Enrollment Trend Chart */}
-        <div className="bg-card rounded-xl p-4 sm:p-6 border-2 border-border shadow-sm">
-          <h3 className="text-base sm:text-lg font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
-            <span className="text-sm sm:text-lg">Enrollment Trend</span>
-          </h3>
-          <div className="flex items-end justify-between gap-1 sm:gap-2 h-48 sm:h-64">
-            {analytics.enrollmentTrend.map((item, index) => {
-              const maxEnrollment = Math.max(...analytics.enrollmentTrend.map((i) => i.enrollments));
-              const height = (item.enrollments / maxEnrollment) * 100;
-              return (
-                <div key={index} className="flex-1 flex flex-col items-center gap-1 sm:gap-2">
-                  <span className="text-xs font-semibold text-muted-foreground">{item.enrollments}</span>
-                  <div
-                    className="w-full bg-gradient-to-t from-green-500 to-teal-400 rounded-t-lg hover:opacity-80 transition-opacity cursor-pointer"
-                    style={{ height: `${height}%` }}
-                    title={`${item.month}: ${item.enrollments} enrollments`}
-                  ></div>
-                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">{item.month}</span>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
     </div>

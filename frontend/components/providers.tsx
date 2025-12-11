@@ -11,7 +11,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <ReduxProvider>
           {children}
         </ReduxProvider>

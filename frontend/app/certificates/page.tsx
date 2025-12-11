@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { useAuthStore } from '@/store/authStore';
-import { Award, Download, Share2, CheckCircle, Lock } from 'lucide-react';
+import { Award, Download, Share2, CheckCircle, Lock, Loader2 } from 'lucide-react';
 
 interface Certificate {
   _id: string;
@@ -43,10 +45,12 @@ interface EnrolledCourse {
 export default function CertificatesPage() {
   const router = useRouter();
   const { token } = useAuthStore();
+  const certificateRef = useRef<HTMLDivElement>(null);
 
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
@@ -106,9 +110,45 @@ export default function CertificatesPage() {
     }
   };
 
-  const handleDownload = (certificate: Certificate) => {
-    // TODO: Implement PDF generation and download
-    alert('PDF download feature coming soon!');
+  const handleDownload = async () => {
+    if (!certificateRef.current) return;
+
+    try {
+      setDownloading(true);
+
+      // Capture with specific settings to avoid clipping
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+
+      // Create PDF with standard A4 landscape
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Stretches to fill A4 Page - assuming the component aspect ratio matches closely
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Certificate-${selectedCertificate?.course.title.replace(/\s+/g, '-')}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleShare = (certificate: Certificate) => {
@@ -204,7 +244,7 @@ export default function CertificatesPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDownload(cert);
+                              setSelectedCertificate(cert);
                             }}
                             className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center justify-center gap-2"
                           >
@@ -361,55 +401,107 @@ export default function CertificatesPage() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Certificate Preview */}
-              <div className="border-8 border-double border-blue-600 m-8 p-12 bg-gradient-to-br from-blue-50 to-purple-50">
-                <div className="text-center">
-                  <Award size={80} className="mx-auto text-yellow-600 mb-6" />
+              <div ref={certificateRef} className="relative overflow-hidden bg-white text-black m-4 sm:m-8 p-1 sm:p-2 shadow-2xl min-w-[800px] aspect-[297/210] flex flex-col justify-center">
+                {/* Decorative Border - Green Theme */}
+                <div className="border-[8px] border-double border-green-700 h-full p-6 sm:p-8 relative flex flex-col justify-between">
 
-                  <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                    Certificate of Completion
-                  </h1>
-
-                  <div className="w-32 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto my-6"></div>
-
-                  <p className="text-lg text-gray-600 mb-8">
-                    This is to certify that
-                  </p>
-
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                    {selectedCertificate.metadata.userName}
-                  </h2>
-
-                  <p className="text-lg text-gray-600 mb-4">
-                    has successfully completed the course
-                  </p>
-
-                  <h3 className="text-2xl font-semibold text-blue-600 mb-8">
-                    "{selectedCertificate.course.title}"
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-8 mb-8 text-sm text-gray-600">
-                    <div>
-                      <p className="font-semibold mb-1">Completion Date</p>
-                      <p>{new Date(selectedCertificate.metadata.completionDate).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold mb-1">Total Lessons</p>
-                      <p>{selectedCertificate.metadata.totalLessons}</p>
-                    </div>
+                  {/* Watermark/Background Pattern */}
+                  <div className="absolute inset-0 opacity-[0.05] pointer-events-none flex items-center justify-center">
+                    <Award size={400} className="text-green-800" />
                   </div>
 
-                  <div className="flex justify-between items-end mt-12 pt-8 border-t border-gray-300">
-                    <div className="text-left">
-                      <div className="w-48 border-t border-gray-400 pt-2">
-                        <p className="font-semibold">{selectedCertificate.metadata.instructor}</p>
-                        <p className="text-sm text-gray-600">Instructor</p>
+                  {/* Corner Ornaments */}
+                  <div className="absolute top-2 left-2 w-16 h-16 border-t-4 border-l-4 border-green-700"></div>
+                  <div className="absolute top-2 right-2 w-16 h-16 border-t-4 border-r-4 border-green-700"></div>
+                  <div className="absolute bottom-2 left-2 w-16 h-16 border-b-4 border-l-4 border-green-700"></div>
+                  <div className="absolute bottom-2 right-2 w-16 h-16 border-b-4 border-r-4 border-green-700"></div>
+
+                  <div className="text-center relative z-10 flex-1 flex flex-col justify-between py-2">
+                    {/* Header */}
+                    <div>
+                      <div className="inline-block p-2 rounded-full bg-green-50 mb-1">
+                        <Award size={40} className="text-green-700" />
+                      </div>
+                      <h1 className="text-3xl sm:text-4xl font-serif font-bold text-green-900 tracking-wide uppercase mb-1">
+                        Certificate of Completion
+                      </h1>
+                      <div className="flex items-center justify-center gap-4 text-green-700">
+                        <span className="h-px w-12 bg-green-700"></span>
+                        <span className="text-xs font-medium tracking-widest uppercase text-teal-800">MicroLearning Platform</span>
+                        <span className="h-px w-12 bg-green-700"></span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 mb-1">Certificate ID</p>
-                      <p className="font-mono text-sm">{selectedCertificate.certificateId}</p>
-                      <p className="text-xs text-gray-500 mt-1">Verification Code</p>
-                      <p className="font-mono text-sm">{selectedCertificate.verificationCode}</p>
+
+                    <p className="text-sm text-slate-600 italic font-serif mb-2">
+                      This successfully certifies that
+                    </p>
+
+                    {/* Student Name */}
+                    <div className="mb-1 relative inline-block">
+                      <h2 className="text-3xl sm:text-5xl font-serif font-bold text-slate-900 border-b-2 border-green-700/50 pb-2 px-8 min-w-[300px]">
+                        {selectedCertificate.metadata.userName}
+                      </h2>
+                    </div>
+
+                    <p className="text-sm text-slate-600 italic font-serif mb-2">
+                      has completed the rigorous requirements for the course
+                    </p>
+
+                    {/* Course Title */}
+                    <h3 className="text-xl sm:text-2xl font-bold text-teal-900 mb-1 max-w-2xl mx-auto leading-tight">
+                      "{selectedCertificate.course.title}"
+                    </h3>
+
+                    {/* Details Grid */}
+                    <div className="flex justify-center gap-12 sm:gap-24 mb-2 text-sm text-slate-600">
+                      <div className="text-center">
+                        <p className="font-bold text-slate-800 text-lg mb-1">
+                          {new Date(selectedCertificate.metadata.completionDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs uppercase tracking-wider text-green-700 font-semibold">Completion Date</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-slate-800 text-lg mb-1">
+                          {selectedCertificate.metadata.totalLessons}
+                        </p>
+                        <p className="text-xs uppercase tracking-wider text-green-700 font-semibold">Total Lessons</p>
+                      </div>
+                    </div>
+
+                    {/* Footer / Signatures */}
+                    <div className="flex flex-col sm:flex-row justify-between items-end gap-2 mt-auto pt-2 px-4 relative">
+                      {/* Instructor Signature Area */}
+                      <div className="text-center sm:text-left">
+                        <div className="mb-2">
+                          {/* Simulated Signature Font */}
+                          <div className="font-serif italic text-2xl text-slate-900 min-w-[200px] border-b border-slate-400 pb-1 px-4 inline-block sm:block">
+                            {selectedCertificate.metadata.instructor}
+                          </div>
+                        </div>
+                        <p className="text-xs font-bold uppercase text-slate-700 tracking-wider">Instructor Signature</p>
+                        <p className="text-xs text-slate-500 mt-1">Authorized Instructor</p>
+                      </div>
+
+                      {/* Seal */}
+                      <div className="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2">
+                        <div className="w-16 h-16 rounded-full border-2 border-green-700 flex items-center justify-center opacity-90">
+                          <div className="w-12 h-12 rounded-full border border-dashed border-green-600 flex items-center justify-center bg-green-50/50">
+                            <Award size={24} className="text-green-700" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Verification Details */}
+                      <div className="text-center sm:text-right">
+                        <div className="mb-4">
+                          <p className="text-[10px] uppercase text-slate-400 font-semibold tracking-wider mb-1">Certificate ID</p>
+                          <p className="font-mono text-sm font-bold text-slate-800 tracking-widest">{selectedCertificate.certificateId}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-400 font-semibold tracking-wider mb-1">Verification Code</p>
+                          <p className="font-mono text-xs text-slate-500">{selectedCertificate.verificationCode}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -424,11 +516,21 @@ export default function CertificatesPage() {
                   Close
                 </button>
                 <button
-                  onClick={() => handleDownload(selectedCertificate)}
-                  className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Download size={18} />
-                  Download PDF
+                  {downloading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={18} />
+                      Download PDF
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => handleShare(selectedCertificate)}

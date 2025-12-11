@@ -281,6 +281,51 @@ interface GlobalState {
         completedIds: string[];
     };
 
+    // Instructor-specific lessons (with quiz status)
+    instructorLessons: {
+        byId: Record<string, Lesson & { hasQuiz?: boolean }>;
+        allIds: string[];
+        loading: boolean;
+        error: string | null;
+        lastFetched: number | null;
+    };
+
+    // Instructor-specific courses
+    instructorCourses: {
+        byId: Record<string, Course>;
+        allIds: string[];
+        loading: boolean;
+        error: string | null;
+        lastFetched: number | null;
+    };
+
+    // Instructor-specific students
+    instructorStudents: {
+        byId: Record<string, any>;
+        allIds: string[];
+        loading: boolean;
+        error: string | null;
+        lastFetched: number | null;
+    };
+
+    // Instructor analytics (with time range caching)
+    instructorAnalytics: {
+        data: any | null;
+        timeRange: '7d' | '30d' | '90d' | 'all';
+        loading: boolean;
+        error: string | null;
+        lastFetched: Record<string, number | null>; // Cache per time range
+    };
+
+    // Instructor-specific quizzes
+    instructorQuizzes: {
+        byId: Record<string, any>;
+        allIds: string[];
+        loading: boolean;
+        error: string | null;
+        lastFetched: number | null;
+    };
+
     friends: {
         byId: Record<string, Friend>;
         allIds: string[];
@@ -322,12 +367,15 @@ interface GlobalState {
         allIds: string[];
     };
 
-    // Cache metadata
+    // Cache metadata (5 minutes)
     cache: {
         badges: number | null;
         leaderboard: number | null;
         courses: number | null;
         lessons: number | null;
+        instructorLessons: number | null;
+        instructorCourses: number | null;
+        instructorStudents: number | null;
         friends: number | null;
         posts: number | null;
         quizzes: number | null;
@@ -359,6 +407,46 @@ const initialState: GlobalState = {
         byId: {},
         allIds: [],
         completedIds: [],
+    },
+    instructorLessons: {
+        byId: {},
+        allIds: [],
+        loading: false,
+        error: null,
+        lastFetched: null,
+    },
+    instructorCourses: {
+        byId: {},
+        allIds: [],
+        loading: false,
+        error: null,
+        lastFetched: null,
+    },
+    instructorStudents: {
+        byId: {},
+        allIds: [],
+        loading: false,
+        error: null,
+        lastFetched: null,
+    },
+    instructorAnalytics: {
+        data: null,
+        timeRange: '30d',
+        loading: false,
+        error: null,
+        lastFetched: {
+            '7d': null,
+            '30d': null,
+            '90d': null,
+            'all': null,
+        },
+    },
+    instructorQuizzes: {
+        byId: {},
+        allIds: [],
+        loading: false,
+        error: null,
+        lastFetched: null,
     },
     friends: {
         byId: {},
@@ -398,6 +486,9 @@ const initialState: GlobalState = {
         leaderboard: null,
         courses: null,
         lessons: null,
+        instructorLessons: null,
+        instructorCourses: null,
+        instructorStudents: null,
         friends: null,
         posts: null,
         quizzes: null,
@@ -497,6 +588,160 @@ export const fetchAllLessons = createAsyncThunk(
     async () => {
         const response = await lessonsAPI.getAllLessons();
         return response.data.data || [];
+    }
+);
+
+// Instructor Lessons (with smart caching and quiz status)
+export const fetchInstructorLessons = createAsyncThunk(
+    'global/fetchInstructorLessons',
+    async ({ force = false }: { force?: boolean } = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as any;
+            const lastFetched = state.global.instructorLessons.lastFetched;
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+            // Smart caching - return cached data if fresh
+            if (!force && lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+                const cachedLessons = state.global.instructorLessons.allIds.map(
+                    (id: string) => state.global.instructorLessons.byId[id]
+                );
+                return { lessons: cachedLessons, fromCache: true };
+            }
+
+            // Fetch instructor's lessons
+            const response = await api.get('/lessons/instructor/my-lessons');
+            const lessonsData = response.data.data || [];
+
+            // Check quiz status for each lesson (parallel requests)
+            const lessonsWithQuizStatus = await Promise.all(
+                lessonsData.map(async (lesson: any) => {
+                    try {
+                        const quizRes = await api.get(`/quiz?lesson=${lesson._id}`);
+                        return {
+                            ...lesson,
+                            hasQuiz: quizRes.data.data?.length > 0,
+                        };
+                    } catch (error) {
+                        return { ...lesson, hasQuiz: false };
+                    }
+                })
+            );
+
+            return { lessons: lessonsWithQuizStatus, fromCache: false };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch instructor lessons');
+        }
+    }
+);
+
+// Instructor Courses (with smart caching)
+export const fetchInstructorCourses = createAsyncThunk(
+    'global/fetchInstructorCourses',
+    async ({ force = false }: { force?: boolean } = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as any;
+            const lastFetched = state.global.instructorCourses.lastFetched;
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+            // Smart caching - return cached data if fresh
+            if (!force && lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+                const cachedCourses = state.global.instructorCourses.allIds.map(
+                    (id: string) => state.global.instructorCourses.byId[id]
+                );
+                return { courses: cachedCourses, fromCache: true };
+            }
+
+            // Fetch instructor's courses
+            const response = await api.get('/courses/instructor/my-courses');
+            const coursesData = response.data?.data || response.data || [];
+
+            return { courses: coursesData, fromCache: false };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch instructor courses');
+        }
+    }
+);
+
+// Instructor Students (with smart caching)
+export const fetchInstructorStudents = createAsyncThunk(
+    'global/fetchInstructorStudents',
+    async ({ force = false }: { force?: boolean } = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as any;
+            const lastFetched = state.global.instructorStudents.lastFetched;
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+            // Smart caching - return cached data if fresh
+            if (!force && lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+                const cachedStudents = state.global.instructorStudents.allIds.map(
+                    (id: string) => state.global.instructorStudents.byId[id]
+                );
+                return { students: cachedStudents, fromCache: true };
+            }
+
+            // Fetch instructor's students
+            const response = await api.get('/courses/instructor/students');
+            const studentsData = response.data?.data || [];
+
+            return { students: studentsData, fromCache: false };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch instructor students');
+        }
+    }
+);
+
+// Instructor Analytics (with smart caching per time range)
+export const fetchInstructorAnalytics = createAsyncThunk(
+    'global/fetchInstructorAnalytics',
+    async ({ timeRange = '30d', force = false }: { timeRange?: '7d' | '30d' | '90d' | 'all'; force?: boolean } = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as any;
+            const lastFetched = state.global.instructorAnalytics.lastFetched[timeRange];
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+            // Smart caching - return cached data if fresh and same time range
+            if (!force && lastFetched && Date.now() - lastFetched < CACHE_DURATION &&
+                state.global.instructorAnalytics.timeRange === timeRange &&
+                state.global.instructorAnalytics.data) {
+                return { analytics: state.global.instructorAnalytics.data, timeRange, fromCache: true };
+            }
+
+            // Fetch instructor's analytics
+            const response = await api.get(`/courses/instructor/analytics?range=${timeRange}`);
+            const analyticsData = response.data?.data || null;
+
+            return { analytics: analyticsData, timeRange, fromCache: false };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch instructor analytics');
+        }
+    }
+);
+
+// Instructor Quizzes (with smart caching)
+export const fetchInstructorQuizzes = createAsyncThunk(
+    'global/fetchInstructorQuizzes',
+    async ({ force = false }: { force?: boolean } = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as any;
+            const lastFetched = state.global.instructorQuizzes.lastFetched;
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+            // Smart caching - return cached data if fresh
+            if (!force && lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+                const cachedQuizzes = state.global.instructorQuizzes.allIds.map(
+                    (id: string) => state.global.instructorQuizzes.byId[id]
+                );
+                return { quizzes: cachedQuizzes, fromCache: true };
+            }
+
+            // Fetch instructor's quizzes
+            const response = await api.get('/quiz/instructor');
+            const quizzesData = response.data?.data || [];
+
+            return { quizzes: quizzesData, fromCache: false };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch instructor quizzes');
+        }
     }
 );
 
@@ -940,6 +1185,343 @@ const globalSlice = createSlice({
                     state.quizzes.allIds.unshift(quiz._id); // Add to beginning
                 }
             }
+        });
+
+        // Instructor Lessons
+        builder.addCase(fetchInstructorLessons.pending, (state) => {
+            if (!state.instructorLessons) {
+                state.instructorLessons = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorLessons.loading = true;
+            state.instructorLessons.error = null;
+        });
+
+        builder.addCase(fetchInstructorLessons.fulfilled, (state, action) => {
+            if (!state.instructorLessons) {
+                state.instructorLessons = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+
+            const { lessons, fromCache } = action.payload;
+
+            // Only update if not from cache
+            if (!fromCache) {
+                state.instructorLessons.byId = {};
+                state.instructorLessons.allIds = [];
+
+                lessons.forEach((lesson: any) => {
+                    state.instructorLessons.byId[lesson._id] = lesson;
+                    state.instructorLessons.allIds.push(lesson._id);
+                });
+
+                state.instructorLessons.lastFetched = Date.now();
+                if (!state.cache) {
+                    state.cache = {
+                        badges: null,
+                        leaderboard: null,
+                        courses: null,
+                        lessons: null,
+                        instructorLessons: null,
+                        instructorCourses: null,
+                        instructorStudents: null,
+                        friends: null,
+                        posts: null,
+                        quizzes: null,
+                        notifications: null,
+                    };
+                }
+                state.cache.instructorLessons = Date.now();
+            }
+
+            state.instructorLessons.loading = false;
+            state.instructorLessons.error = null;
+        });
+
+        builder.addCase(fetchInstructorLessons.rejected, (state, action) => {
+            if (!state.instructorLessons) {
+                state.instructorLessons = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorLessons.loading = false;
+            state.instructorLessons.error = action.payload as string;
+        });
+
+        // Instructor Courses
+        builder.addCase(fetchInstructorCourses.pending, (state) => {
+            if (!state.instructorCourses) {
+                state.instructorCourses = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorCourses.loading = true;
+            state.instructorCourses.error = null;
+        });
+
+        builder.addCase(fetchInstructorCourses.fulfilled, (state, action) => {
+            if (!state.instructorCourses) {
+                state.instructorCourses = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+
+            const { courses, fromCache } = action.payload;
+
+            // Only update if not from cache
+            if (!fromCache) {
+                state.instructorCourses.byId = {};
+                state.instructorCourses.allIds = [];
+
+                courses.forEach((course: any) => {
+                    state.instructorCourses.byId[course._id] = course;
+                    state.instructorCourses.allIds.push(course._id);
+                });
+
+                state.instructorCourses.lastFetched = Date.now();
+                if (!state.cache) {
+                    state.cache = {
+                        badges: null,
+                        leaderboard: null,
+                        courses: null,
+                        lessons: null,
+                        instructorLessons: null,
+                        instructorCourses: null,
+                        instructorStudents: null,
+                        friends: null,
+                        posts: null,
+                        quizzes: null,
+                        notifications: null,
+                    };
+                }
+                state.cache.instructorCourses = Date.now();
+            }
+
+            state.instructorCourses.loading = false;
+            state.instructorCourses.error = null;
+        });
+
+        builder.addCase(fetchInstructorCourses.rejected, (state, action) => {
+            if (!state.instructorCourses) {
+                state.instructorCourses = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorCourses.loading = false;
+            state.instructorCourses.error = action.payload as string;
+        });
+
+        // Instructor Students
+        builder.addCase(fetchInstructorStudents.pending, (state) => {
+            if (!state.instructorStudents) {
+                state.instructorStudents = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorStudents.loading = true;
+            state.instructorStudents.error = null;
+        });
+
+        builder.addCase(fetchInstructorStudents.fulfilled, (state, action) => {
+            if (!state.instructorStudents) {
+                state.instructorStudents = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+
+            const { students, fromCache } = action.payload;
+
+            // Only update if not from cache
+            if (!fromCache) {
+                state.instructorStudents.byId = {};
+                state.instructorStudents.allIds = [];
+
+                students.forEach((student: any) => {
+                    state.instructorStudents.byId[student._id] = student;
+                    state.instructorStudents.allIds.push(student._id);
+                });
+
+                state.instructorStudents.lastFetched = Date.now();
+                if (!state.cache) {
+                    state.cache = {
+                        badges: null,
+                        leaderboard: null,
+                        courses: null,
+                        lessons: null,
+                        instructorLessons: null,
+                        instructorCourses: null,
+                        instructorStudents: null,
+                        friends: null,
+                        posts: null,
+                        quizzes: null,
+                        notifications: null,
+                    };
+                }
+                state.cache.instructorStudents = Date.now();
+            }
+
+            state.instructorStudents.loading = false;
+            state.instructorStudents.error = null;
+        });
+
+        builder.addCase(fetchInstructorStudents.rejected, (state, action) => {
+            if (!state.instructorStudents) {
+                state.instructorStudents = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorStudents.loading = false;
+            state.instructorStudents.error = action.payload as string;
+        });
+
+        // Instructor Analytics
+        builder.addCase(fetchInstructorAnalytics.pending, (state) => {
+            if (!state.instructorAnalytics) {
+                state.instructorAnalytics = {
+                    data: null,
+                    timeRange: '30d',
+                    loading: false,
+                    error: null,
+                    lastFetched: { '7d': null, '30d': null, '90d': null, 'all': null },
+                };
+            }
+            state.instructorAnalytics.loading = true;
+            state.instructorAnalytics.error = null;
+        });
+
+        builder.addCase(fetchInstructorAnalytics.fulfilled, (state, action) => {
+            if (!state.instructorAnalytics) {
+                state.instructorAnalytics = {
+                    data: null,
+                    timeRange: '30d',
+                    loading: false,
+                    error: null,
+                    lastFetched: { '7d': null, '30d': null, '90d': null, 'all': null },
+                };
+            }
+
+            const { analytics, timeRange, fromCache } = action.payload;
+
+            // Only update if not from cache
+            if (!fromCache) {
+                state.instructorAnalytics.data = analytics;
+                state.instructorAnalytics.timeRange = timeRange;
+                state.instructorAnalytics.lastFetched[timeRange] = Date.now();
+            }
+
+            state.instructorAnalytics.loading = false;
+            state.instructorAnalytics.error = null;
+        });
+
+        builder.addCase(fetchInstructorAnalytics.rejected, (state, action) => {
+            if (!state.instructorAnalytics) {
+                state.instructorAnalytics = {
+                    data: null,
+                    timeRange: '30d',
+                    loading: false,
+                    error: null,
+                    lastFetched: { '7d': null, '30d': null, '90d': null, 'all': null },
+                };
+            }
+            state.instructorAnalytics.loading = false;
+            state.instructorAnalytics.error = action.payload as string;
+        });
+
+        // Instructor Quizzes
+        builder.addCase(fetchInstructorQuizzes.pending, (state) => {
+            if (!state.instructorQuizzes) {
+                state.instructorQuizzes = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorQuizzes.loading = true;
+            state.instructorQuizzes.error = null;
+        });
+
+        builder.addCase(fetchInstructorQuizzes.fulfilled, (state, action) => {
+            if (!state.instructorQuizzes) {
+                state.instructorQuizzes = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+
+            const { quizzes, fromCache } = action.payload;
+
+            // Only update if not from cache
+            if (!fromCache) {
+                state.instructorQuizzes.byId = {};
+                state.instructorQuizzes.allIds = [];
+
+                quizzes.forEach((quiz: any) => {
+                    state.instructorQuizzes.byId[quiz._id] = quiz;
+                    state.instructorQuizzes.allIds.push(quiz._id);
+                });
+
+                state.instructorQuizzes.lastFetched = Date.now();
+            }
+
+            state.instructorQuizzes.loading = false;
+            state.instructorQuizzes.error = null;
+        });
+
+        builder.addCase(fetchInstructorQuizzes.rejected, (state, action) => {
+            if (!state.instructorQuizzes) {
+                state.instructorQuizzes = {
+                    byId: {},
+                    allIds: [],
+                    loading: false,
+                    error: null,
+                    lastFetched: null,
+                };
+            }
+            state.instructorQuizzes.loading = false;
+            state.instructorQuizzes.error = action.payload as string;
         });
     },
 });

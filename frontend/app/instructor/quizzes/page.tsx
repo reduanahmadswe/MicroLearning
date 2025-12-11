@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { useAppDispatch } from '@/store/hooks';
+import {
+  useInstructorQuizzes,
+  useInstructorQuizzesLoading,
+  useInstructorQuizzesError,
+} from '@/store/hooks';
+import { fetchInstructorQuizzes } from '@/store/globalSlice';
 import {
   Plus,
   Search,
@@ -24,7 +31,8 @@ import {
   Download,
   Share2,
   Settings,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,8 +56,14 @@ interface Quiz {
 export default function InstructorQuizzesPage() {
   const router = useRouter();
   const { user, token } = useAuthStore();
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+
+  // Redux state
+  const quizzes = useInstructorQuizzes() as Quiz[];
+  const loading = useInstructorQuizzesLoading();
+  const error = useInstructorQuizzesError();
+
+  // Local UI state
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
@@ -63,64 +77,43 @@ export default function InstructorQuizzesPage() {
     duration: 0,
     questions: [] as any[],
   });
-  const [stats, setStats] = useState({
-    totalQuizzes: 0,
-    publishedQuizzes: 0,
-    totalAttempts: 0,
-    averageScore: 0
-  });
 
   useEffect(() => {
     if (!user || user.role !== 'instructor') {
       router.push('/');
       return;
     }
-    loadQuizzes();
-  }, [user, router]);
 
-  const loadQuizzes = async () => {
-    try {
-      setLoading(true);
+    // Fetch quizzes (will use cache if available)
+    dispatch(fetchInstructorQuizzes({}));
+  }, [user, router, dispatch]);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/instructor`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch quizzes');
-      }
-
-      const data = await response.json();
-      const quizData = data.data || [];
-
-      setQuizzes(quizData);
-      calculateStats(quizData);
-    } catch (error) {
-      console.error('Error loading quizzes:', error);
-      toast.error('Failed to load quizzes');
-      setQuizzes([]);
-    } finally {
-      setLoading(false);
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
+  }, [error]);
+
+  const handleRefresh = () => {
+    dispatch(fetchInstructorQuizzes({ force: true }));
+    toast.success('Refreshing quizzes...');
   };
 
-  const calculateStats = (quizData: Quiz[]) => {
-    const totalQuizzes = quizData.length;
-    const publishedQuizzes = quizData.filter(q => q.published).length;
-    const totalAttempts = quizData.reduce((sum, q) => sum + q.totalAttempts, 0);
-    const averageScore = totalAttempts > 0
-      ? Math.round(quizData.reduce((sum, q) => sum + (q.averageScore * q.totalAttempts), 0) / totalAttempts)
-      : 0;
-
-    setStats({ totalQuizzes, publishedQuizzes, totalAttempts, averageScore });
+  // Calculate stats from quizzes
+  const stats = {
+    totalQuizzes: quizzes.length,
+    publishedQuizzes: quizzes.filter(q => q.published).length,
+    totalAttempts: quizzes.reduce((sum, q) => sum + (q.totalAttempts || 0), 0),
+    averageScore: quizzes.length > 0
+      ? Math.round(quizzes.reduce((sum, q) => sum + (q.averageScore || 0) * (q.totalAttempts || 0), 0) /
+        Math.max(quizzes.reduce((sum, q) => sum + (q.totalAttempts || 0), 0), 1))
+      : 0
   };
 
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      quiz.course.title.toLowerCase().includes(searchQuery.toLowerCase());
+      quiz.course?.title?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus === 'all' ||
       (filterStatus === 'published' && quiz.published) ||
       (filterStatus === 'draft' && !quiz.published);
@@ -141,10 +134,12 @@ export default function InstructorQuizzesPage() {
         throw new Error('Failed to delete quiz');
       }
 
-      setQuizzes(quizzes.filter(q => q._id !== quizId));
       toast.success('Quiz deleted successfully');
       setShowDeleteModal(false);
       setSelectedQuiz(null);
+
+      // Refresh quizzes
+      dispatch(fetchInstructorQuizzes({ force: true }));
     } catch (error) {
       console.error('Error deleting quiz:', error);
       toast.error('Failed to delete quiz');
@@ -167,12 +162,15 @@ export default function InstructorQuizzesPage() {
       }
 
       toast.success('Quiz duplicated successfully');
-      loadQuizzes();
+
+      // Refresh quizzes
+      dispatch(fetchInstructorQuizzes({ force: true }));
     } catch (error) {
       console.error('Error duplicating quiz:', error);
       toast.error('Failed to duplicate quiz');
     }
   };
+
   const handleTogglePublish = async (quizId: string) => {
     try {
       setSelectedQuiz(null);
@@ -192,10 +190,10 @@ export default function InstructorQuizzesPage() {
       }
 
       const data = await response.json();
-      setQuizzes(quizzes.map(q =>
-        q._id === quizId ? { ...q, published: data.data.published } : q
-      ));
       toast.success(`Quiz ${data.data.published ? 'published' : 'unpublished'} successfully`);
+
+      // Refresh quizzes
+      dispatch(fetchInstructorQuizzes({ force: true }));
     } catch (error) {
       console.error('Error updating quiz status:', error);
       toast.error('Failed to update quiz status');
@@ -252,20 +250,19 @@ export default function InstructorQuizzesPage() {
         throw new Error('Failed to update quiz');
       }
 
-      const data = await response.json();
-      setQuizzes(quizzes.map(q =>
-        q._id === editingQuiz._id ? { ...q, ...editForm } : q
-      ));
       toast.success('Quiz updated successfully');
       setShowEditModal(false);
       setEditingQuiz(null);
+
+      // Refresh quizzes
+      dispatch(fetchInstructorQuizzes({ force: true }));
     } catch (error) {
       console.error('Error updating quiz:', error);
       toast.error('Failed to update quiz');
     }
   };
 
-  if (loading) {
+  if (loading && quizzes.length === 0) {
     return (
       <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
@@ -291,13 +288,23 @@ export default function InstructorQuizzesPage() {
               </h1>
               <p className="mt-2 text-muted-foreground">Create and manage quizzes for your courses</p>
             </div>
-            <button
-              onClick={() => router.push('/instructor/quizzes/create')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Create Quiz</span>
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-3 bg-secondary text-foreground rounded-xl hover:bg-secondary/80 transition-all font-medium disabled:opacity-50"
+              >
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{loading ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+              <button
+                onClick={() => router.push('/instructor/quizzes/create')}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Create Quiz</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -369,8 +376,8 @@ export default function InstructorQuizzesPage() {
               <button
                 onClick={() => setFilterStatus('all')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all ${filterStatus === 'all'
-                    ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
-                    : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                   }`}
               >
                 All
@@ -378,8 +385,8 @@ export default function InstructorQuizzesPage() {
               <button
                 onClick={() => setFilterStatus('published')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all ${filterStatus === 'published'
-                    ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
-                    : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                   }`}
               >
                 Published
@@ -387,8 +394,8 @@ export default function InstructorQuizzesPage() {
               <button
                 onClick={() => setFilterStatus('draft')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all ${filterStatus === 'draft'
-                    ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
-                    : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-800'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                   }`}
               >
                 Draft
@@ -429,8 +436,8 @@ export default function InstructorQuizzesPage() {
                   {/* Status Badge */}
                   <div className="flex items-center justify-between mb-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${quiz.published
-                        ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                        : 'bg-secondary text-muted-foreground'
+                      ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'bg-secondary text-muted-foreground'
                       }`}>
                       {quiz.published ? 'Published' : 'Draft'}
                     </span>
@@ -508,7 +515,7 @@ export default function InstructorQuizzesPage() {
                         <Award className="w-4 h-4" />
                         Questions
                       </span>
-                      <span className="font-semibold text-foreground">{quiz.questions.length}</span>
+                      <span className="font-semibold text-foreground">{quiz.questions?.length || 0}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-2">
@@ -522,21 +529,21 @@ export default function InstructorQuizzesPage() {
                         <Users className="w-4 h-4" />
                         Attempts
                       </span>
-                      <span className="font-semibold text-foreground">{quiz.totalAttempts}</span>
+                      <span className="font-semibold text-foreground">{quiz.totalAttempts || 0}</span>
                     </div>
                   </div>
 
                   {/* Stats Bar */}
-                  {quiz.totalAttempts > 0 && (
+                  {(quiz.totalAttempts || 0) > 0 && (
                     <div className="mb-4">
                       <div className="flex items-center justify-between text-sm mb-2">
                         <span className="text-muted-foreground">Average Score</span>
-                        <span className="font-bold text-green-600 dark:text-green-400">{quiz.averageScore}%</span>
+                        <span className="font-bold text-green-600 dark:text-green-400">{quiz.averageScore || 0}%</span>
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-green-500 to-teal-500 transition-all duration-500"
-                          style={{ width: `${quiz.averageScore}%` }}
+                          style={{ width: `${quiz.averageScore || 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -596,7 +603,7 @@ export default function InstructorQuizzesPage() {
         </div>
       )}
 
-      {/* Edit Quiz Modal */}
+      {/* Edit Quiz Modal - Simplified version */}
       {showEditModal && editingQuiz && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto border border-border">
@@ -679,149 +686,21 @@ export default function InstructorQuizzesPage() {
                 </div>
               </div>
 
-              {/* Course Info (Read-only) */}
-              <div className="bg-secondary p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <BookOpen className="w-4 h-4" />
-                  <span className="font-medium">Course:</span>
-                </div>
-                <p className="text-foreground font-medium">{editingQuiz.course?.title || 'N/A'}</p>
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-3 bg-secondary text-foreground rounded-xl hover:bg-secondary/80 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateQuiz}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+                >
+                  Save Changes
+                </button>
               </div>
-
-              {/* Questions Section */}
-              <div className="pt-4 border-t border-border">
-                <label className="block text-sm font-medium text-foreground mb-3">
-                  Questions ({editForm.questions.length})
-                </label>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                  {editForm.questions.map((question, qIndex) => (
-                    <div key={qIndex} className="border border-border rounded-lg p-4 bg-secondary/50">
-                      {/* Question Number & Type */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-semibold text-green-600">Question {qIndex + 1}</span>
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                          {question.type === 'mcq' ? 'Multiple Choice' :
-                            question.type === 'true-false' ? 'True/False' : 'Fill in Blank'}
-                        </span>
-                      </div>
-
-                      {/* Question Text */}
-                      <div className="mb-3">
-                        <label className="block text-xs font-medium text-muted-foreground mb-1">Question</label>
-                        <input
-                          type="text"
-                          value={question.question}
-                          onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
-                          className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          placeholder="Enter question"
-                        />
-                      </div>
-
-                      {/* Options (for MCQ) */}
-                      {question.type === 'mcq' && question.options && (
-                        <div className="mb-3">
-                          <label className="block text-xs font-medium text-muted-foreground mb-2">Options</label>
-                          <div className="space-y-2">
-                            {question.options.map((option: string, oIndex: number) => (
-                              <div key={oIndex} className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-muted-foreground w-6">
-                                  {String.fromCharCode(65 + oIndex)}.
-                                </span>
-                                <input
-                                  type="text"
-                                  value={option}
-                                  onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-background text-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent ${question.correctAnswer === option
-                                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                      : 'border-border'
-                                    }`}
-                                  placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
-                                />
-                                {question.correctAnswer === option && (
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Correct Answer (for True/False & Fill in Blank) */}
-                      {question.type !== 'mcq' && (
-                        <div className="mb-3">
-                          <label className="block text-xs font-medium text-muted-foreground mb-1">Correct Answer</label>
-                          <input
-                            type="text"
-                            value={question.correctAnswer}
-                            onChange={(e) => handleQuestionChange(qIndex, 'correctAnswer', e.target.value)}
-                            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            placeholder="Enter correct answer"
-                          />
-                        </div>
-                      )}
-
-                      {/* Explanation */}
-                      <div className="mb-2">
-                        <label className="block text-xs font-medium text-muted-foreground mb-1">Explanation</label>
-                        <textarea
-                          value={question.explanation}
-                          onChange={(e) => handleQuestionChange(qIndex, 'explanation', e.target.value)}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                          placeholder="Explain the correct answer"
-                        />
-                      </div>
-
-                      {/* Points */}
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs font-medium text-muted-foreground">Points:</label>
-                        <input
-                          type="number"
-                          value={question.points || 1}
-                          onChange={(e) => handleQuestionChange(qIndex, 'points', Number(e.target.value))}
-                          min="1"
-                          className="w-20 px-2 py-1 border border-border rounded text-sm bg-background text-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quiz Stats */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{editForm.questions.length}</p>
-                  <p className="text-sm text-muted-foreground">Questions</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{editingQuiz.totalAttempts}</p>
-                  <p className="text-sm text-gray-600">Attempts</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{editingQuiz.averageScore}%</p>
-                  <p className="text-sm text-gray-600">Avg Score</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingQuiz(null);
-                }}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateQuiz}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl hover:from-green-700 hover:to-teal-700 transition-colors font-medium"
-              >
-                Save Changes
-              </button>
             </div>
           </div>
         </div>

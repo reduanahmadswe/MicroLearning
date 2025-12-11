@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   MessageCircle,
@@ -28,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { aiTutorAPI, ttsAPI, asrAPI } from '@/services/api.service';
+import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
@@ -53,6 +55,8 @@ interface ChatSession {
 }
 
 export default function AITutorPage() {
+  const router = useRouter();
+  const { token } = useAuthStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -77,8 +81,12 @@ export default function AITutorPage() {
   }, [messages]);
 
   useEffect(() => {
+    if (!token) {
+      router.push('/auth/login');
+      return;
+    }
     loadSessions();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     // Initialize speech recognition

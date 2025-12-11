@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Play,
@@ -17,28 +17,47 @@ import {
   X,
   PlayCircle
 } from 'lucide-react';
-import { profileAPI } from '@/services/api.service';
+import { useAuthStore } from '@/store/authStore';
+import { useAppDispatch } from '@/store/hooks';
+import {
+  useAllVideos,
+  useVideosSearchQuery,
+  useVideosSelectedCategory,
+  useVideosSelectedVideo,
+  useVideosShowPlayer,
+  useVideosShowMobileFilters,
+  useVideosLoading,
+  useVideosSearching,
+  useVideosError,
+} from '@/store/hooks';
+import {
+  fetchRecommendedVideos,
+  searchVideos,
+  searchByCategory,
+  setSearchQuery,
+  setSelectedCategory,
+  setSelectedVideo,
+  setShowVideoPlayer,
+  setShowMobileFilters,
+  clearError,
+} from '@/store/videosSlice';
 import { toast } from 'sonner';
-
-interface YouTubeVideo {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  channelTitle: string;
-  publishedAt: string;
-  duration?: string;
-}
 
 export default function VideosPage() {
   const router = useRouter();
-  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [youtubeSearching, setYoutubeSearching] = useState(false);
-  const [selectedYoutubeVideo, setSelectedYoutubeVideo] = useState<YouTubeVideo | null>(null);
-  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const dispatch = useAppDispatch();
+  const { token } = useAuthStore();
+
+  // Redux state
+  const youtubeVideos = useAllVideos();
+  const searchQuery = useVideosSearchQuery();
+  const selectedCategory = useVideosSelectedCategory();
+  const selectedYoutubeVideo = useVideosSelectedVideo();
+  const showVideoPlayer = useVideosShowPlayer();
+  const showMobileFilters = useVideosShowMobileFilters();
+  const loading = useVideosLoading();
+  const youtubeSearching = useVideosSearching();
+  const error = useVideosError();
 
   const categories = [
     { id: 'all', name: 'All Educational', icon: Sparkles, color: 'from-green-500 to-teal-500' },
@@ -49,132 +68,39 @@ export default function VideosPage() {
   ];
 
   useEffect(() => {
-    loadRecommendedVideos();
-  }, []);
-
-  const loadRecommendedVideos = async () => {
-    try {
-      // Get user profile to fetch interests
-      const profileResponse = await profileAPI.getMyProfile();
-      const userInterests = profileResponse.data.data?.interests || [];
-
-      // Create dynamic search query with randomization
-      let searchQuery = '';
-
-      if (userInterests.length > 0) {
-        // Randomly shuffle and select interests to create variety
-        const shuffledInterests = [...userInterests].sort(() => Math.random() - 0.5);
-        const selectedInterests = shuffledInterests.slice(0, Math.floor(Math.random() * 2) + 1); // 1-2 interests
-
-        // Add variety modifiers randomly
-        const modifiers = ['tutorial', 'course', 'learn', 'introduction', 'guide', 'explained', 'basics', 'advanced'];
-        const randomModifier = modifiers[Math.floor(Math.random() * modifiers.length)];
-
-        // Add difficulty level randomly
-        const levels = ['beginner', 'intermediate', 'advanced', ''];
-        const randomLevel = levels[Math.floor(Math.random() * levels.length)];
-
-        // Add time-based variation (changes throughout the day)
-        const hour = new Date().getHours();
-        const timeModifier = hour < 12 ? 'morning' : hour < 18 ? 'quick' : 'complete';
-
-        // Combine for unique search each time with educational focus
-        searchQuery = `${selectedInterests.join(' ')} ${randomModifier} ${randomLevel} ${timeModifier} education learning course`.trim();
-      } else {
-        // Default with educational variety
-        const defaultTopics = [
-          'programming tutorial education',
-          'web development course learn',
-          'python for beginners educational',
-          'javascript explained tutorial',
-          'data structures course',
-          'algorithm basics education',
-          'react tutorial learn',
-          'machine learning course introduction'
-        ];
-        searchQuery = defaultTopics[Math.floor(Math.random() * defaultTopics.length)];
-      }
-
-      // Add random relevance sorting
-      const sortOptions = ['relevance', 'date', 'viewCount', 'rating'];
-      const randomSort = sortOptions[Math.floor(Math.random() * sortOptions.length)];
-
-      await searchYouTube(searchQuery, true, randomSort); // true = silent load
-    } catch (error) {
-      console.error('Failed to load recommended videos:', error);
-      // Silently fail, user can still search manually
-    }
-  };
-
-  const searchYouTube = async (query: string, silent = false, order = 'relevance') => {
-    if (!query.trim()) {
-      if (!silent) toast.error('Please enter a search term');
+    if (!token) {
+      router.push('/auth/login');
       return;
     }
+    // Load recommended videos on mount
+    dispatch(fetchRecommendedVideos());
+  }, [token, dispatch]);
 
-    try {
-      setYoutubeSearching(true);
-      const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || '';
-      const maxResults = 12;
-
-      // Add educational keywords to ensure educational content only
-      const educationalQuery = `${query} tutorial course education learning`;
-
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(
-          educationalQuery
-        )}&type=video&order=${order}&safeSearch=strict&videoCategoryId=27&key=${apiKey}`
-      );
-
-      if (!response.ok) {
-        throw new Error('YouTube API request failed');
-      }
-
-      const data = await response.json();
-
-      const videos: YouTubeVideo[] = data.items.map((item: any) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        description: item.snippet.description,
-        thumbnail: item.snippet.thumbnails.medium.url,
-        channelTitle: item.snippet.channelTitle,
-        publishedAt: item.snippet.publishedAt,
-      }));
-
-      setYoutubeVideos(videos);
-      if (!silent) {
-        toast.success(`Found ${videos.length} videos`);
-      }
-    } catch (error: any) {
-      console.error('YouTube search error:', error);
-      if (!silent) toast.error('Failed to search YouTube. Please try again.');
-    } finally {
-      setYoutubeSearching(false);
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearError());
     }
-  };
+  }, [error, dispatch]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      searchYouTube(searchQuery);
-      setSelectedCategory('all');
+      dispatch(searchVideos({ query: searchQuery }));
+      dispatch(setSelectedCategory('all'));
+      toast.success(`Searching for "${searchQuery}"`);
     }
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setShowMobileFilters(false);
+    dispatch(setSelectedCategory(categoryId));
+    dispatch(setShowMobileFilters(false));
+
     if (categoryId === 'all') {
-      loadRecommendedVideos();
+      dispatch(fetchRecommendedVideos());
     } else {
-      // Add educational context to category searches
-      const categoryMap: { [key: string]: string } = {
-        'programming': 'programming tutorial course education',
-        'science': 'science math education learn',
-        'language': 'language learning course tutorial',
-        'business': 'business skills professional development'
-      };
-      searchYouTube(categoryMap[categoryId] || categoryId);
+      dispatch(searchByCategory(categoryId));
     }
   };
 
@@ -190,9 +116,9 @@ export default function VideosPage() {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
-  const handleYoutubeVideoClick = (video: YouTubeVideo) => {
-    setSelectedYoutubeVideo(video);
-    setShowVideoPlayer(true);
+  const handleYoutubeVideoClick = (video: any) => {
+    dispatch(setSelectedVideo(video));
+    dispatch(setShowVideoPlayer(true));
   };
 
   return (
@@ -241,7 +167,7 @@ export default function VideosPage() {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search videos by topic, skill, or keyword..."
               className="w-full pl-12 pr-24 sm:pr-32 py-3 sm:py-4 bg-background border border-border rounded-xl text-foreground placeholder-muted-foreground focus:border-green-500 focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/30 transition-all outline-none text-sm sm:text-base"
             />
@@ -269,7 +195,7 @@ export default function VideosPage() {
         <div className="mb-6 sm:mb-8">
           {/* Mobile Filter Button */}
           <button
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            onClick={() => dispatch(setShowMobileFilters(!showMobileFilters))}
             className="md:hidden w-full bg-card border border-border rounded-xl p-3 mb-3 flex items-center justify-between font-semibold text-foreground hover:bg-accent transition-all"
           >
             <span className="flex items-center gap-2">
@@ -442,7 +368,7 @@ export default function VideosPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowVideoPlayer(false)}
+                  onClick={() => dispatch(setShowVideoPlayer(false))}
                   className="ml-3 w-8 h-8 sm:w-10 sm:h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl flex items-center justify-center transition-all hover:scale-105 flex-shrink-0"
                 >
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />

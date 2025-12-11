@@ -127,47 +127,52 @@ export default function CourseDetailPage() {
   };
 
   const checkLessonUnlockStatus = async (lessons: any[], enrollmentData: any) => {
-
     const unlockStatus: Record<string, boolean> = {};
     const quizData: Record<string, any> = {};
 
+    // Sort lessons by order to ensure sequential processing
+    const sortedLessons = [...lessons].sort((a, b) => (a.order || 0) - (b.order || 0));
+
     // First lesson always unlocked for enrolled students
-    if (lessons.length > 0 && lessons[0].order === 1) {
-      unlockStatus[lessons[0]._id] = true;
+    if (sortedLessons.length > 0) {
+      // Logic for first lesson (usually order 1)
+      const firstLesson = sortedLessons[0];
+      unlockStatus[firstLesson._id] = true;
     }
 
     // Check subsequent lessons
-    for (let i = 0; i < lessons.length; i++) {
-      const lesson = lessons[i];
+    for (let i = 0; i < sortedLessons.length; i++) {
+      const lesson = sortedLessons[i];
+
+      // If lesson is already completed, it MUST be unlocked
+      const isCompleted = enrollmentData.completedLessons?.some(
+        (id: any) => id.toString() === lesson._id.toString()
+      );
+
+      if (isCompleted) {
+        unlockStatus[lesson._id] = true;
+        // Continue to verify quiz data for UI but don't block
+      }
 
       if (lesson.order === 1) continue; // Already handled
 
-
       // Find previous lesson
-      const previousLesson = lessons.find((l: any) => l.order === lesson.order - 1);
+      const previousLesson = sortedLessons.find((l: any) => l.order === lesson.order - 1);
 
       if (previousLesson) {
-
         // Check if previous lesson is completed
         const isPreviousCompleted = enrollmentData.completedLessons?.some(
           (lessonId: any) => lessonId.toString() === previousLesson._id.toString()
         );
 
-        if (!isPreviousCompleted) {
-          // Previous lesson not even completed
-          unlockStatus[lesson._id] = false;
-          continue;
-        }
-
+        // Check if quiz exists for previous lesson (for UI info only)
         try {
-          // Check if quiz exists for previous lesson
           const quizResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/quiz/lesson/${previousLesson._id}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
           );
 
           if (quizResponse.ok) {
-            // Quiz exists - check if passed (80%+)
             const quizInfo = await quizResponse.json();
             const quiz = quizInfo.data;
 
@@ -180,19 +185,24 @@ export default function CourseDetailPage() {
             if (attemptResponse.ok) {
               const attempts = await attemptResponse.json();
               const passedAttempt = attempts.data?.find((a: any) => a.passed === true);
-              unlockStatus[lesson._id] = !!passedAttempt;
               quizData[previousLesson._id] = { quiz, passed: !!passedAttempt };
             } else {
-              unlockStatus[lesson._id] = false;
               quizData[previousLesson._id] = { quiz, passed: false };
             }
-          } else {
-            // No quiz exists - lesson completed is enough
-            unlockStatus[lesson._id] = true;
           }
         } catch (error) {
           console.error('  ❌ Error checking quiz:', error);
-          unlockStatus[lesson._id] = false;
+        }
+
+        // UNLOCK LOGIC:
+        // If it's not already unlocked (by being completed)
+        if (!unlockStatus[lesson._id]) {
+          // Unlock if previous lesson is completed
+          if (isPreviousCompleted) {
+            unlockStatus[lesson._id] = true;
+          } else {
+            unlockStatus[lesson._id] = false;
+          }
         }
       }
     }

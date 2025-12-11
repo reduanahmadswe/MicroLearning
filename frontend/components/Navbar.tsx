@@ -168,7 +168,16 @@ export default function Navbar() {
   };
 
   const isActive = (path: string) => {
-    return pathname === path || pathname?.startsWith(`${path}/`);
+    // Exact match
+    if (pathname === path) return true;
+
+    // For dashboard paths, only match exact path (not children)
+    if (path === '/instructor' || path === '/dashboard' || path === '/admin') {
+      return pathname === path;
+    }
+
+    // For other paths, match if pathname starts with path followed by /
+    return pathname?.startsWith(`${path}/`);
   };
 
   // Don't show navbar on auth pages
@@ -435,7 +444,7 @@ export default function Navbar() {
                       Login
                     </button>
                   </Link>
-                  <Link href="/auth/signup">
+                  <Link href="/auth/register">
                     <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
                       Sign Up Free
                     </button>
@@ -574,7 +583,7 @@ export default function Navbar() {
                       <span>Log In</span>
                     </button>
                   </Link>
-                  <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)} className="block w-full">
+                  <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)} className="block w-full">
                     <button className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-base font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 hover:opacity-90 transition-all shadow-md">
                       <GraduationCap className="w-5 h-5" />
                       <span>Create Account</span>

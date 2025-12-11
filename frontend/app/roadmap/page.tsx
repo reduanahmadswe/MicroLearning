@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Map,
   Target,
@@ -20,6 +21,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { roadmapAPI } from '@/services/api.service';
+import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
 interface RoadmapNode {
@@ -50,6 +52,8 @@ interface Roadmap {
 }
 
 export default function RoadmapPage() {
+  const router = useRouter();
+  const { token } = useAuthStore();
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [selectedRoadmap, setSelectedRoadmap] = useState<Roadmap | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,8 +64,12 @@ export default function RoadmapPage() {
   const [timeCommitment, setTimeCommitment] = useState(10); // number, not string
 
   useEffect(() => {
+    if (!token) {
+      router.push('/auth/login');
+      return;
+    }
     loadRoadmaps();
-  }, []);
+  }, [token]);
 
   const loadRoadmaps = async () => {
     try {

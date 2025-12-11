@@ -50,6 +50,12 @@ export default function AdminContentPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [viewModal, setViewModal] = useState<{ open: boolean; item: any; type: ContentType } | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; itemId: string; itemTitle: string } | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
+
   const [stats, setStats] = useState({
     total: 0,
     published: 0,
@@ -63,37 +69,53 @@ export default function AdminContentPage() {
       return;
     }
     loadContent();
-  }, [activeTab, user]);
+  }, [activeTab, currentPage, user]);
+
+  // Reset to page 1 when changing tabs or search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
 
   const loadContent = async () => {
     try {
       setLoading(true);
       let response;
       let loadedItems: any[] = [];
+      let total = 0;
+
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchQuery,
+      };
 
       switch (activeTab) {
         case 'lessons':
-          response = await lessonsAPI.getAllLessons({ search: searchQuery });
-          loadedItems = response.data.data || [];
+          response = await lessonsAPI.getAllLessons(params);
+          loadedItems = response.data.data?.lessons || response.data.data || [];
+          total = response.data.data?.total || loadedItems.length;
           break;
         case 'quizzes':
-          response = await quizAPI.getAllQuizzes({ search: searchQuery });
-          loadedItems = response.data.data || [];
+          response = await quizAPI.getAllQuizzes(params);
+          loadedItems = response.data.data?.quizzes || response.data.data || [];
+          total = response.data.data?.total || loadedItems.length;
           break;
         case 'courses':
-          response = await coursesAPI.getAllCourses({ search: searchQuery });
-          loadedItems = response.data.data || [];
+          response = await coursesAPI.getAllCourses(params);
+          loadedItems = response.data.data?.courses || response.data.data || [];
+          total = response.data.data?.total || loadedItems.length;
           break;
         case 'forum':
-          response = await forumAPI.getAllPosts({ search: searchQuery });
-          loadedItems = response.data.data || [];
+          response = await forumAPI.getAllPosts(params);
+          loadedItems = response.data.data?.posts || response.data.data || [];
+          total = response.data.data?.total || loadedItems.length;
           break;
       }
 
       setItems(loadedItems);
+      setTotalItems(total);
 
       // Calculate stats from loaded items
-      const total = loadedItems.length;
       const published = loadedItems.filter((i: any) => i.status === 'published' || i.isPublished || !i.status).length;
       const draft = loadedItems.filter((i: any) => i.status === 'draft').length;
       const pending = loadedItems.filter((i: any) => i.status === 'pending').length;
@@ -284,8 +306,8 @@ export default function AdminContentPage() {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`flex items-center gap-2 px-4 py-2.5 font-medium rounded-lg transition-all whitespace-nowrap text-sm ${activeTab === tab
-                        ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -390,8 +412,8 @@ export default function AdminContentPage() {
                     </div>
                     {item.difficulty && (
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.difficulty === 'beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                          item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                            'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                        item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                         }`}>
                         {item.difficulty}
                       </span>
@@ -501,8 +523,8 @@ export default function AdminContentPage() {
                         <div className="flex flex-wrap gap-2">
                           {item.difficulty && (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${item.difficulty === 'beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                                'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                               }`}>
                               {item.difficulty}
                             </span>
@@ -603,6 +625,100 @@ export default function AdminContentPage() {
             ))}
           </div>
         )}
+
+        {/* Pagination Controls */}
+        {!loading && filteredItems.length > 0 && (
+          <Card className="border border-border/50 bg-card shadow-sm mt-6">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Page Info */}
+                <div className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                  <span className="font-semibold text-foreground">
+                    {Math.min(currentPage * itemsPerPage, totalItems)}
+                  </span>{' '}
+                  of <span className="font-semibold text-foreground">{totalItems}</span> {activeTab}
+                </div>
+
+                {/* Pagination Buttons */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="border border-input text-muted-foreground hover:bg-muted disabled:opacity-50"
+                  >
+                    First
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="border border-input text-muted-foreground hover:bg-muted disabled:opacity-50"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, Math.ceil(totalItems / itemsPerPage)) }, (_, i) => {
+                      const totalPages = Math.ceil(totalItems / itemsPerPage);
+                      let pageNum;
+
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={currentPage === pageNum
+                            ? "bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700"
+                            : "border border-input text-muted-foreground hover:bg-muted"
+                          }
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalItems / itemsPerPage), prev + 1))}
+                    disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
+                    className="border border-input text-muted-foreground hover:bg-muted disabled:opacity-50"
+                  >
+                    <ChevronLeft className="w-4 h-4 rotate-180" />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.ceil(totalItems / itemsPerPage))}
+                    disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
+                    className="border border-input text-muted-foreground hover:bg-muted disabled:opacity-50"
+                  >
+                    Last
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* View Modal */}
@@ -636,16 +752,16 @@ export default function AdminContentPage() {
               <div className="flex flex-wrap gap-3">
                 {viewModal.item.difficulty && (
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${viewModal.item.difficulty === 'beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                      viewModal.item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    viewModal.item.difficulty === 'intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                      'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     }`}>
                     {viewModal.item.difficulty}
                   </span>
                 )}
                 {viewModal.item.status && (
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${viewModal.item.status === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                      viewModal.item.status === 'draft' ? 'bg-muted text-muted-foreground' :
-                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                    viewModal.item.status === 'draft' ? 'bg-muted text-muted-foreground' :
+                      'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                     }`}>
                     {viewModal.item.status}
                   </span>
@@ -678,8 +794,8 @@ export default function AdminContentPage() {
                           <div
                             key={idx}
                             className={`p-3 rounded-lg border ${viewModal.item.correctAnswer === option
-                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                : 'border-border/50'
+                              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                              : 'border-border/50'
                               }`}
                           >
                             <div className="flex items-center gap-2">

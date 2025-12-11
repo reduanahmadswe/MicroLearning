@@ -186,58 +186,60 @@ export default function LessonDetailPage() {
       setCompleting(true);
       await lessonsAPI.completeLesson(lessonId);
 
-      // Find next lesson
+      // Determine next lesson
+      let nextLesson = null;
       if (courseData?.lessons && lesson) {
-        const currentLessonOrder = lesson.order || 1;
-        const nextLesson = courseData.lessons.find((l: any) => l.order === currentLessonOrder + 1);
+        // Strategy 1: Find by order
+        const currentLessonOrder = lesson.order || 0;
+        nextLesson = courseData.lessons.find((l: any) => l.order === currentLessonOrder + 1);
 
-        if (nextLesson) {
-          // Show success message with next lesson info
-          toast.success(
-            <div className="flex flex-col gap-2">
-              <div className="font-bold">🎉 Lesson Completed!</div>
-              <div className="text-sm">Redirecting to: {nextLesson.title}</div>
-            </div>,
-            {
-              duration: 2000,
-            }
-          );
-
-          // Redirect to next lesson after 2 seconds
-          setTimeout(() => {
-            router.push(`/lessons/${nextLesson._id}`);
-          }, 2000);
-        } else {
-          // Last lesson - show completion message
-          toast.success(
-            <div className="flex flex-col gap-2">
-              <div className="font-bold">🎉 Course Completed!</div>
-              <div className="text-sm">Congratulations! You finished all lessons.</div>
-            </div>,
-            {
-              duration: 2000,
-            }
-          );
-
-          // Redirect back to course page
-          setTimeout(() => {
-            if (lesson.course) {
-              router.push(`/courses/${lesson.course}?completed=true`);
-            }
-          }, 2000);
+        // Strategy 2: Find by index if order strategy fails
+        if (!nextLesson) {
+          const currentIndex = courseData.lessons.findIndex((l: any) => l._id === lesson._id);
+          if (currentIndex !== -1 && currentIndex < courseData.lessons.length - 1) {
+            nextLesson = courseData.lessons[currentIndex + 1];
+          }
         }
-      } else {
-        // Fallback - simple success message
-        toast.success('🎉 Lesson completed!', { duration: 1500 });
+      }
 
+      if (nextLesson) {
+        // Show success message with next lesson info
+        toast.success(
+          <div className="flex flex-col gap-2">
+            <div className="font-bold">🎉 Lesson Completed!</div>
+            <div className="text-sm">Redirecting to next lesson: {nextLesson.title}</div>
+          </div>,
+          {
+            duration: 1500,
+          }
+        );
+
+        // Redirect to next lesson
+        setTimeout(() => {
+          router.push(`/lessons/${nextLesson._id}`);
+        }, 1500);
+      } else {
+        // Last lesson or no next lesson found - show course completion message
+        toast.success(
+          <div className="flex flex-col gap-2">
+            <div className="font-bold">🎉 Course Completed!</div>
+            <div className="text-sm">Congratulations! You finished all lessons.</div>
+          </div>,
+          {
+            duration: 2000,
+          }
+        );
+
+        // Redirect back to course page
         setTimeout(() => {
           if (lesson?.course) {
-            router.push(`/courses/${lesson.course}?refresh=true`);
+            router.push(`/courses/${lesson.course}?completed=true`);
           }
-        }, 1500);
+        }, 2000);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to complete lesson');
+    } finally {
       setCompleting(false);
     }
   };
@@ -460,35 +462,71 @@ export default function LessonDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Complete Lesson Button */}
-            {!lesson.isCompleted && (
-              <Card className="border-0 shadow-xl bg-gradient-to-r from-green-600 to-teal-600">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="text-center">
-                    <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-white mx-auto mb-4" />
-                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Ready to Complete?</h3>
-                    <p className="text-green-50 mb-6">Mark this lesson as complete and earn XP!</p>
-                    <Button
-                      onClick={handleCompleteLesson}
-                      disabled={completing}
-                      className="bg-card text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 shadow-lg font-bold px-8 py-6 text-base sm:text-lg"
-                    >
-                      {completing ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Completing...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-5 h-5 mr-2" />
-                          Complete Lesson
-                        </>
-                      )}
-                    </Button>
+            {/* Complete Lesson & Next Lesson Buttons */}
+            <Card className="border-0 shadow-xl bg-gradient-to-r from-green-600 to-teal-600">
+              <CardContent className="p-6 sm:p-8">
+                <div className="text-center">
+                  {!lesson.isCompleted ? (
+                    <>
+                      <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-white mx-auto mb-4" />
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Ready to Complete?</h3>
+                      <p className="text-green-50 mb-6">Mark this lesson as complete and earn XP!</p>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-white mx-auto mb-4" />
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Lesson Completed!</h3>
+                      <p className="text-green-50 mb-6">You have already earned XP for this lesson.</p>
+                    </>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    {!lesson.isCompleted && (
+                      <Button
+                        onClick={handleCompleteLesson}
+                        disabled={completing}
+                        className="w-full sm:w-auto bg-card text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 shadow-lg font-bold px-8 py-6 text-base sm:text-lg"
+                      >
+                        {completing ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Completing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                            Complete & Continue
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Next Lesson Button - Show if next lesson exists */}
+                    {(() => {
+                      if (!courseData?.lessons || !lesson) return null;
+                      const currentOrder = lesson.order || 1;
+                      const nextLesson = courseData.lessons.find((l: any) => l.order === currentOrder + 1);
+
+                      if (nextLesson) {
+                        return (
+                          <Button
+                            onClick={() => router.push(`/lessons/${nextLesson._id}`)}
+                            className={`w-full sm:w-auto shadow-lg font-bold px-8 py-6 text-base sm:text-lg ${lesson.isCompleted
+                              ? "bg-white text-green-600 hover:bg-green-50"
+                              : "bg-green-700/50 text-white hover:bg-green-700/70 border-2 border-white/20"
+                              }`}
+                          >
+                            <span className="mr-2">Next Lesson</span>
+                            <ArrowRight className="w-5 h-5" />
+                          </Button>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}

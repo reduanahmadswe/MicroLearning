@@ -26,6 +26,14 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/hooks';
+import {
+  useInstructorStudents,
+  useInstructorStudentsLoading,
+  useInstructorStudentsError,
+} from '@/store/hooks';
+import { fetchInstructorStudents } from '@/store/globalSlice';
+import { useAuthStore } from '@/store/authStore';
 
 interface Course {
   _id: string;
@@ -57,48 +65,44 @@ interface Student {
 
 export default function InstructorStudentsPage() {
   const router = useRouter();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { token } = useAuthStore();
+  const dispatch = useAppDispatch();
+
+  // Redux state
+  const students = useInstructorStudents() as Student[];
+  const loading = useInstructorStudentsLoading();
+  const error = useInstructorStudentsError();
+
+  // Local UI state
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'progress' | 'lastActive'>('name');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(6); // Show 6 students per page
+  const [itemsPerPage] = useState(6);
 
   useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/instructor/students`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to fetch students');
-      }
-
-      const data = await response.json();
-      setStudents(data.data || []);
-    } catch (error: any) {
-      console.error('Error fetching students:', error);
-      toast.error(error.message || 'Failed to load students from database');
-      setStudents([]);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      router.push('/auth/login');
+      return;
     }
+
+    // Fetch students (will use cache if available)
+    dispatch(fetchInstructorStudents({}));
+  }, [token, dispatch]);
+
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  const handleRefresh = () => {
+    dispatch(fetchInstructorStudents({ force: true }));
+    toast.success('Refreshing students...');
   };
-
-
 
   const exportStudentsToExcel = () => {
     if (students.length === 0) {
@@ -109,7 +113,6 @@ export default function InstructorStudentsPage() {
     try {
       const XLSX = require('xlsx');
 
-      // Student Summary Sheet
       const summaryData = [
         ['Student Report'],
         ['Generated on', new Date().toLocaleString()],
@@ -129,58 +132,11 @@ export default function InstructorStudentsPage() {
         ]),
       ];
 
-      // Detailed Course Enrollment Sheet
-      const enrollmentData = [
-        ['Course Enrollments'],
-        [],
-        ['Student Name', 'Course Title', 'Progress', 'Enrolled Date', 'Last Accessed', 'Completed Lessons', 'Total Lessons', 'Quizzes Taken', 'Average Score'],
-      ];
-
-      students.forEach((student) => {
-        // Check if enrolledCourses exists and is an array
-        const courses = Array.isArray(student.enrolledCourses) ? student.enrolledCourses : [];
-
-        courses.forEach((course) => {
-          enrollmentData.push([
-            student.name || 'N/A',
-            course.title || 'Untitled Course',
-            `${course.progress || 0}%`,
-            course.enrolledAt ? new Date(course.enrolledAt).toLocaleDateString() : 'N/A',
-            course.lastAccessed ? formatDate(course.lastAccessed) : 'N/A',
-            String(course.completedLessons || 0),
-            String(course.totalLessons || 0),
-            String(course.quizzesTaken || 0),
-            `${course.averageScore || 0}%`,
-          ] as any);
-        });
-      });
-
-      // Statistics Sheet
-      const statsData = [
-        ['Student Statistics'],
-        [],
-        ['Metric', 'Value'],
-        ['Total Students', students.length],
-        ['Active Students', students.filter(s => s.status === 'active').length],
-        ['Inactive Students', students.filter(s => s.status === 'inactive').length],
-        ['Average Progress', `${Math.round(students.reduce((acc, s) => acc + (s.totalProgress || 0), 0) / students.length) || 0}%`],
-        ['Total Enrollments', students.reduce((acc, s) => acc + (Array.isArray(s.enrolledCourses) ? s.enrolledCourses.length : 0), 0)],
-      ];
-
-      // Create workbook and add sheets
       const wb = XLSX.utils.book_new();
-      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-      const wsEnrollments = XLSX.utils.aoa_to_sheet(enrollmentData);
-      const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+      const ws = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Students Summary');
 
-      XLSX.utils.book_append_sheet(wb, wsSummary, 'Students Summary');
-      XLSX.utils.book_append_sheet(wb, wsEnrollments, 'Course Enrollments');
-      XLSX.utils.book_append_sheet(wb, wsStats, 'Statistics');
-
-      // Generate file name with timestamp
       const fileName = `Students_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-      // Download file
       XLSX.writeFile(wb, fileName);
       toast.success('Student data exported successfully!');
     } catch (error) {
@@ -236,10 +192,10 @@ export default function InstructorStudentsPage() {
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return 'text-green-600 bg-green-50';
-    if (progress >= 50) return 'text-blue-600 bg-blue-50';
-    if (progress >= 30) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (progress >= 80) return 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400';
+    if (progress >= 50) return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400';
+    if (progress >= 30) return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400';
+    return 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400';
   };
 
   const getProgressBarColor = (progress: number) => {
@@ -262,7 +218,7 @@ export default function InstructorStudentsPage() {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  if (loading) {
+  if (loading && students.length === 0) {
     return (
       <div className="min-h-screen bg-page-gradient flex items-center justify-center">
         <div className="text-center">
@@ -297,13 +253,24 @@ export default function InstructorStudentsPage() {
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Monitor and manage your students' progress</p>
               </div>
             </div>
-            <Button
-              onClick={exportStudentsToExcel}
-              className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm sm:text-base"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export Data
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <Button
+                onClick={exportStudentsToExcel}
+                className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm sm:text-base"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+              </Button>
+            </div>
           </div>
 
           {/* Statistics Cards */}
@@ -441,8 +408,8 @@ export default function InstructorStudentsPage() {
                           <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground flex flex-wrap items-center gap-2">
                             <span className="truncate">{student.name}</span>
                             <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium flex-shrink-0 ${student.status === 'active'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-                                : 'bg-gray-50 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+                              : 'bg-gray-50 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
                               }`}>
                               {student.status === 'active' ? 'Active' : 'Inactive'}
                             </span>
@@ -627,8 +594,8 @@ export default function InstructorStudentsPage() {
                               variant={currentPage === page ? "default" : "outline"}
                               size="sm"
                               className={`w-8 h-8 sm:w-9 sm:h-9 p-0 text-xs sm:text-sm ${currentPage === page
-                                  ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white border-0'
-                                  : 'border-2 border-border text-muted-foreground hover:bg-secondary'
+                                ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white border-0'
+                                : 'border-2 border-border text-muted-foreground hover:bg-secondary'
                                 }`}
                             >
                               {page}
@@ -657,8 +624,8 @@ export default function InstructorStudentsPage() {
 
         {/* Student Details Modal */}
         {showDetailsModal && selectedStudent && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowDetailsModal(false)}>
+            <div className="bg-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-gradient-to-r from-green-600 to-teal-600 p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">

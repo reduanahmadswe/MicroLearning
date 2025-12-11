@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   TrendingUp,
@@ -20,45 +21,78 @@ import {
   Star,
   Medal,
   TrendingDown,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
-import { analyticsAPI } from '@/services/api.service';
+import { useAuthStore } from '@/store/authStore';
+import { useAnalyticsStore } from '@/store/analyticsStore';
 import { toast } from 'sonner';
 
 export default function AnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
-  const [analytics, setAnalytics] = useState<any>({
-    overview: {},
-    learningActivity: [],
-    performance: {},
-    topTopics: [],
-    studyTime: [],
-    achievements: {},
-  });
+  const router = useRouter();
+  const { token } = useAuthStore();
+
+  // Use analytics store
+  const {
+    analytics,
+    timeRange,
+    loading,
+    error,
+    setTimeRange,
+    fetchAnalytics,
+  } = useAnalyticsStore();
 
   useEffect(() => {
-    loadAnalytics();
-  }, [timeRange]);
-
-  const loadAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response = await analyticsAPI.getAnalytics({ timeRange });
-      const activeDays = response.data.data?.learningActivity?.filter((day: any) => day.count > 0) || [];
-      setAnalytics(response.data.data || {});
-    } catch (error: any) {
-      toast.error('Failed to load analytics');
-      console.error(error);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      router.push('/auth/login');
+      return;
     }
+    // Fetch analytics on mount
+    fetchAnalytics();
+  }, [token]);
+
+  // Show error toast when error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  // Safe defaults to prevent undefined errors
+  const overview = analytics.overview || {
+    currentLevel: 1,
+    totalXP: 0,
+    totalStudyHours: 0,
+    lessonsCompleted: 0,
+    lessonsGrowth: 0,
+    quizzesTaken: 0,
+    averageScore: 0,
+    avgDailyHours: 0,
+    currentXP: 0,
+    nextLevelXP: 100,
   };
 
-  const overview = analytics.overview || {};
-  const performance = analytics.performance || {};
+  const performance = analytics.performance || {
+    quizAverage: 0,
+    completionRate: 0,
+    accuracy: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+  };
+
   const topTopics = analytics.topTopics || [];
   const studyTime = analytics.studyTime || [];
-  const achievements = analytics.achievements || {};
+  const achievements = analytics.achievements || {
+    badges: 0,
+    challenges: 0,
+    certificates: 0,
+    recentMilestones: [],
+  };
+
+  const handleRefresh = () => {
+    fetchAnalytics(true); // Force refresh
+    toast.success('Analytics refreshed');
+  };
 
   if (loading) {
     return (
@@ -76,17 +110,46 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-3 sm:gap-4 mb-3">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
-              <BarChart3 className="w-7 h-7 sm:w-9 sm:h-9 text-white" />
+          <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+                <BarChart3 className="w-7 h-7 sm:w-9 sm:h-9 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                  Learning Analytics
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Track your progress and insights</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
-                Learning Analytics
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Track your progress and insights</p>
-            </div>
+
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-card border border-border rounded-xl hover:bg-accent hover:border-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+              title="Refresh analytics"
+            >
+              <RefreshCw className={`w-4 h-4 text-green-600 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+              <span className="hidden sm:inline text-sm font-medium text-foreground">Refresh</span>
+            </button>
           </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">{error}</p>
+                <button
+                  onClick={handleRefresh}
+                  className="text-xs text-destructive hover:underline mt-1"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
