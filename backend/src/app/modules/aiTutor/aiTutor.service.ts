@@ -16,7 +16,12 @@ export class AITutorService {
     try {
       return await this.tryOpenRouter(message, conversationHistory);
     } catch (error: any) {
-      console.error('❌ Full error:', error);
+      // Only log once, not for every model
+      if (error.message?.includes('insufficient credits')) {
+        console.warn('⚠️  AI Tutor: OpenRouter account needs credits');
+      } else if (error.message) {
+        console.warn('⚠️  AI Tutor unavailable:', error.message);
+      }
       return this.generateFallbackResponse(message);
     }
   }
@@ -32,16 +37,15 @@ export class AITutorService {
       throw new Error('OpenRouter API not configured');
     }
 
-
-    // Try different models in order of preference
+    // Try free models only (skip paid models to avoid credit errors)
     const models = [
-      'openai/gpt-4o-mini',
-      'anthropic/claude-3-haiku',
-      'openai/gpt-3.5-turbo',
-      'anthropic/claude-3.5-sonnet',
       'google/gemma-2-9b-it:free',
       'microsoft/phi-3-mini-128k-instruct:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
     ];
+
+    let lastError: any = null;
+    let hasInsufficientCredits = false;
 
     for (let i = 0; i < models.length; i++) {
       const model = models[i];
@@ -55,7 +59,7 @@ export class AITutorService {
           {
             model: model,
             messages: messages,
-            max_tokens: model.includes(':free') ? 800 : 2000,
+            max_tokens: 800,
             temperature: 0.7,
             top_p: 0.95,
             frequency_penalty: 0.1,
@@ -75,13 +79,28 @@ export class AITutorService {
         const result = response.data.choices[0]?.message?.content || 'No response generated';
         return result;
       } catch (error: any) {
-        console.error(`❌ Error with model ${model}:`, error.response?.data || error.message);
-        if (i === models.length - 1) throw error;
+        lastError = error;
+        const errorData = error.response?.data;
+        
+        // Detect insufficient credits
+        if (errorData?.error?.code === 402 || errorData?.error?.message?.includes('Insufficient credits')) {
+          hasInsufficientCredits = true;
+        }
+        
+        // Only log detailed error on last attempt
+        if (i === models.length - 1) {
+          console.error(`❌ All AI models failed. Last error:`, errorData || error.message);
+        }
+        
         continue;
       }
     }
 
-    throw new Error('All models failed');
+    // Throw descriptive error
+    if (hasInsufficientCredits) {
+      throw new Error('OpenRouter account has insufficient credits. Please add credits at https://openrouter.ai/settings/credits');
+    }
+    throw new Error(lastError?.response?.data?.error?.message || 'All AI models failed');
   }
 
   /**
@@ -212,7 +231,12 @@ My AI service is temporarily overloaded. Please try again shortly for a comprehe
 
     return `I received your question: "${message.length > 50 ? message.substring(0, 50) + '...' : message}"
 
-I'm experiencing temporary high demand. Please try again in a few moments for a detailed, helpful response.
+**AI Tutor is temporarily unavailable** due to API configuration. Our team is working on restoring the service.
+
+In the meantime:
+✅ Browse our lessons and courses
+✅ Practice with quizzes
+✅ Review flashcards
 
 Thank you for your patience! 🙏`;
   }
