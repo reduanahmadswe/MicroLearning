@@ -30,7 +30,7 @@ const AI_CONFIG = {
 
   // Deepseek Configuration (Primary - Cheaper & Faster)
   deepseek: {
-    apiKey: process.env.DEEPSEEK_API_KEY || 'sk-be8c105bb6c7491081c2720a77c8b541',
+    apiKey: process.env.DEEPSEEK_API_KEY || '',
     model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
     endpoint: 'https://api.deepseek.com/v1/chat/completions',
   },
@@ -71,7 +71,7 @@ const makeOpenAIRequest = async (
 ): Promise<IOpenAIResponse> => {
 
   // Try Deepseek first (Primary)
-  if (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey !== 'your_deepseek_api_key_here') {
+  if (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) {
     try {
       console.log('🚀 Trying Deepseek API...');
       const response = await axios.post<IOpenAIResponse>(
@@ -100,8 +100,8 @@ const makeOpenAIRequest = async (
   }
 
   // Fallback to OpenAI
-  if (!AI_CONFIG.openai.apiKey || AI_CONFIG.openai.apiKey === 'your_openai_api_key_here') {
-    throw new ApiError(500, 'Both Deepseek and OpenAI API keys are not configured.');
+  if (!AI_CONFIG.openai.apiKey) {
+    throw new ApiError(501, 'AI services are not configured. Both Deepseek and OpenAI API keys are missing.');
   }
 
   try {
@@ -182,6 +182,17 @@ export const generateLesson = async (
   data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
 
+  // Check if AI is configured
+  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+                      (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
+
+  if (!hasValidKey) {
+    throw new ApiError(
+      501,
+      'AI Lesson Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+    );
+  }
+
   const systemPrompt = `You are an expert educational content creator specializing in micro-learning. 
 Create concise, engaging, and well-structured lessons that are easy to understand and remember.
 Focus on clarity, practical examples, and actionable insights.`;
@@ -244,7 +255,16 @@ Format your response as a JSON object with the following structure:
     return generatedLesson;
   } catch (error: any) {
     await saveGenerationHistory(userId, 'lesson', data, null, 0, 'failed', error.message);
-    throw error;
+    
+    // Return user-friendly error
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    
+    throw new ApiError(
+      503,
+      'AI service is temporarily unavailable. Please try again later or contact support.'
+    );
   }
 };
 
@@ -255,6 +275,17 @@ export const generateQuiz = async (
   userId: Types.ObjectId,
   data: IGenerateQuizRequest
 ): Promise<IGeneratedQuiz> => {
+
+  // Check if AI is configured
+  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+                      (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
+
+  if (!hasValidKey) {
+    throw new ApiError(
+      501,
+      'AI Quiz Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+    );
+  }
 
   const systemPrompt = `You are an expert quiz creator.
 Create challenging yet fair questions that test understanding, not just memorization.
@@ -339,8 +370,16 @@ export const generateFlashcards = async (
   userId: Types.ObjectId,
   data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
-  // Log configuration for debugging
+  // Check if AI is configured
+  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+                      (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
 
+  if (!hasValidKey) {
+    throw new ApiError(
+      501,
+      'AI Flashcard Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+    );
+  }
 
   const systemPrompt = `You are an expert at creating effective flashcards for spaced repetition learning.
 Create concise cards with clear questions and comprehensive answers.

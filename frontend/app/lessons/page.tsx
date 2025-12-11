@@ -113,8 +113,16 @@ export default function LessonsPage() {
         }, 1000);
       }
     } catch (error: any) {
+      const statusCode = error?.response?.status;
       const errorMessage = error?.response?.data?.message || 'Failed to generate lesson';
-      toast.error(errorMessage);
+      
+      if (statusCode === 501) {
+        toast.error('⚠️ AI Generation is currently unavailable. Feature coming soon!');
+      } else if (statusCode === 503) {
+        toast.error('🔧 AI service is temporarily down. Please try again later.');
+      } else {
+        toast.error(errorMessage);
+      }
       console.error('AI Generation Error:', error);
     } finally {
       setAiGenerating(false);
