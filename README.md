@@ -1,342 +1,555 @@
-# AI-Powered Micro-Learning Platform (Next.js + TypeScript + NoSQL)
+<div align="center">
 
-**Project Summary:**
-An AI-driven micro-learning platform that generates short, personalized micro-lessons, quizzes, flashcards, adaptive learning paths and micro-videos. Built with `Next.js` (TypeScript) for the frontend and server-side (API routes / server actions), and a NoSQL backend (recommended: MongoDB Atlas). The platform integrates AI services for lesson generation, adaptive recommendations, summarization, TTS, and more.
+# 🎓 MicroLearning Platform
 
-**Requirements (as requested):**
-- Project must use `Next.js`.
-- Backend must use a NoSQL DB (recommended: `MongoDB`).
-- Use `TypeScript` across frontend and backend.
+### AI-Powered Micro-Learning Platform for Modern Education
 
-**Language note:**
-Some feature descriptions in the backlog include Bengali phrases (e.g., AI lesson generator descriptions). This README follows the requested feature list and maps them to technical design and implementation guidance.
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22.16-green?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.0-green?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-**Table of contents**
-- **Project**: Overview & Goals
-- **Features**: Core & Advanced
-- **Architecture**: High-level components & data flow
-- **Tech Stack**: Packages & third-party services
-- **Data Models**: TypeScript interfaces
-- **API**: Endpoints & responsibilities
-- **Frontend**: Folder structure & major components
-- **Backend**: Folder structure & services
-- **AI Workflows**: Generation, SRS, video, chat
-- **Dev Setup**: Env vars, install & run (PowerShell)
-- **Deployment**: Recommendations
-- **Security, Privacy & Compliance**
-- **Testing, CI/CD & Monitoring**
-- **Roadmap & Future Features**
-- **Contributing & License**
+[Live Demo](https://microlearning-beta.vercel.app) • [Documentation](./backend/API_Documentation) • [Report Bug](https://github.com/reduanahmadswe/MicroLearning/issues)
 
-**Project Goals**
-- Deliver 1–2 minute AI-generated micro-lessons per topic.
-- Provide personalized, adaptive learning using user performance and SRS.
-- Offer multi-format content: short articles, videos, flashcards, quizzes and notes.
-- Gamify learning with XP, badges, leaderboards and social elements.
-- Provide creator tools: upload & AI-convert content to micro-lessons.
-- Operate at scale and support offline & multilingual modes.
-
-**Key Features (condensed)**
-- **AI Lesson Generator:** AI creates bite-sized lessons, summaries, and key-points.
-- **Adaptive Learning:** Auto-adjust next lesson & give extra micro-lessons for weak topics.
-- **Flashcards + SRS:** Auto-generated flashcards + spaced repetition scheduler.
-- **Quiz Generator:** Auto quizzes (MCQ, TF, Fill-in) with explanations.
-- **AI Chat Tutor:** Chat interface for instant help and assignment guidance.
-- **Creator Tools:** Upload PDFs/Videos, transform to micro-lessons, add quizzes.
-- **Gamification & Social:** XP, badges, leaderboards, groups & forums.
-- **Monetization:** Freemium, subscriptions, paid micro-courses, premium AI tutor.
-- **Advanced AI:** Video tutor avatars, AR micro-learning, career mentor, behavior analytics.
-
-**High-level Architecture**
-- **Frontend (Next.js)**: App Router + React components, client and server components, PWA support for offline.
-- **API / Backend**: Next.js API routes or separate Node/Express microservices (TypeScript) exposing REST/GraphQL for heavy ops.
-- **Database**: NoSQL DB (MongoDB) for users, lessons, progress, SRS state, forums, and analytics.
-- **AI Services**: OpenAI/Azure OpenAI for text generation, TTS; optional video generation provider; embeddings & vector DB (Pinecone, Milvus) for semantic search and personalization.
-- **Storage**: S3-compatible (AWS S3 / DigitalOcean Spaces / MinIO) for videos and media.
-- **Auth**: `next-auth` with OAuth (Google) + email/phone MFA.
-- **Payments**: Stripe for subscriptions & paid courses.
-- **Hosting**: Vercel for frontend, serverless functions; or AWS/GCP for full control.
-
-Architecture diagram (text):
-
-Client (Next.js PWA)
-  ↕
-Edge / Server (Next.js) -> API routes / server actions -> AI workers / Services
-  ↕                              ↘
-NoSQL DB (MongoDB)                 Vector DB (Pinecone) / Storage (S3)
-
-**Tech Stack & Suggested Packages**
-- **Frontend:** `next`, `react`, `react-dom`, `swr` or `react-query`, `typescript`, `next-auth`, `next-pwa`, `tailwindcss` (or Chakra/UI)
-- **Backend (server):** `next` API routes or `express`/`fastify` if separated; `mongodb` or `mongoose` (TypeScript types), `jsonwebtoken` if custom auth
-- **AI:** `openai` (official) or `azure-openai`, `@pinecone-database/pinecone` or `langchain` (optional), TTS packages
-- **Storage:** `aws-sdk` (S3) or `minio` client
-- **Payments:** `stripe`
-- **Testing & Quality:** `jest`, `react-testing-library`, `eslint`, `prettier`, `husky`, `commitlint`
-- **CI/CD:** GitHub Actions; deploy to `Vercel` or `AWS` (ECS/Lambda)
-
-**Data Models (TypeScript interfaces)**
-- Keep models illustrative; adapt field names and normalization to your needs.
-
-```ts
-// User
-interface User {
-  _id: string;
-  email?: string;
-  phone?: string;
-  name?: string;
-  avatarUrl?: string;
-  preferences: {
-    interests: string[];
-    goals?: string;
-    dailyAvailableMinutes?: number;
-    language?: string;
-  };
-  streak: { current: number; best: number; lastActive: string };
-  xp: number;
-  coins: number; // learning wallet
-  roles: string[]; // ['user','instructor','admin']
-}
-
-// Lesson (micro-lesson)
-interface Lesson {
-  _id: string;
-  title: string;
-  topicTags: string[];
-  durationSeconds: number;
-  difficulty: 'beginner'|'intermediate'|'advanced';
-  content: string; // short article / transcript
-  media?: { type: 'video'|'image'; url: string }[];
-  aiSummary?: string;
-  createdBy: string; // userId or 'system'
-  createdAt: string;
-  updatedAt?: string;
-}
-
-// Flashcard
-interface Flashcard {
-  _id: string;
-  lessonId: string;
-  front: string;
-  back: string;
-  tags: string[];
-}
-
-// Quiz
-interface Quiz {
-  _id: string;
-  lessonId: string;
-  questions: Array<{
-    id: string;
-    type: 'mcq'|'tf'|'fill';
-    prompt: string;
-    options?: string[]; // mcq
-    answer: string | string[];
-    explanation?: string;
-  }>;
-}
-
-// UserProgress
-interface UserProgress {
-  _id: string;
-  userId: string;
-  lessonId: string;
-  status: 'not_started'|'in_progress'|'completed';
-  score?: number;
-  timeSpentSeconds?: number;
-  mastery?: number; // 0-100
-  lastSeen: string;
-}
-
-// SRS State
-interface SRSItem {
-  _id: string;
-  userId: string;
-  flashcardId: string;
-  nextReview: string; // ISO
-  intervalDays: number;
-  easeFactor: number;
-  repetitions: number;
-}
-```
-
-**API Endpoints (examples)**
-- Consider using REST or GraphQL. For simplicity here: REST with JSON. Use server-side validation and RBAC.
-
-- `POST /api/auth/login` — login via email/phone or OAuth (handled by `next-auth`).
-- `GET  /api/users/:id` — get user profile.
-- `PUT  /api/users/:id/preferences` — update learning preferences.
-- `POST /api/lessons/generate` — request AI to generate micro-lessons for a topic.
-- `GET  /api/lessons/:id` — fetch lesson.
-- `GET  /api/lessons?topic=&duration=&level=` — search & filter.
-- `POST /api/flashcards/generate` — auto-generate flashcards from a lesson.
-- `POST /api/quizzes/generate` — generate quizzes from lesson.
-- `POST /api/progress` — record progress, time, score.
-- `GET  /api/recommendations` — personalized next lessons (AI-driven).
-- `POST /api/srs/review` — handle spaced repetition review updates.
-- `POST /api/upload` — media upload (signed URL flows recommended).
-- `POST /api/admin/validate-content` — AI + human moderation pipeline.
-
-**Frontend Structure (suggested)**
-- `app/` or `pages/` (Next.js App Router recommended)
-  - `app/page.tsx` — dashboard
-  - `app/lesson/[id]/page.tsx` — lesson viewer
-  - `app/lesson/[id]/quiz.tsx` — quiz runner
-  - `app/flashcards` — flashcard review UI
-  - `app/profile` — user profile & preferences
-  - `components/` — small UI components (LessonCard, QuizCard, Flashcard)
-  - `lib/` — client helpers and API wrappers
-  - `hooks/` — custom React hooks (useSWR/useQuery wrappers)
-  - `styles/` — global & component styles
-  - `public/` — static assets
-
-**Backend Structure (suggested)**
-- `src/server/` — API route handlers / controllers
-- `src/lib/ai/` — wrappers for AI calls (text gen, embeddings, TTS)
-- `src/lib/db/` — DB connection & models
-- `src/lib/srs/` — SRS scheduler & algorithms
-- `src/lib/search/` — semantic search & vector indexing
-- `src/jobs/` — background jobs (video generation, heavy AI tasks)
-- `src/admin/` — admin utilities & validation
-
-**AI Workflows (examples & best practices)**
-- **Lesson generation:**
-  - Input: topic + user level + max duration + preferred language.
-  - Pipeline: prompt engineer -> generate text lessons (chunked) -> summarize -> create key-points & TL;DR -> create quiz and flashcards -> store lesson and embeddings.
-  - Post-process: moderation & deduplication.
-
-- **Adaptive learning:**
-  - Use `UserProgress` and performance (accuracy, time) to compute mastery.
-  - If mastery < threshold, add more micro-lessons on weak sub-topics (use AI to break topic down).
-  - Update recommendations using embeddings & collaborative signals.
-
-- **Flashcards & SRS:**
-  - Generate flashcards per lesson automatically.
-  - Implement SM-2 or variant with ease factor, spaced intervals, and dynamic adjustments.
-
-- **AI Chat Tutor:**
-  - Chat endpoint uses conversation history + relevant lesson embeddings for context.
-  - Rate-limit & guardrails; disable providing answers for academic cheating; enable hint-mode and explanation-mode.
-
-- **AI Video Lessons:**
-  - Use TTS + avatar video generator or slide-to-video service.
-  - Auto-subtitles via ASR; provide downloadable transcript.
-
-**Environment Variables (example `.env.example`)**
-- `NEXT_PUBLIC_APP_NAME=MicroLearning`
-- `MONGODB_URI=`
-- `NEXTAUTH_URL=`
-- `NEXTAUTH_SECRET=`
-- `GOOGLE_CLIENT_ID=`
-- `GOOGLE_CLIENT_SECRET=`
-- `OPENAI_API_KEY=`
-- `PINECONE_API_KEY=`
-- `PINECONE_ENV=`
-- `S3_BUCKET=`
-- `S3_REGION=`
-- `S3_ACCESS_KEY_ID=`
-- `S3_SECRET_ACCESS_KEY=`
-- `STRIPE_SECRET_KEY=`
-- `REDIS_URL=` (for background jobs or rate-limiting)
-
-**Run Locally (PowerShell commands)**
-
-- Clone & install (PowerShell):
-
-```powershell
-# from workspace root
-git clone <repo-url> MicroLearning
-cd MicroLearning
-# create .env from .env.example and fill values
-npm install
-npm run dev
-```
-
-- Common `package.json` scripts to include:
-  - `dev`: `next dev`
-  - `build`: `next build`
-  - `start`: `next start`
-  - `lint`: `next lint`
-  - `test`: jest runner
-
-**Database & Indexing**
-- Use MongoDB Atlas for managed NoSQL; create collections:
-  - `users`, `lessons`, `flashcards`, `quizzes`, `progress`, `srs`, `notifications`, `analytics`.
-- Important indexes:
-  - `users.email` unique
-  - `lessons.topicTags` for tag search
-  - `lessons.createdAt` for trending queries
-  - `srs.userId + nextReview` compound for review queues
-
-**Storage & Media**
-- Use signed-upload (pre-signed URLs) for client direct uploads to S3.
-- Transcode uploaded videos for multiple resolutions; store thumbnails.
-
-**Offline Mode**
-- Use PWA and service worker to cache lessons and media for offline viewing.
-- For large media, allow partial downloads (select lessons to save).
-
-**Search & Discovery**
-- Use embeddings + vector DB (Pinecone or Milvus) for semantic search.
-- Index lesson content and user notes; combine vector similarity with filters.
-
-**Moderation & Content Safety**
-- Automate content validation using AI moderation APIs and human-in-the-loop review for flagged content.
-- Implement toxic comment filter for forums (AI moderation).
-
-**Security & Privacy**
-- Use `https`, secure cookies, and `sameSite` policy.
-- Encrypt sensitive data at rest where needed.
-- Apply rate-limiting and abuse detection for AI endpoints.
-- For GDPR: allow data export and deletion endpoints.
-
-**Testing & CI/CD**
-- Unit & integration tests with `jest` and `react-testing-library`.
-- E2E tests with `cypress` (optional).
-- GitHub Actions pipeline: install, lint, test, build, and deploy to Vercel or AWS.
-
-**Monitoring & Observability**
-- Use Sentry for errors.
-- Use Prometheus + Grafana or vendor tools for metrics.
-- Log AI usage separately for cost tracking.
-
-**Scalability & Cost Considerations**
-- Offload heavy AI jobs to background workers (AWS Batch, Step Functions, or serverless queues).
-- Cache embeddings & recommendations.
-- Track per-user AI usage; throttle premium features.
-
-**Monetization**
-- Freemium core features; premium subscription unlocks:
-  - unlimited AI tutor chats
-  - AI video generation credits
-  - premium learning paths & certificates
-- Integrate `Stripe` for subscriptions & payments.
-
-**Roadmap & Future Features (from backlog)**
-- AI Video Tutor (avatar-based auto-generated instructor)
-- AR micro-learning (object scanning)
-- Pronunciation checker & voice tutor
-- AI Career Mentor & resume builder
-- AI Memory Tracker (graphical brain map)
-- Marketplace for instructor-created micro-lessons
-
-**Developer Notes & Implementation Tips**
-- Keep all codebase in TypeScript.
-- Use well-typed API schemas (zod or io-ts) for runtime validation.
-- Keep AI prompts centralized and versioned for reproducibility.
-- Design the DB schema for append-only analytics and TTL indexes for ephemeral data.
-
-**Contribution**
-- **How to contribute:** Fork, branch, PR with tests and description. Follow commit conventions.
-- **Coding standards:** `eslint` + `prettier` enforced on pre-commit via `husky`.
-
-**License**
-- Choose a license (e.g., MIT) and include `LICENSE` file.
+</div>
 
 ---
 
-If you want, I can:
-- Generate a `README_bengali.md` translation.
-- Produce starter scaffolding: `package.json`, `tsconfig.json`, `next.config.js`, `.env.example` and a minimal Next.js app with API routes for `lessons/generate`.
-- Create TypeScript model files and sample API route implementations for `POST /api/lessons/generate` and SRS worker.
+## 📋 Table of Contents
 
-Which next step would you like me to do?
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Technology Stack](#-technology-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Environment Setup](#-environment-setup)
+- [Development](#-development)
+- [Deployment](#-deployment)
+- [API Documentation](#-api-documentation)
+- [Contributing](#-contributing)
+- [Team](#-team)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+**MicroLearning** is a modern, AI-powered education platform that delivers bite-sized learning experiences through micro-lessons, interactive quizzes, gamification, and real-time collaboration. Built with cutting-edge technologies, it provides an engaging and effective learning environment for students worldwide.
+
+### 🎯 Project Goals
+
+- **Micro-Lessons**: Deliver 5-10 minute focused learning sessions
+- **Gamification**: XP points, levels, badges, and leaderboards
+- **AI Integration**: Intelligent tutoring and content generation
+- **Social Learning**: Community forums, study groups, and peer interaction
+- **Progress Tracking**: Comprehensive analytics and personalized dashboards
+- **Accessibility**: Multi-device support with responsive design
+
+### 📊 Platform Statistics
+
+- 🎓 **5,000+** Active Students
+- 📚 **150+** Expert Courses
+- 👨‍🏫 **50+** Certified Instructors
+- ⭐ **4.9/5** Average Rating
+- 🌍 **40+** Countries Worldwide
+
+---
+
+## ✨ Key Features
+
+### 🎓 Core Learning Features
+- **Micro-Lessons**: Short, focused lessons (5-10 minutes)
+- **Interactive Quizzes**: MCQ, True/False, Fill-in-the-blanks with instant feedback
+- **Flashcards**: Spaced repetition for better retention
+- **Video Streaming**: HLS-based adaptive streaming
+- **Progress Tracking**: Real-time progress monitoring and analytics
+- **Certificates**: Blockchain-verified completion certificates
+
+### 🎮 Gamification
+- **XP System**: Earn points for completed lessons and quizzes
+- **Levels**: Progress from Beginner to Expert
+- **Badges**: 50+ achievement badges to unlock
+- **Leaderboards**: Global and friend rankings
+- **Streaks**: Daily learning streak tracking
+- **Challenges**: Weekly and monthly competitions
+
+### 🤖 AI-Powered Features
+- **AI Voice Tutor**: 24/7 doubt solving with voice interaction
+- **Smart Recommendations**: Personalized course suggestions
+- **Adaptive Learning**: Difficulty adjustment based on performance
+- **Content Generation**: AI-assisted quiz and lesson creation
+- **Automated Grading**: Instant quiz evaluation
+
+### 👥 Social & Community
+- **Community Forum**: Discussion boards and Q&A
+- **Study Groups**: Collaborate with peers
+- **Friends System**: Connect and compete
+- **Live Streams**: Real-time instructor sessions
+- **Activity Feed**: Track friend progress
+- **Bookmarks**: Save favorite content
+
+### 💳 Monetization
+- **Freemium Model**: Basic courses free, premium paid
+- **Subscription Plans**: Monthly/yearly unlimited access
+- **Course Marketplace**: Individual course purchases
+- **Payment Integration**: SSLCommerz gateway
+- **Instructor Revenue**: Earnings dashboard
+
+### 🛠️ Admin & Instructor Tools
+- **Content Management**: Create/edit courses, lessons, quizzes
+- **Analytics Dashboard**: User engagement and retention metrics
+- **Badge Management**: Create custom achievements
+- **User Management**: Role-based access control
+- **Platform Monitoring**: Real-time system health
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend
+```
+Next.js 16.0        - React framework with App Router
+React 19            - UI library
+TypeScript          - Type safety
+Tailwind CSS        - Styling
+Redux Toolkit       - State management
+Zustand             - Lightweight state management
+shadcn/ui           - UI components
+Socket.io Client    - Real-time features
+React Query         - Data fetching
+Framer Motion       - Animations
+```
+
+### Backend
+```
+Node.js 22.16       - Runtime environment
+Express.js          - Web framework
+TypeScript          - Type safety
+MongoDB 8.0         - NoSQL database
+Mongoose            - ODM
+Redis               - Caching & sessions
+Socket.io           - Real-time communication
+BullMQ              - Job queue
+JWT                 - Authentication
+Bcrypt              - Password hashing
+```
+
+### AI & External Services
+```
+OpenAI API          - AI content generation
+Deepseek API        - Alternative AI provider
+OpenRouter          - Unified AI API
+Cloudinary          - Media hosting
+SSLCommerz          - Payment gateway
+Nodemailer          - Email service
+```
+
+### DevOps & Deployment
+```
+Vercel              - Frontend hosting
+Render              - Backend hosting
+MongoDB Atlas       - Database hosting
+GitHub Actions      - CI/CD pipeline
+Docker              - Containerization (optional)
+```
+
+---
+
+## 📁 Project Structure
+
+```
+MicroLearning/
+├── backend/                    # Backend application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── modules/       # Feature modules
+│   │   │   │   ├── auth/      # Authentication
+│   │   │   │   ├── user/      # User management
+│   │   │   │   ├── course/    # Course management
+│   │   │   │   ├── lesson/    # Lesson management
+│   │   │   │   ├── quiz/      # Quiz system
+│   │   │   │   ├── badge/     # Gamification
+│   │   │   │   ├── forum/     # Community
+│   │   │   │   └── ...
+│   │   ├── config/            # Configuration
+│   │   ├── middleware/        # Express middleware
+│   │   ├── utils/             # Utility functions
+│   │   ├── workers/           # Background jobs
+│   │   ├── scripts/           # Seed scripts
+│   │   └── server.ts          # Entry point
+│   ├── .env                   # Environment variables
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── frontend/                   # Frontend application
+│   ├── app/                   # Next.js App Router
+│   │   ├── (public)/          # Public routes
+│   │   │   ├── home/
+│   │   │   ├── about/
+│   │   │   └── ...
+│   │   ├── auth/              # Authentication pages
+│   │   ├── dashboard/         # Student dashboard
+│   │   ├── courses/           # Course pages
+│   │   ├── quiz/              # Quiz interface
+│   │   ├── admin/             # Admin panel
+│   │   └── layout.tsx         # Root layout
+│   ├── components/            # React components
+│   │   ├── ui/                # shadcn/ui components
+│   │   ├── auth/              # Auth components
+│   │   └── ...
+│   ├── store/                 # Redux store
+│   ├── services/              # API services
+│   ├── lib/                   # Utilities
+│   ├── types/                 # TypeScript types
+│   ├── .env.local             # Environment variables
+│   ├── package.json
+│   └── next.config.mjs
+│
+└── README.md                   # This file
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js**: v22.16 or higher
+- **npm** or **yarn**: Latest version
+- **MongoDB**: v8.0 or MongoDB Atlas account
+- **Redis** (optional): For caching and sessions
+- **Git**: For version control
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/reduanahmadswe/MicroLearning.git
+cd MicroLearning
+```
+
+2. **Install Backend Dependencies**
+```bash
+cd backend
+npm install
+```
+
+3. **Install Frontend Dependencies**
+```bash
+cd ../frontend
+npm install
+```
+
+---
+
+## 🔧 Environment Setup
+
+### Backend Environment Variables
+
+Create a `.env` file in the `backend` directory:
+
+```env
+# Application
+NODE_ENV=development
+PORT=5000
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/microlearning
+# OR MongoDB Atlas
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/microlearning
+
+# JWT
+JWT_ACCESS_SECRET=your-access-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret-key
+JWT_ACCESS_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+
+# AI Provider (Choose one)
+AI_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your-deepseek-api-key
+DEEPSEEK_MODEL=deepseek-chat
+
+# SSLCommerz Payment
+SSLCOMMERZ_STORE_ID=your-store-id
+SSLCOMMERZ_STORE_PASSWORD=your-store-password
+SSLCOMMERZ_IS_LIVE=false
+
+# Email (Gmail recommended)
+EMAIL_PROVIDER=gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+EMAIL_FROM=your-email@gmail.com
+EMAIL_FROM_NAME=MicroLearning Platform
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:5000
+
+# Redis (Optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+### Frontend Environment Variables
+
+Create a `.env.local` file in the `frontend` directory:
+
+```env
+# API
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+
+# Google OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+
+# Socket.io
+NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+```
+
+---
+
+## 💻 Development
+
+### Running Backend
+
+```bash
+cd backend
+
+# Development mode with hot reload
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+Backend will run on: `http://localhost:5000`
+
+### Running Frontend
+
+```bash
+cd frontend
+
+# Development mode
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+Frontend will run on: `http://localhost:3000`
+
+### Running Both Concurrently
+
+You can run both servers simultaneously in separate terminals:
+
+**Terminal 1 (Backend):**
+```bash
+cd backend && npm run dev
+```
+
+**Terminal 2 (Frontend):**
+```bash
+cd frontend && npm run dev
+```
+
+### Seeding Database
+
+```bash
+cd backend
+
+# Seed admin user
+npm run seed:admin
+
+# Seed demo data
+npm run seed:demo
+
+# Seed all comprehensive data
+npm run seed:all
+```
+
+---
+
+## 🌐 Deployment
+
+### Frontend (Vercel)
+
+1. Push code to GitHub
+2. Connect repository to Vercel
+3. Configure environment variables
+4. Deploy automatically on push to main
+
+**Manual deployment:**
+```bash
+cd frontend
+vercel --prod
+```
+
+### Backend (Render)
+
+1. Create new Web Service on Render
+2. Connect GitHub repository
+3. Configure build command: `npm install && npm run build`
+4. Configure start command: `npm start`
+5. Add environment variables
+6. Deploy
+
+### Environment Variables for Production
+
+**Render (Backend):**
+```
+NODE_ENV=production
+MONGODB_URI=your-mongodb-atlas-uri
+JWT_ACCESS_SECRET=strong-secret
+JWT_REFRESH_SECRET=strong-secret
+AI_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your-key
+FRONTEND_URL=https://your-frontend.vercel.app
+```
+
+**Vercel (Frontend):**
+```
+NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api/v1
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+NEXT_PUBLIC_SOCKET_URL=https://your-backend.onrender.com
+```
+
+---
+
+## 📚 API Documentation
+
+Comprehensive API documentation is available in the [API_Documentation](./backend/API_Documentation) directory.
+
+### Key API Endpoints
+
+#### Authentication
+```
+POST   /api/v1/auth/register          - User registration
+POST   /api/v1/auth/login             - User login
+POST   /api/v1/auth/google            - Google OAuth
+POST   /api/v1/auth/refresh-token     - Refresh access token
+POST   /api/v1/auth/logout            - User logout
+```
+
+#### Courses
+```
+GET    /api/v1/courses                - Get all courses
+GET    /api/v1/courses/:id            - Get course details
+POST   /api/v1/courses                - Create course (Instructor)
+PUT    /api/v1/courses/:id            - Update course (Instructor)
+DELETE /api/v1/courses/:id            - Delete course (Instructor)
+POST   /api/v1/courses/:id/enroll     - Enroll in course
+```
+
+#### Lessons
+```
+GET    /api/v1/lessons/:id            - Get lesson details
+POST   /api/v1/lessons/:id/complete   - Mark lesson complete
+GET    /api/v1/lessons/:id/next       - Get next lesson
+```
+
+#### Quizzes
+```
+GET    /api/v1/quiz/:id               - Get quiz
+POST   /api/v1/quiz/submit            - Submit quiz attempt
+GET    /api/v1/quiz/:id/results       - Get quiz results
+```
+
+#### AI Tutor
+```
+POST   /api/v1/ai-tutor/chat          - Chat with AI tutor
+POST   /api/v1/ai-tutor/voice         - Voice interaction
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
+3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
+4. **Push to the branch** (`git push origin feature/AmazingFeature`)
+5. **Open a Pull Request**
+
+### Coding Standards
+
+- Use TypeScript for all new code
+- Follow ESLint and Prettier configurations
+- Write meaningful commit messages
+- Add comments for complex logic
+- Update documentation when needed
+
+---
+
+## 👥 Team
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/reduanahmadswe">
+        <img src="https://avatars.githubusercontent.com/u/143122014?v=4" width="100px;" alt="Reduan Ahmad"/><br />
+        <sub><b>Reduan Ahmad</b></sub>
+      </a><br />
+      <sub>CEO & Founder</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/mohammadalinayeem">
+        <img src="https://avatars.githubusercontent.com/u/85398213?v=4" width="100px;" alt="Mohammad Ali Nayeem"/><br />
+        <sub><b>Mohammad Ali Nayeem</b></sub>
+      </a><br />
+      <sub>Co-Founder & Managing Director</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/abdullahalnoman003">
+        <img src="https://avatars.githubusercontent.com/u/141672697?v=4" width="100px;" alt="Abdullah Al Noman"/><br />
+        <sub><b>Abdullah Al Noman</b></sub>
+      </a><br />
+      <sub>CTO</sub>
+    </td>
+    <td align="center">
+      <img src="https://res.cloudinary.com/di21cbkyf/image/upload/v1765551133/photo_2025-12-12_20-39-08_azqxom.jpg" width="100px;" alt="Faizun Nur"/><br />
+      <sub><b>Faizun Nur</b></sub><br />
+      <sub>Head of Education</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - React framework
+- [MongoDB](https://www.mongodb.com/) - Database
+- [Vercel](https://vercel.com/) - Frontend hosting
+- [Render](https://render.com/) - Backend hosting
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [OpenAI](https://openai.com/) - AI capabilities
+
+---
+
+<div align="center">
+
+### ⭐ Star us on GitHub — it motivates us a lot!
+
+Made with ❤️ by the MicroLearning Team
+
+[Website](https://microlearning-beta.vercel.app) • [GitHub](https://github.com/reduanahmadswe/MicroLearning) • [LinkedIn](https://linkedin.com/in/reduanahmadswe)
+
+</div>

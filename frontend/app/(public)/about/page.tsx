@@ -116,7 +116,7 @@ export default function AboutPage() {
     { 
       name: 'Rashedul Islam', 
       role: 'Head of Content', 
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop', 
+      image: 'https://res.cloudinary.com/di21cbkyf/image/upload/WhatsApp_Image_2025-12-12_at_22.20.16_b345ee76_ybbrpd.jpg', 
       bio: 'Award-winning Educator',
       socials: {
         linkedin: 'https://linkedin.com',
