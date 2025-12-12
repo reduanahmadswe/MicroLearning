@@ -37,6 +37,7 @@ export default function UserManagementPage() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [tempSearchQuery, setTempSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [banUserId, setBanUserId] = useState<string | null>(null);
@@ -56,22 +57,16 @@ export default function UserManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      loadUsers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, roleFilter]);
-
-  const loadUsers = async () => {
+  const loadUsers = async (search?: string) => {
     try {
       setLoading(true);
       const params: any = {
         limit: 1000
       };
 
-      if (searchQuery) {
-        params.search = searchQuery;
+      const queryToUse = search !== undefined ? search : searchQuery;
+      if (queryToUse) {
+        params.search = queryToUse;
       }
 
       if (roleFilter && roleFilter !== 'all') {
@@ -257,12 +252,76 @@ export default function UserManagementPage() {
               <Input
                 type="text"
                 placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
+                value={tempSearchQuery}
+                onChange={(e) => setTempSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchQuery(tempSearchQuery);
+                    loadUsers(tempSearchQuery);
+                  }
                 }}
                 className="pl-10 w-full border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
               />
+              {/* Live Suggestions Dropdown */}
+              {tempSearchQuery && (
+                <div className="absolute z-50 w-full mt-2 bg-background border border-border rounded-xl shadow-xl max-h-80 overflow-y-auto">
+                  {(() => {
+                    const suggestions = users.filter(user =>
+                      user.name?.toLowerCase().includes(tempSearchQuery.toLowerCase()) ||
+                      user.email?.toLowerCase().includes(tempSearchQuery.toLowerCase())
+                    ).slice(0, 8);
+                    
+                    if (suggestions.length === 0) {
+                      return (
+                        <div className="px-4 py-4 text-sm text-muted-foreground text-center">
+                          No users found
+                        </div>
+                      );
+                    }
+                    
+                    return suggestions.map((user) => {
+                      const profileImage = user.profilePicture || user.avatar;
+                      return (
+                        <div
+                          key={user._id}
+                          className="px-4 py-3 hover:bg-accent cursor-pointer border-b border-border/50 last:border-0 transition-colors"
+                          onClick={() => {
+                            setTempSearchQuery(user.name || user.email);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            {profileImage ? (
+                              <img
+                                src={profileImage}
+                                alt={user.name || 'User'}
+                                className="w-10 h-10 rounded-full object-cover border border-border/50 flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center text-white font-semibold flex-shrink-0 ${profileImage ? 'hidden' : ''}`}>
+                              {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                            <span className={`text-xs px-2.5 py-1 rounded-full border flex-shrink-0 ${getRoleBadgeColor(user.role)}`}>
+                              {user.role}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
             </div>
             <select
               value={roleFilter}
@@ -277,7 +336,10 @@ export default function UserManagementPage() {
               <option value="admin">Admin</option>
             </select>
             <Button
-              onClick={loadUsers}
+              onClick={() => {
+                setSearchQuery(tempSearchQuery);
+                loadUsers(tempSearchQuery);
+              }}
               className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-6 rounded-xl"
             >
               Apply

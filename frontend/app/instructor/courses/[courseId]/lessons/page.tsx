@@ -40,6 +40,7 @@ export default function CourseLessonsPage() {
     try {
       setLoading(true);
 
+      console.log('Fetching course with ID:', courseId);
 
       // Fetch course
       const courseRes = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
@@ -94,11 +95,24 @@ export default function CourseLessonsPage() {
       setLessons(lessonsWithQuizStatus.sort((a, b) => a.order - b.order));
     } catch (error: any) {
       console.error('Error fetching data:', error);
+      console.error('Course ID:', courseId);
       console.error('Error response:', error.response?.data);
       console.error('Status:', error.response?.status);
+      
+      const errorMessage = error.response?.status === 404 
+        ? `Course not found with ID: ${courseId}`
+        : error.response?.data?.message || 'Please check if the backend server is running.';
+      
       toast.error('Failed to load course lessons', {
-        description: error.response?.data?.message || 'Please restart the backend server.'
+        description: errorMessage
       });
+      
+      // If course not found, redirect back to courses list
+      if (error.response?.status === 404) {
+        setTimeout(() => {
+          router.push('/instructor/courses');
+        }, 2000);
+      }
     } finally {
       setLoading(false);
     }

@@ -115,23 +115,23 @@ export default function InstructorDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-page-gradient py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-page-gradient py-4 sm:py-8 p-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           {statsCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <Card key={index} className="hover:shadow-lg transition-shadow bg-card border border-border/50">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-5 md:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                      <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1 truncate">{stat.title}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
                     </div>
-                    <div className={`${stat.bgColor} p-3 rounded-lg`}>
-                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    <div className={`${stat.bgColor} p-2 sm:p-3 rounded-lg flex-shrink-0`}>
+                      <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                     </div>
                   </div>
                 </CardContent>
@@ -141,40 +141,40 @@ export default function InstructorDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           <Card
             onClick={() => setShowCourseModal(true)}
             className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-blue-300 hover:border-blue-500 bg-card dark:border-blue-800 dark:hover:border-blue-600"
           >
-            <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-full mb-3">
-                <Plus className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center text-center min-h-[130px] sm:min-h-[150px]">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 rounded-full mb-2 sm:mb-3">
+                <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="font-semibold text-lg mb-1 text-foreground">Create Lesson</h3>
-              <p className="text-sm text-muted-foreground">Create a new micro-lesson</p>
+              <h3 className="font-semibold text-base sm:text-lg mb-1 text-foreground">Create Lesson</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Create a new micro-lesson</p>
             </CardContent>
           </Card>
 
           <Link href="/instructor/courses/create">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-green-300 hover:border-green-500 bg-card dark:border-green-800 dark:hover:border-green-600">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-full mb-3">
-                  <Video className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center text-center min-h-[130px] sm:min-h-[150px]">
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 rounded-full mb-2 sm:mb-3">
+                  <Video className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 text-foreground">Create Course</h3>
-                <p className="text-sm text-muted-foreground">Build a complete course</p>
+                <h3 className="font-semibold text-base sm:text-lg mb-1 text-foreground">Create Course</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Build a complete course</p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/instructor/quizzes/create">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-500 bg-card dark:border-purple-800 dark:hover:border-purple-600">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[150px]">
-                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-full mb-3">
-                  <FileQuestion className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center text-center min-h-[130px] sm:min-h-[150px]">
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 sm:p-4 rounded-full mb-2 sm:mb-3">
+                  <FileQuestion className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 text-foreground">Create Quiz</h3>
-                <p className="text-sm text-muted-foreground">Design interactive quizzes</p>
+                <h3 className="font-semibold text-base sm:text-lg mb-1 text-foreground">Create Quiz</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Design interactive quizzes</p>
               </CardContent>
             </Card>
           </Link>
@@ -213,8 +213,8 @@ export default function InstructorDashboard() {
                     key={lesson._id}
                     className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg mb-1 text-foreground">{lesson.title}</h4>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-lg mb-1 text-foreground truncate">{lesson.title}</h4>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function InstructorDashboard() {
                 {courses.slice(0, 6).map((course: any) => (
                   <Card key={course._id} className="hover:shadow-lg transition-shadow bg-card border border-border/50">
                     <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2 text-foreground">{course.title}</h4>
+                      <h4 className="font-semibold mb-2 text-foreground truncate" title={course.title}>{course.title}</h4>
                       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {course.description}
                       </p>

@@ -236,25 +236,49 @@ export default function DashboardPage() {
               </Card>
             )}
 
-            {/* Daily Challenge */}
-            <Card className="bg-gradient-to-br from-green-600 via-teal-600 to-emerald-600 text-white border-0 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-white/10 blur-2xl"></div>
-              <CardHeader className="relative z-10">
+            {/* Learning Progress */}
+            <Card className="border-border/50 shadow-lg bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20">
+              <CardHeader>
                 <div className="flex items-center space-x-2 mb-2">
-                  <Target className="w-6 h-6" />
-                  <CardTitle className="text-white text-lg font-bold">Daily Challenge</CardTitle>
+                  <Trophy className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <CardTitle className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                    Your Progress
+                  </CardTitle>
                 </div>
-                <CardDescription className="text-green-50">
-                  Complete today's challenge to earn bonus XP and rewards!
-                </CardDescription>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <Link href="/challenges">
-                  <Button className="w-full bg-white text-green-600 hover:bg-green-50 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    Start Challenge 🚀
-                  </Button>
-                </Link>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-muted-foreground font-medium">Level Progress</span>
+                      <span className="text-foreground font-bold">{stats?.currentLevel || 1}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-green-500 to-teal-600 rounded-full transition-all duration-500"
+                        style={{ width: `${((stats?.totalXP || 0) % 100)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{(stats?.totalXP || 0) % 100}/100 XP to next level</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-card rounded-lg p-3 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Courses</p>
+                      <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats?.completedCourses || 0}</p>
+                    </div>
+                    <div className="bg-card rounded-lg p-3 border border-border/50">
+                      <p className="text-xs text-muted-foreground mb-1">Achievements</p>
+                      <p className="text-xl font-bold text-teal-600 dark:text-teal-400">{stats?.achievementsCount || badges.length}</p>
+                    </div>
+                  </div>
+
+                  <Link href="/analytics" className="block mt-4">
+                    <Button className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300">
+                      View Detailed Stats →
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>

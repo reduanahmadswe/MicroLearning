@@ -275,6 +275,37 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Test Credentials */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-3">🧪 Test Credentials (Click to fill):</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ email: "admin@microlearning.com", password: "12345678" })}
+                    className="text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-all text-xs"
+                  >
+                    <p className="font-semibold text-foreground">👨‍💼 Admin</p>
+                    <p className="text-muted-foreground truncate">admin@...</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ email: "instructor1@microlearning.com", password: "12345678" })}
+                    className="text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-all text-xs"
+                  >
+                    <p className="font-semibold text-foreground">👨‍🏫 Instructor</p>
+                    <p className="text-muted-foreground truncate">instructor1@...</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ email: "reduanahmadswe@gmail.com", password: "123456" })}
+                    className="text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-all text-xs"
+                  >
+                    <p className="font-semibold text-foreground">👨‍🎓 Student</p>
+                    <p className="text-muted-foreground truncate">reduan...</p>
+                  </button>
+                </div>
+              </div>
+
               <div className="flex justify-end">
                 <Link
                   href="/auth/forgot-password"

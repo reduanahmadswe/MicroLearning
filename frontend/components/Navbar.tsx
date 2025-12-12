@@ -438,14 +438,14 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Link href="/auth/login">
-                    <button className="px-4 py-2 text-sm font-medium text-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all">
+                    <button className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all">
                       Login
                     </button>
                   </Link>
                   <Link href="/auth/register">
-                    <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
+                    <button className="px-2 py-2 sm:px-4 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg hover:opacity-90 transition-opacity shadow-md hover:shadow-lg whitespace-nowrap">
                       Sign Up Free
                     </button>
                   </Link>

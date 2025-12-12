@@ -51,6 +51,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [content, setContent] = useState<any>({ recentLessons: [], recentQuizzes: [], recentCourses: [] });
   const [searchQuery, setSearchQuery] = useState('');
+  const [tempSearchQuery, setTempSearchQuery] = useState(''); // Temporary search for input field
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [banUserId, setBanUserId] = useState<string | null>(null);
@@ -69,15 +70,11 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    // Reset temp search when changing tabs
+    setTempSearchQuery('');
+    setSearchQuery('');
     loadDashboard();
   }, [activeTab]);
-
-  useEffect(() => {
-    // Reload users when search query or role filter changes
-    if (activeTab === 'users') {
-      loadDashboard();
-    }
-  }, [searchQuery, roleFilter]);
 
   const loadDashboard = async () => {
     try {
@@ -415,11 +412,69 @@ export default function AdminPage() {
                     <div className="flex-1 relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                       <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search users..."
+                        value={tempSearchQuery}
+                        onChange={(e) => setTempSearchQuery(e.target.value)}
+                        placeholder="Search users by name or email..."
                         className="pl-9 h-10 text-sm bg-background border-input focus:border-green-500 focus:ring-green-500"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setSearchQuery(tempSearchQuery);
+                            loadDashboard();
+                          }
+                        }}
                       />
+                      {/* Live Suggestions Dropdown */}
+                      {tempSearchQuery && (
+                        <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {(() => {
+                            const suggestions = users.filter(user =>
+                              user.name?.toLowerCase().includes(tempSearchQuery.toLowerCase()) ||
+                              user.email?.toLowerCase().includes(tempSearchQuery.toLowerCase())
+                            ).slice(0, 5);
+                            
+                            if (suggestions.length === 0) {
+                              return (
+                                <div className="px-4 py-3 text-sm text-muted-foreground">
+                                  No users found
+                                </div>
+                              );
+                            }
+                            
+                            return suggestions.map((user) => (
+                              <div
+                                key={user._id}
+                                className="px-4 py-2.5 hover:bg-accent cursor-pointer border-b border-border/50 last:border-0"
+                                onClick={() => {
+                                  setTempSearchQuery(user.name || user.email);
+                                }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-green-600 dark:text-green-400 font-semibold text-xs">
+                                      {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-foreground truncate">
+                                      {user.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {user.email}
+                                    </p>
+                                  </div>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    user.role === 'admin' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                    user.role === 'instructor' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                  }`}>
+                                    {user.role}
+                                  </span>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      )}
                     </div>
                     <select
                       value={roleFilter}
@@ -432,7 +487,10 @@ export default function AdminPage() {
                       <option value="admin">Admin</option>
                     </select>
                     <Button
-                      onClick={loadDashboard}
+                      onClick={() => {
+                        setSearchQuery(tempSearchQuery);
+                        loadDashboard();
+                      }}
                       className="bg-green-600 hover:bg-green-700 text-white h-10 px-5 text-sm shadow-sm"
                     >
                       <Filter className="w-4 h-4 mr-2" />

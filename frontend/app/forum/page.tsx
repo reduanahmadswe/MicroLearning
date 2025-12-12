@@ -116,7 +116,6 @@ export default function ForumPage() {
     { value: 'all', label: 'All Topics', icon: Globe },
     { value: 'programming', label: 'Programming', icon: BookOpen },
     { value: 'business', label: 'Business', icon: Award },
-    { value: 'general', label: 'General', icon: MessageSquare },
   ];
 
   // Client-side filtering (instant!)
@@ -378,10 +377,10 @@ export default function ForumPage() {
 
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8 ">
             {/* Search & Filters */}
             <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm ">
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="p-4 xl:p-6">
                 <div className="space-y-2 sm:space-y-3">
                   {/* Search */}
                   <div className="relative ">
