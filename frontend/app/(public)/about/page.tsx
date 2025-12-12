@@ -63,10 +63,10 @@ export default function AboutPage() {
   ];
 
   const team = [
-    { name: 'John Smith', role: 'CEO & Founder', image: '👨‍💼', bio: '15+ years in EdTech' },
-    { name: 'Sarah Johnson', role: 'Head of Education', image: '👩‍🏫', bio: 'Former Harvard Professor' },
-    { name: 'Michael Chen', role: 'CTO', image: '👨‍💻', bio: 'Ex-Google Engineer' },
-    { name: 'Emily Rodriguez', role: 'Head of Content', image: '👩‍🎨', bio: 'Award-winning Educator' }
+    { name: 'Reduan Ahmad', role: 'CEO & Founder', image: '👨‍💼', bio: '15+ years in EdTech' },
+    { name: 'Fatema Akter', role: 'Head of Education', image: '👩‍🏫', bio: 'Former DU Professor' },
+    { name: 'Tanvir Rahman', role: 'CTO', image: '👨‍💻', bio: 'Ex-Google Engineer' },
+    { name: 'Nusrat Jahan', role: 'Head of Content', image: '👩‍🎨', bio: 'Award-winning Educator' }
   ];
 
   return (

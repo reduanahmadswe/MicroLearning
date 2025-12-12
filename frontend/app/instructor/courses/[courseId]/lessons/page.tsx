@@ -43,13 +43,13 @@ export default function CourseLessonsPage() {
       console.log('Fetching course with ID:', courseId);
 
       // Fetch course
-      const courseRes = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
+      const courseRes = await axios.get(`https://microlearning-backend-reduan.onrender.com/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCourse(courseRes.data.data || courseRes.data);
 
       // Fetch lessons for this course
-      const lessonsRes = await axios.get(`http://localhost:5000/api/v1/lessons?course=${courseId}`, {
+      const lessonsRes = await axios.get(`https://microlearning-backend-reduan.onrender.com/api/v1/lessons?course=${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

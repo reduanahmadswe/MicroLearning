@@ -3,12 +3,12 @@ import axios from "axios";
 // Use localhost in development, production URL in production
 const isDevelopment = process.env.NODE_ENV === 'development';
 const defaultUrl = isDevelopment
-  ? "http://localhost:5000/api/v1"
-  : "http://localhost:5000/api/v1";
+  ? "https://microlearning-backend-reduan.onrender.com/api/v1"
+  : "https://microlearning-backend-reduan.onrender.com/api/v1";
 
 // Force localhost in development to ensure we hit the local backend with our fixes
 const rawApiUrl = isDevelopment
-  ? "http://localhost:5000/api/v1"
+  ? "https://microlearning-backend-reduan.onrender.com/api/v1"
   : (process.env.NEXT_PUBLIC_API_URL || defaultUrl);
 const API_URL = rawApiUrl.replace(/([^:]\/)\/+/g, "$1");
 

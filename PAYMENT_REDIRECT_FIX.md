@@ -4,11 +4,11 @@
 After deploying to Vercel, payment redirects are going to `localhost:3000` instead of your production URL.
 
 ## Root Cause
-The backend is using `process.env.FRONTEND_URL` which defaults to `http://localhost:3000` when not set.
+The backend is using `process.env.FRONTEND_URL` which defaults to `https://microlearning-beta.vercel.app` when not set.
 
 ```typescript
 // From course.payment.controller.ts
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontendUrl = process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app';
 res.redirect(`${frontendUrl}/courses/payment/success?courseId=${courseId}`);
 ```
 

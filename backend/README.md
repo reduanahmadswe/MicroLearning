@@ -45,7 +45,7 @@ BCRYPT_SALT_ROUNDS=10
 npm run dev
 ```
 
-Server will start at: `http://localhost:5000/`
+Server will start at: `https://microlearning-backend-reduan.onrender.com/`
 
 ---
 
@@ -195,7 +195,7 @@ backend/
 
 ### Base URL
 ```
-http://localhost:5000/api/v1
+https://microlearning-backend-reduan.onrender.com/api/v1
 ```
 
 ### Quick API Reference
@@ -253,7 +253,7 @@ GET    /api/v1/analytics/system               # System analytics (admin)
 
 ### Health Check
 ```bash
-GET http://localhost:5000/health
+GET https://microlearning-backend-reduan.onrender.com/health
 ```oken | Duration | Purpose |
 |-------|----------|---------|
 | Access Token | 7 days | Access protected resources |
@@ -281,12 +281,12 @@ Comprehensive API documentation is available in the `/API_Documentation` folder:
 
 ### Base URL
 ```
-http://localhost:5000/api/v1
+https://microlearning-backend-reduan.onrender.com/api/v1
 ```
 
 ### Health Check
 ```bash
-GET http://localhost:5000/health
+GET https://microlearning-backend-reduan.onrender.com/health
 ```
 
 ---
@@ -411,7 +411,7 @@ GET /api/v1/certificates/verify/:verificationCode
 
 ```bash
 # Anyone can verify without authentication
-curl -X GET http://localhost:5000/api/v1/certificates/verify/ABC123XYZ456...
+curl -X GET https://microlearning-backend-reduan.onrender.com/api/v1/certificates/verify/ABC123XYZ456...
 
 # Response
 {
@@ -714,7 +714,7 @@ router.post('/content', authGuard('admin', 'instructor'), controller.createConte
 
 1. Import the Postman collection (coming soon)
 2. Set up environment variables:
-   - `baseUrl`: `http://localhost:5000/api/v1`
+   - `baseUrl`: `https://microlearning-backend-reduan.onrender.com/api/v1`
    - `accessToken`: (auto-populated after login)
    - `refreshToken`: (auto-populated after login)
 
@@ -722,7 +722,7 @@ router.post('/content', authGuard('admin', 'instructor'), controller.createConte
 
 1. **Register a user**
 ```bash
-curl -X POST http://localhost:5000/api/v1/auth/register \
+curl -X POST https://microlearning-backend-reduan.onrender.com/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -734,7 +734,7 @@ curl -X POST http://localhost:5000/api/v1/auth/register \
 
 2. **Login**
 ```bash
-curl -X POST http://localhost:5000/api/v1/auth/login \
+curl -X POST https://microlearning-backend-reduan.onrender.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -744,7 +744,7 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
 
 3. **Access protected route**
 ```bash
-curl -X GET http://localhost:5000/api/v1/protected-route \
+curl -X GET https://microlearning-backend-reduan.onrender.com/api/v1/protected-route \
   -H "Authorization: Bearer <your_access_token>"
 ```
 

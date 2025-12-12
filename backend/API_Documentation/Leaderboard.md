@@ -460,7 +460,7 @@ UserProgress: { lesson: 1, status: 1 }
 
 ### Environment Variables
 ```
-base_url=http://localhost:5000/
+base_url=https://microlearning-backend-reduan.onrender.com/
 access_token={{your_jwt_token}}
 topic={{topic_name}}
 ```

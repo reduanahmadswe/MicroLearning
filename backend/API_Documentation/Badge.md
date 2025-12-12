@@ -539,7 +539,7 @@ achievements.data.forEach(achievement => {
 
 ### Environment Variables
 ```
-base_url=http://localhost:5000/
+base_url=https://microlearning-backend-reduan.onrender.com/
 access_token={{your_jwt_token}}
 admin_token={{admin_jwt_token}}
 badge_id={{badge_id}}

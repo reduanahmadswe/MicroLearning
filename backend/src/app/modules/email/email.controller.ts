@@ -182,7 +182,7 @@ export const sendTestEmail = catchAsync(async (req: Request, res: Response) => {
     templateType: 'welcome',
     variables: {
       username: 'Test User',
-      dashboardUrl: 'http://localhost:3000/dashboard',
+      dashboardUrl: 'https://microlearning-beta.vercel.app/dashboard',
     },
   });
 

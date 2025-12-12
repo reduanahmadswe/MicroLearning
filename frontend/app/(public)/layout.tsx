@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "MicroLearning - AI-Powered Learning Platform",
@@ -11,10 +10,5 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      {children}
-      <Toaster position="top-right" richColors />
-    </>
-  );
+  return <>{children}</>;
 }

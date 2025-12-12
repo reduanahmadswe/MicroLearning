@@ -25,7 +25,8 @@ import {
   Rocket,
   Heart,
   Code,
-  ChevronRight
+  ChevronRight,
+  Video
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
@@ -33,7 +34,6 @@ export default function HomePage() {
   const router = useRouter();
   const { user, token } = useAuthStore();
   const [stats, setStats] = useState({
-    totalCourses: 150,
     totalStudents: 5000,
     instructors: 50,
     completionRate: 92
@@ -157,87 +157,158 @@ export default function HomePage() {
       {/* Navigation is handled by global Navbar component */}
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden py-8 sm:py-12 lg:py-20 bg-page-gradient">
+        {/* Decorative circles */}
+        <div className="absolute top-10 left-10 w-64 h-64 sm:w-96 sm:h-96 bg-green-100/30 dark:bg-green-900/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-64 h-64 sm:w-96 sm:h-96 bg-teal-100/30 dark:bg-teal-900/10 rounded-full blur-3xl"></div>
+        
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             {/* Left Content */}
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4" />
-                #1 Micro Learning Platform
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white dark:bg-gray-800 border border-green-200 dark:border-green-800 rounded-full text-xs sm:text-sm font-medium shadow-sm">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                <span className="text-green-700 dark:text-green-400">#1 Micro Learning Platform</span>
               </div>
-              <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-                Learn Smarter,
+              
+              {/* Main Heading */}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span className="text-gray-900 dark:text-white">Master </span>
+                <span className="text-green-600 dark:text-green-500">New Skills</span>
                 <br />
-                <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                  Achieve Faster
-                </span>
+                <span className="text-gray-900 dark:text-white">In </span>
+                <span className="text-green-600 dark:text-green-500">Bite-Sized</span>
+                <br />
+                <span className="text-green-600 dark:text-green-500">Micro Lessons</span>
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Master new skills with bite-sized lessons designed for busy professionals.
-                Learn anytime, anywhere with our gamified micro-learning platform.
+              
+              {/* Description */}
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed">
+                Master new skills with bite-sized lessons designed for busy professionals. Learn anytime, anywhere with our gamified micro-learning platform powered by AI.
               </p>
-              <div className="flex flex-wrap gap-4 mb-8">
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                 <button
                   onClick={handleGetStarted}
-                  className="group px-8 py-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:shadow-xl transition-all font-semibold flex items-center gap-2"
+                  className="px-6 py-3 sm:px-8 sm:py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl text-sm sm:text-base"
                 >
-                  Get Started Free
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Get Started
                 </button>
-                <Link
-                  href="/courses"
-                  className="px-8 py-4 border-2 border-border text-foreground rounded-lg hover:border-primary hover:text-primary transition-all font-semibold flex items-center gap-2"
+                <button
+                  onClick={() => router.push('/courses')}
+                  className="px-6 py-3 sm:px-8 sm:py-4 border-2 border-green-600 text-green-600 dark:text-green-500 dark:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-semibold transition-all text-sm sm:text-base"
                 >
-                  <Play className="w-5 h-5" />
-                  Browse Courses
-                </Link>
+                  Get free trial
+                </button>
               </div>
-              <div className="flex items-center gap-8">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />
-                  <span className="text-sm text-muted-foreground">Free Forever Plan</span>
+              
+              {/* Features */}
+              <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8 pt-2 sm:pt-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-500" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Quick Learning</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />
-                  <span className="text-sm text-muted-foreground">No Credit Card</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600 dark:text-pink-500" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Gamified Learning</span>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-500" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
                 </div>
               </div>
+              
+              
             </div>
 
-            {/* Right Content - Stats Cards */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            {/* Right Content - Hero Image with Stats */}
+            <div className="relative flex items-center justify-center mt-8 lg:mt-0">
+              {/* Main circular background */}
+              <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg aspect-square mx-auto">
+                {/* Green circular background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 rounded-full"></div>
+                
+                {/* Hero Image */}
+                <div className="absolute inset-0 flex items-end justify-center overflow-hidden rounded-full">
+                  <img
+                    src="https://img.freepik.com/free-photo/young-smiling-pretty-caucasian-schoolgirl-wearing-glasses-back-bag-points-side-with-hand-holding-books-green-with-copy-space_141793-62821.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="Happy student with books"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.totalCourses}+</h3>
-                <p className="text-muted-foreground">Active Courses</p>
-              </div>
-              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow mt-8">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                
+                
+                {/* Micro Lessons Card */}
+                <div className="absolute top-1/3 -left-4 sm:-left-6 lg:-left-8 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 shadow-xl border border-gray-100 dark:border-gray-700 animate-float">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">1K+</div>
+                      <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Micro Lessons</div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.totalStudents.toLocaleString()}+</h3>
-                <p className="text-muted-foreground">Happy Students</p>
-              </div>
-              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow -mt-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                
+                {/* Active Students Card */}
+                <div className="absolute top-12 sm:top-14 lg:top-16 -right-4 sm:-right-6 lg:-right-8 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 shadow-xl border border-gray-100 dark:border-gray-700 animate-float" style={{ animationDelay: '0.5s' }}>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-green-600 rounded-full flex items-center justify-center">
+                        <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Active Students</div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.instructors}+</h3>
-                <p className="text-muted-foreground">Expert Instructors</p>
-              </div>
-              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-shadow mt-4">
-                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <Trophy className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                
+                {/* Instructors Card */}
+                <div className="absolute bottom-12 sm:bottom-14 lg:bottom-16 -right-2 sm:-right-3 lg:-right-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 shadow-xl border border-gray-100 dark:border-gray-700 animate-float" style={{ animationDelay: '1s' }}>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">Instructors</div>
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{stats.instructors}+</div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-1">{stats.completionRate}%</h3>
-                <p className="text-muted-foreground">Completion Rate</p>
               </div>
             </div>
           </div>
+          
+          {/* Partner Logos */}
+          <div className="mt-12 sm:mt-16 lg:mt-20 pt-8 sm:pt-10 lg:pt-12 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:gap-8 xl:gap-12 opacity-60">
+              <div className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-gray-400 dark:text-gray-600">Coursera</div>
+              <div className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-gray-400 dark:text-gray-600">Udemy</div>
+              <div className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-gray-400 dark:text-gray-600">EdX</div>
+              <div className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-gray-400 dark:text-gray-600">Khan Academy</div>
+            </div>
+          </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+          }
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
+          }
+        `}</style>
       </section>
 
       {/* Features Section */}

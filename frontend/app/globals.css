@@ -15,6 +15,11 @@
 
 @layer utilities {
 
+  /* Page gradient that adapts to dark mode */
+  .bg-page-gradient {
+    background: var(--page-gradient);
+  }
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

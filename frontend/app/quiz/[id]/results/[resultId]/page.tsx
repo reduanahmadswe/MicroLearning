@@ -83,7 +83,7 @@ export default function QuizResultsPage() {
       const token = localStorage.getItem('token');
 
       // Get current lesson details
-      const lessonResponse = await fetch(`http://localhost:5000/api/v1/lessons/${result.quiz.lesson}`, {
+      const lessonResponse = await fetch(`https://microlearning-backend-reduan.onrender.com/api/v1/lessons/${result.quiz.lesson}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -102,7 +102,7 @@ export default function QuizResultsPage() {
 
       // Get next lesson
       const nextResponse = await fetch(
-        `http://localhost:5000/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
+        `https://microlearning-backend-reduan.onrender.com/api/v1/lessons?course=${courseId}&order=${(currentLesson.order || 0) + 1}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

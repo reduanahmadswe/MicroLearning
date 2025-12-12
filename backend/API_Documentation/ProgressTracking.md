@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:5000/api/v1/progress
+https://microlearning-backend-reduan.onrender.com/api/v1/progress
 ```
 
 ---

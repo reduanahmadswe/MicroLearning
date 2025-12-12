@@ -24,8 +24,8 @@
 SSLCOMMERZ_STORE_ID=your_store_id_here
 SSLCOMMERZ_STORE_PASSWORD=your_store_password_here
 SSLCOMMERZ_IS_LIVE=false
-BACKEND_URL=http://localhost:5000/
-FRONTEND_URL=http://localhost:3000
+BACKEND_URL=https://microlearning-backend-reduan.onrender.com/
+FRONTEND_URL=https://microlearning-beta.vercel.app
 ```
 
 **কিভাবে SSLCommerz Credentials পাবেন:**
@@ -96,7 +96,7 @@ SSLCommerz থেকে payment সফল হলে এই endpoint call হয�
 
 **Redirect:**
 ```
-Frontend URL: http://localhost:3000/payment/success?purchase=<purchase_id>
+Frontend URL: https://microlearning-beta.vercel.app/payment/success?purchase=<purchase_id>
 ```
 
 ---
@@ -109,7 +109,7 @@ Payment fail হলে এই endpoint call হয়।
 
 **Redirect:**
 ```
-Frontend URL: http://localhost:3000/payment/failed
+Frontend URL: https://microlearning-beta.vercel.app/payment/failed
 ```
 
 ---
@@ -122,7 +122,7 @@ User payment cancel করলে এই endpoint call হয়।
 
 **Redirect:**
 ```
-Frontend URL: http://localhost:3000/payment/cancelled
+Frontend URL: https://microlearning-beta.vercel.app/payment/cancelled
 ```
 
 ---

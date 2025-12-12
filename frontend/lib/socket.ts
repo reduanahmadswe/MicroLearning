@@ -10,7 +10,7 @@ export const initSocket = (userId: string) => {
   }
 
   if (!socket) {
-    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'https://microlearning-backend-reduan.onrender.com', {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 3,
