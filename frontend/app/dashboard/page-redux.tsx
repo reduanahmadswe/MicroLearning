@@ -80,11 +80,11 @@ export default function DashboardPage() {
 
     const statCards = [
         { icon: TrendingUp, label: 'Total XP', value: stats?.totalXP || user?.xp || 0, color: 'text-green-600 dark:text-green-400', bg: 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20', iconBg: 'bg-gradient-to-br from-green-500 to-emerald-600' },
-        { icon: Star, label: 'Level', value: stats?.level || user?.level || 1, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20', iconBg: 'bg-gradient-to-br from-yellow-500 to-amber-600' },
+        { icon: Star, label: 'Level', value: stats?.currentLevel || user?.level || 1, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20', iconBg: 'bg-gradient-to-br from-yellow-500 to-amber-600' },
         { icon: Flame, label: 'Streak', value: `${stats?.currentStreak || user?.streak || 0} days`, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20', iconBg: 'bg-gradient-to-br from-orange-500 to-red-600' },
-        { icon: BookOpen, label: 'Lessons', value: stats?.lessonsCompleted || user?.totalLessonsCompleted || 0, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20', iconBg: 'bg-gradient-to-br from-teal-500 to-cyan-600' },
-        { icon: Brain, label: 'Quizzes', value: stats?.quizzesCompleted || user?.totalQuizzesCompleted || 0, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
-        { icon: Clock, label: 'Study Time', value: `${Math.floor((stats?.studyTimeMinutes || 0) / 60)}h`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20', iconBg: 'bg-gradient-to-br from-emerald-500 to-green-600' },
+        { icon: BookOpen, label: 'Lessons', value: stats?.completedLessons || user?.totalLessonsCompleted || 0, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20', iconBg: 'bg-gradient-to-br from-teal-500 to-cyan-600' },
+        { icon: Brain, label: 'Quizzes', value: stats?.completedQuizzes || user?.totalQuizzesCompleted || 0, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
+        { icon: Clock, label: 'Study Time', value: `${Math.floor((stats?.totalStudyTime || 0) / 60)}h`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20', iconBg: 'bg-gradient-to-br from-emerald-500 to-green-600' },
     ];
 
     // Show minimal loading only on first initialization

@@ -15,7 +15,11 @@ import {
   ArrowRight,
   Shield,
   Zap,
-  Star
+  Star,
+  Linkedin,
+  Twitter,
+  Github,
+  Mail
 } from 'lucide-react';
 
 export default function AboutPage() {
@@ -63,10 +67,63 @@ export default function AboutPage() {
   ];
 
   const team = [
-    { name: 'Reduan Ahmad', role: 'CEO & Founder', image: '👨‍💼', bio: '15+ years in EdTech' },
-    { name: 'Fatema Akter', role: 'Head of Education', image: '👩‍🏫', bio: 'Former DU Professor' },
-    { name: 'Tanvir Rahman', role: 'CTO', image: '👨‍💻', bio: 'Ex-Google Engineer' },
-    { name: 'Nusrat Jahan', role: 'Head of Content', image: '👩‍🎨', bio: 'Award-winning Educator' }
+    { 
+      name: 'Reduan Ahmad', 
+      role: 'CEO & Founder', 
+      image: 'https://avatars.githubusercontent.com/u/143122014?v=4', 
+      bio: '3+ years in EdTech',
+      socials: {
+        linkedin: 'https://linkedin.com/in/reduanahmadswe',
+        twitter: 'https://twitter.com/reduanahmadswe',
+        github: 'https://github.com/reduanahmadswe',
+        email: 'reduanahmadswe@gmail.com'
+      }
+    },
+    { 
+      name: 'Mohammad Ali Nayeem', 
+      role: 'Co-Founder & Managing Director', 
+      image: 'https://avatars.githubusercontent.com/u/85398213?v=4', 
+      bio: 'Visionary Leader in Education',
+      socials: {
+        linkedin: 'https://linkedin.com/in/mohammadalinayeem',
+        twitter: 'https://twitter.com',
+        email: 'nayeem@microlearning.com'
+      }
+    },
+    { 
+      name: 'Fatema Akter', 
+      role: 'Head of Education', 
+      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop', 
+      bio: 'Former DU Professor',
+      socials: {
+        linkedin: 'https://linkedin.com',
+        twitter: 'https://twitter.com',
+        email: 'fatema@microlearning.com'
+      }
+    },
+    { 
+      name: 'Abdullah Al Noman', 
+      role: 'CTO', 
+      image: 'https://avatars.githubusercontent.com/u/141672697?v=4', 
+      bio: 'Building the Future of EdTech',
+      socials: {
+        linkedin: 'https://linkedin.com/in/abdullahalnoman',
+        github: 'https://github.com/abdullahalnoman003',
+        twitter: 'https://twitter.com/abdullahalnoman',
+        email: 'noman@microlearning.com'
+      }
+    },
+    { 
+      name: 'Nusrat Jahan', 
+      role: 'Head of Content', 
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop', 
+      bio: 'Award-winning Educator',
+      socials: {
+        linkedin: 'https://linkedin.com',
+        twitter: 'https://twitter.com',
+        email: 'nusrat@microlearning.com'
+      }
+    }
   ];
 
   return (
@@ -193,37 +250,37 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="py-20 bg-background">
+      <section className="py-12 sm:py-16 md:py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 sm:mb-4">
               Our
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent"> Journey</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
               From a small startup to a global learning platform - here's our story.
             </p>
           </div>
 
           <div className="relative">
-            {/* Timeline Line */}
+            {/* Timeline Line - Hidden on mobile, shown on large screens */}
             <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-500 to-teal-600 hidden lg:block"></div>
 
             {/* Timeline Items */}
-            <div className="space-y-12">
+            <div className="space-y-6 sm:space-y-8 md:space-y-12">
               {milestones.map((milestone, index) => (
-                <div key={index} className={`flex items-center gap-8 ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
-                  <div className={`flex-1 ${index % 2 === 0 ? 'lg:text-right' : 'lg:text-left'}`}>
-                    <div className="bg-card rounded-2xl p-8 border-2 border-border/50 hover:border-green-500 hover:shadow-xl transition-all">
-                      <div className="inline-block px-4 py-1 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-full text-sm font-bold mb-3">
+                <div key={index} className={`flex items-center gap-4 sm:gap-6 md:gap-8 ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
+                  <div className={`flex-1 ${index % 2 === 0 ? 'lg:text-right' : 'lg:text-left'} text-left`}>
+                    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border-2 border-border/50 hover:border-green-500 hover:shadow-xl transition-all">
+                      <div className="inline-block px-3 py-1 sm:px-4 sm:py-1 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-full text-xs sm:text-sm font-bold mb-2 sm:mb-3">
                         {milestone.year}
                       </div>
-                      <h3 className="text-2xl font-bold text-foreground mb-2">{milestone.title}</h3>
-                      <p className="text-muted-foreground">{milestone.description}</p>
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-1 sm:mb-2">{milestone.title}</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground">{milestone.description}</p>
                     </div>
                   </div>
-                  <div className="hidden lg:block w-6 h-6 bg-gradient-to-br from-green-500 to-teal-600 rounded-full border-4 border-white shadow-lg z-10"></div>
-                  <div className="flex-1"></div>
+                  <div className="hidden lg:block w-6 h-6 bg-gradient-to-br from-green-500 to-teal-600 rounded-full border-4 border-white dark:border-gray-900 shadow-lg z-10"></div>
+                  <div className="hidden lg:block flex-1"></div>
                 </div>
               ))}
             </div>
@@ -244,15 +301,61 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
             {team.map((member, index) => (
-              <div key={index} className="bg-card rounded-2xl p-8 text-center border border-border/50 hover:shadow-xl transition-all">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                  {member.image}
+              <div key={index} className="bg-card rounded-2xl p-6 text-center border border-border/50 hover:shadow-xl transition-all group flex flex-col h-full">
+                <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden ring-4 ring-green-500/20 group-hover:ring-green-500/40 transition-all">
+                  <img 
+                    src={member.image} 
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-1">{member.name}</h3>
-                <p className="text-green-600 dark:text-green-400 font-semibold mb-2">{member.role}</p>
-                <p className="text-sm text-muted-foreground">{member.bio}</p>
+                <h3 className="text-lg font-bold text-foreground mb-1">{member.name}</h3>
+                <p className="text-green-600 dark:text-green-400 font-semibold mb-2 text-sm min-h-[2.5rem]">{member.role}</p>
+                <p className="text-xs text-muted-foreground mb-4 flex-grow">{member.bio}</p>
+                
+                {/* Social Media Links */}
+                <div className="flex items-center justify-center gap-2 pt-3 border-t border-border/50 mt-auto">
+                  {member.socials?.linkedin && (
+                    <a 
+                      href={member.socials.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {member.socials?.twitter && (
+                    <a 
+                      href={member.socials.twitter} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all"
+                    >
+                      <Twitter className="w-4 h-4" />
+                    </a>
+                  )}
+                  {member.socials?.github && (
+                    <a 
+                      href={member.socials.github} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                    >
+                      <Github className="w-4 h-4" />
+                    </a>
+                  )}
+                  {member.socials?.email && (
+                    <a 
+                      href={`mailto:${member.socials.email}`}
+                      className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition-all"
+                    >
+                      <Mail className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>
