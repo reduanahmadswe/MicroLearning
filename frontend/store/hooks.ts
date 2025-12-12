@@ -190,6 +190,14 @@ export const useForumPostById = (postId: string | undefined) => {
     );
 };
 
+export const useForumCommentsByPostId = (postId: string | undefined) => {
+    return useAppSelector((state) => {
+        if (!postId || !state.global.forumComments) return [];
+        const commentIds = state.global.forumComments.byPostId[postId] || [];
+        return commentIds.map(id => state.global.forumComments.byId[id]).filter(Boolean);
+    });
+};
+
 // Quiz hooks
 export const useQuizzes = () => {
     return useAppSelector((state) => {

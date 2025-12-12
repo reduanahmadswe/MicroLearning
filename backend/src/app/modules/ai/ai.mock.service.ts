@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
 import {
-  AIProvider,
   IGenerateLessonRequest,
   IGeneratedLesson,
   IGenerateQuizRequest,
@@ -21,7 +20,7 @@ import {
  */
 export const generateMockLesson = async (
   _userId: Types.ObjectId,
-  data: IGenerateLessonRequest
+  _data: IGenerateLessonRequest
 ): Promise<IGeneratedLesson> => {
   // Mock generation disabled: enforce error to avoid auto content
   const ApiError = require('../../utils/ApiError').default;
@@ -37,7 +36,7 @@ export const generateMockLesson = async (
  */
 export const generateMockQuiz = async (
   _userId: Types.ObjectId,
-  data: IGenerateQuizRequest
+  _data: IGenerateQuizRequest
 ): Promise<IGeneratedQuiz> => {
   const ApiError = require('../../utils/ApiError').default;
   const httpStatus = require('http-status');
@@ -52,7 +51,7 @@ export const generateMockQuiz = async (
  */
 export const generateMockFlashcards = async (
   _userId: Types.ObjectId,
-  data: IGenerateFlashcardRequest
+  _data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
   const ApiError = require('../../utils/ApiError').default;
   const httpStatus = require('http-status');
@@ -67,7 +66,7 @@ export const generateMockFlashcards = async (
  */
 export const generateMockChat = async (
   _userId: Types.ObjectId,
-  data: IChatRequest
+  _data: IChatRequest
 ): Promise<IChatResponse> => {
   const ApiError = require('../../utils/ApiError').default;
   const httpStatus = require('http-status');

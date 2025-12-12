@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { friendsAPI } from '@/services/api.service';
 import { toast } from 'sonner';
+import { useAppDispatch, useFriends, useIsInitializing } from '@/store/hooks';
+import { fetchFriends } from '@/store/globalSlice';
 
 interface Friend {
   _id: string;
@@ -54,12 +56,16 @@ interface FriendRequest {
 }
 
 export default function FriendsPage() {
+  const dispatch = useAppDispatch();
+  const friendsFromRedux = useFriends();
+  const isInitializing = useIsInitializing();
+
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'suggestions'>('friends');
-  const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,13 +73,19 @@ export default function FriendsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 12;
 
+  // Load initial data only once
   useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when tab changes
-    if (activeTab === 'friends') {
-      loadFriends();
-    } else if (activeTab === 'requests') {
+    if (!isInitializing && friendsFromRedux.length === 0) {
+      dispatch(fetchFriends());
+    }
+  }, [isInitializing, friendsFromRedux.length, dispatch]);
+
+  // Handle tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+    if (activeTab === 'requests' && requests.length === 0) {
       loadRequests();
-    } else if (activeTab === 'suggestions') {
+    } else if (activeTab === 'suggestions' && suggestions.length === 0) {
       loadSuggestions(1);
     }
   }, [activeTab]);
@@ -86,33 +98,9 @@ export default function FriendsPage() {
     }
   };
 
-  const loadFriends = async () => {
-    try {
-      setLoading(true);
-      const response = await friendsAPI.getFriends();
-      const responseData = response.data.data;
-
-      // Backend now returns { friends: [], pagination: {} }
-      const friendsData = responseData?.friends || responseData;
-      setFriends(Array.isArray(friendsData) ? friendsData : []);
-
-      // Update pagination if available
-      if (responseData?.pagination) {
-        setTotalPages(responseData.pagination.totalPages || 1);
-        setTotalItems(responseData.pagination.total || 0);
-      }
-    } catch (error: any) {
-      toast.error('Failed to load friends');
-      console.error('❌ Load friends error:', error);
-      setFriends([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadRequests = async () => {
     try {
-      setLoading(true);
+      setRequestsLoading(true);
       const response = await friendsAPI.getFriendRequests();
       const requestsData = response.data.data;
       setRequests(Array.isArray(requestsData) ? requestsData : []);
@@ -121,17 +109,16 @@ export default function FriendsPage() {
       console.error('❌ Load requests error:', error);
       setRequests([]);
     } finally {
-      setLoading(false);
+      setRequestsLoading(false);
     }
   };
 
   const loadSuggestions = async (page = 1) => {
     try {
-      setLoading(true);
+      setSuggestionsLoading(true);
       const response = await friendsAPI.getSuggestions(page, itemsPerPage);
       const suggestionsData = response.data.data;
       const meta = response.data.meta;
-
 
       // Extract user from nested structure
       const users = Array.isArray(suggestionsData)
@@ -147,7 +134,7 @@ export default function FriendsPage() {
       console.error(error);
       setSuggestions([]);
     } finally {
-      setLoading(false);
+      setSuggestionsLoading(false);
     }
   };
 
@@ -166,7 +153,7 @@ export default function FriendsPage() {
       await friendsAPI.acceptFriendRequest(requestId);
       toast.success('Friend request accepted!');
       loadRequests();
-      loadFriends();
+      dispatch(fetchFriends());
     } catch (error: any) {
       toast.error('Failed to accept request');
     }
@@ -188,14 +175,17 @@ export default function FriendsPage() {
     try {
       await friendsAPI.removeFriend(friendId);
       toast.success('Friend removed');
-      loadFriends();
+      dispatch(fetchFriends());
     } catch (error: any) {
       toast.error('Failed to remove friend');
     }
   };
 
-  const filteredFriends = friends.filter((f) =>
-    f.friend?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFriends = useMemo(() => 
+    friendsFromRedux.filter((f) =>
+      f.friend?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [friendsFromRedux, searchQuery]
   );
 
   return (
@@ -219,7 +209,7 @@ export default function FriendsPage() {
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
             <div className="bg-card rounded-xl border-2 border-green-100 dark:border-green-900/30 p-3 sm:p-4 text-center hover:shadow-lg transition-all">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                {friends.length}
+                {friendsFromRedux.length}
               </p>
               <p className="text-[10px] sm:text-xs text-muted-foreground font-medium mt-1">Friends</p>
             </div>
@@ -252,7 +242,7 @@ export default function FriendsPage() {
               <span>My Friends</span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'friends' ? 'bg-white/20' : 'bg-muted text-muted-foreground'
                 }`}>
-                {friends.length}
+                {friendsFromRedux.length}
               </span>
             </button>
             <button
@@ -299,7 +289,7 @@ export default function FriendsPage() {
             </div>
 
             {/* Friends List */}
-            {loading ? (
+            {isInitializing ? (
               <div className="flex flex-col justify-center items-center py-16 sm:py-24">
                 <div className="relative">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-green-200 rounded-full"></div>
@@ -313,14 +303,14 @@ export default function FriendsPage() {
                   <Users className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3">
-                  {friends.length === 0 ? 'No Friends Yet' : 'No Friends Found'}
+                  {friendsFromRedux.length === 0 ? 'No Friends Yet' : 'No Friends Found'}
                 </h3>
                 <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto">
-                  {friends.length === 0
+                  {friendsFromRedux.length === 0
                     ? 'Start connecting with fellow students to learn together, compete in quizzes, and share your journey!'
                     : 'Try a different search term to find your friends'}
                 </p>
-                {friends.length === 0 && (
+                {friendsFromRedux.length === 0 && (
                   <button
                     onClick={() => setActiveTab('suggestions')}
                     className="bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold py-3 px-8 rounded-xl hover:shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2"
@@ -412,7 +402,7 @@ export default function FriendsPage() {
 
         {activeTab === 'requests' && (
           <>
-            {loading ? (
+            {requestsLoading ? (
               <div className="flex flex-col justify-center items-center py-16 sm:py-24">
                 <div className="relative">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-teal-200 rounded-full"></div>
@@ -511,7 +501,7 @@ export default function FriendsPage() {
 
         {activeTab === 'suggestions' && (
           <>
-            {loading ? (
+            {suggestionsLoading ? (
               <div className="flex flex-col justify-center items-center py-16 sm:py-24">
                 <div className="relative">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-emerald-200 rounded-full"></div>
@@ -621,7 +611,7 @@ export default function FriendsPage() {
                 </div>
 
                 {/* Pagination */}
-                {!loading && suggestions.length > 0 && totalPages > 1 && (
+                {!suggestionsLoading && suggestions.length > 0 && totalPages > 1 && (
                   <div className="mt-8 flex justify-center">
                     <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-100 p-3 sm:p-4">
                       <div className="flex items-center gap-2">

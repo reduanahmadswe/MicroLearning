@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-https://microlearning-backend-reduan.onrender.com/api/v1/lessons
+http://localhost:5000/api/v1/lessons
 ```
 
 ---
@@ -425,7 +425,7 @@ Authorization: Bearer <access_token>
 
 ### Environment Variables
 ```
-baseUrl: https://microlearning-backend-reduan.onrender.com/api/v1
+baseUrl: http://localhost:5000/api/v1
 accessToken: (auto-populated after login)
 ```
 

@@ -331,9 +331,9 @@ export default function CoursesPage() {
                       {/* Thumbnail */}
                       <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'h-48' : 'w-48 flex-shrink-0'
                         } bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/20 dark:to-teal-900/20`}>
-                        {course.thumbnail ? (
+                        {(course.thumbnailUrl || course.thumbnail) ? (
                           <img
-                            src={course.thumbnail}
+                            src={course.thumbnailUrl || course.thumbnail}
                             alt={course.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
@@ -469,9 +469,9 @@ export default function CoursesPage() {
                       <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-card overflow-hidden cursor-pointer">
                         {/* Thumbnail with Progress */}
                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/20 dark:to-teal-900/20">
-                          {course.thumbnail ? (
+                          {(course.thumbnailUrl || course.thumbnail) ? (
                             <img
-                              src={course.thumbnail}
+                              src={course.thumbnailUrl || course.thumbnail}
                               alt={course.title}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />

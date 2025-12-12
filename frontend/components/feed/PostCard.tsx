@@ -439,38 +439,38 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
 
       <div className="border-t border-border" />
 
-      <div className="px-4 py-2 flex items-center gap-2">
+      <div className="px-2 sm:px-4 py-2 flex items-center gap-1 sm:gap-2">
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-accent rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 hover:bg-accent rounded-lg transition-colors"
         >
-          <MessageCircle className="w-5 h-5 text-muted-foreground" />
-          <span className="text-muted-foreground font-medium">Comment</span>
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <span className="text-muted-foreground font-medium text-xs sm:text-sm md:text-base">Comment</span>
         </button>
 
         <button
           onClick={() => setIsSharing(!isSharing)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 hover:bg-accent rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 hover:bg-accent rounded-lg transition-colors"
         >
-          <Share2 className="w-5 h-5 text-muted-foreground" />
-          <span className="text-muted-foreground font-medium">Share</span>
+          <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <span className="text-muted-foreground font-medium text-xs sm:text-sm md:text-base">Share</span>
         </button>
       </div>
 
       {/* Share Form */}
       {isSharing && (
-        <div className="border-t border-border p-4 bg-muted/30">
+        <div className="border-t border-border p-3 sm:p-4 bg-muted/30">
           <textarea
             value={shareMessage}
             onChange={(e) => setShareMessage(e.target.value)}
             placeholder="Add a message (optional)..."
-            className="w-full px-3 py-2 border border-input bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className="w-full px-3 py-2 border border-input bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-sm sm:text-base"
             rows={2}
           />
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
             <button
               onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base transition-colors"
             >
               Share Now
             </button>
@@ -479,7 +479,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
                 setIsSharing(false);
                 setShareMessage('');
               }}
-              className="px-4 py-2 text-muted-foreground hover:bg-accent rounded-lg"
+              className="flex-1 sm:flex-none px-4 py-2 text-muted-foreground hover:bg-accent rounded-lg font-medium text-sm sm:text-base transition-colors"
             >
               Cancel
             </button>

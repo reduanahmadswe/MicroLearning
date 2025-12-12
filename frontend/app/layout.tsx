@@ -6,7 +6,12 @@ import AuthMiddleware from "@/components/auth/AuthMiddleware";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: "swap",
+  fallback: ["system-ui", "arial"],
+  adjustFontFallback: true,
+});
 
 export const metadata: Metadata = {
   title: "MicroLearning - AI-Powered Learning Platform",

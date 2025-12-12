@@ -4,7 +4,7 @@ import axios from "axios";
 const isDevelopment = process.env.NODE_ENV === 'development';
 const defaultUrl = isDevelopment
   ? "http://localhost:5000/api/v1"
-  : "https://microlearning-backend-reduan.onrender.com/api/v1";
+  : "http://localhost:5000/api/v1";
 
 // Force localhost in development to ensure we hit the local backend with our fixes
 const rawApiUrl = isDevelopment

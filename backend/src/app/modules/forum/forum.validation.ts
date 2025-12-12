@@ -37,11 +37,14 @@ export const createPostSchema = z.object({
   body: z.object({
     groupId: z.string().min(1, 'Group ID is required'),
     title: z.string().min(5, 'Title must be at least 5 characters').max(200),
-    content: z.string().min(10, 'Content must be at least 10 characters').max(10000),
+    content: z.string().min(3, 'Content must be at least 3 characters').max(10000),
     contentType: z.enum(['text', 'question', 'discussion', 'announcement', 'poll']).default('text'),
     images: z.array(z.string().url()).optional(),
     attachments: z.array(z.string().url()).optional(),
     tags: z.array(z.string()).optional(),
+    course: z.string().optional(),
+    lesson: z.string().optional(),
+    isHelpNeeded: z.boolean().optional().default(false),
   }),
 });
 
@@ -51,7 +54,7 @@ export const updatePostSchema = z.object({
   }),
   body: z.object({
     title: z.string().min(5).max(200).optional(),
-    content: z.string().min(10).max(10000).optional(),
+    content: z.string().min(3).max(10000).optional(),
     tags: z.array(z.string()).optional(),
   }),
 });

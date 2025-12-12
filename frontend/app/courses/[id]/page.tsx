@@ -293,61 +293,61 @@ export default function CourseDetailPage() {
     <div className="min-h-screen bg-page-gradient w-full overflow-x-hidden">
       {/* Hero Section */}
       <div className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12">
           {/* Back Button */}
           <Link
             href="/courses"
-            className="inline-flex items-center gap-2 text-white/90 hover:text-white transition-colors mb-4 sm:mb-6 text-sm sm:text-base"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-white/90 hover:text-white transition-colors mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm md:text-base"
           >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
             <span>Back to Courses</span>
           </Link>
 
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Course Info */}
             <div className="lg:col-span-2">
               {/* Category Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full mb-4">
-                <GraduationCap className="w-4 h-4" />
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/20 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full mb-3 sm:mb-4">
+                <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-xs sm:text-sm font-medium">{course.topic || 'General'}</span>
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 leading-tight">
                 {course.title}
               </h1>
 
               {/* Description */}
-              <p className="text-base sm:text-lg text-white/90 mb-4 sm:mb-6 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-white/90 mb-3 sm:mb-4 md:mb-6 leading-relaxed line-clamp-3 sm:line-clamp-none">
                 {course.description}
               </p>
 
               {/* Stats Row */}
-              <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{course.rating || 4.5}</span>
-                  <span className="text-white/80">({course.enrolledCount || 0} students)</span>
+              <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm md:text-base">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                  <span className="font-semibold">{course.rating?.toFixed(1) || '4.5'}</span>
+                  <span className="text-white/80 hidden xs:inline">({course.enrolledCount || 0} students)</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>{course.estimatedDuration || 0} minutes</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 flex-shrink-0" />
+                  <span>{course.estimatedDuration || 0} min</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 flex-shrink-0" />
                   <span>{course.lessons?.length || 0} lessons</span>
                 </div>
               </div>
 
               {/* Instructor (Mobile) */}
-              <div className="mt-6 lg:hidden">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white font-bold text-base sm:text-lg">
+              <div className="mt-4 sm:mt-6 lg:hidden">
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 md:p-4">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg flex-shrink-0">
                     {course.instructor?.name?.charAt(0).toUpperCase() || 'I'}
                   </div>
-                  <div>
-                    <p className="text-xs text-white/70">Instructor</p>
-                    <p className="font-semibold text-sm sm:text-base text-white">{course.instructor?.name || 'Anonymous'}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-white/70">Instructor</p>
+                    <p className="font-semibold text-xs sm:text-sm md:text-base text-white truncate">{course.instructor?.name || 'Anonymous'}</p>
                   </div>
                 </div>
               </div>
@@ -482,13 +482,13 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 pb-24 lg:pb-12">
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 w-full">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 pb-24 lg:pb-12">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full">
           {/* Left Column - Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Tabs */}
-            <div className="border-b border-border overflow-x-auto w-full scrollbar-hide">
-              <div className="flex gap-2 sm:gap-4 px-1 pb-1">
+            <div className="border-b border-border overflow-x-auto w-full scrollbar-hide -mx-3 sm:mx-0 px-3 sm:px-0">
+              <div className="flex gap-1 sm:gap-2 md:gap-4 pb-px min-w-max sm:min-w-0">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
@@ -497,13 +497,13 @@ export default function CourseDetailPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${activeTab === tab.id
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 font-medium border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm md:text-base ${activeTab === tab.id
                       ? 'border-green-600 text-green-600'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                       }`}
                   >
-                    <tab.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span>{tab.label}</span>
+                    <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                    <span className="hidden xs:inline">{tab.label}</span>
                   </button>
                 ))}
               </div>
@@ -511,15 +511,15 @@ export default function CourseDetailPage() {
 
             {/* Tab Content */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* What You'll Learn */}
-                <Card className="w-full overflow-hidden">
-                  <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                      <Target className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                      What You'll Learn
+                <Card className="w-full overflow-hidden shadow-sm border-border/50">
+                  <CardContent className="p-3 sm:p-4 md:p-6">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                      <Target className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0" />
+                      <span>What You'll Learn</span>
                     </h2>
-                    <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="grid gap-2.5 sm:gap-3 md:gap-4 md:grid-cols-2">
                       {[
                         'Master core concepts',
                         'Build real projects',
@@ -528,9 +528,9 @@ export default function CourseDetailPage() {
                         'Practical exercises',
                         'Expert techniques',
                       ].map((item, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm sm:text-base text-muted-foreground">{item}</span>
+                        <div key={index} className="flex items-start gap-2 sm:gap-2.5 md:gap-3">
+                          <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -538,35 +538,35 @@ export default function CourseDetailPage() {
                 </Card>
 
                 {/* Course Description */}
-                <Card className="w-full overflow-hidden">
-                  <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">About This Course</h2>
-                    <div className="prose prose-sm sm:prose w-full max-w-full text-muted-foreground dark:prose-invert break-words">
+                <Card className="w-full overflow-hidden shadow-sm border-border/50">
+                  <CardContent className="p-3 sm:p-4 md:p-6">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-3 sm:mb-4">About This Course</h2>
+                    <div className="prose prose-sm sm:prose w-full max-w-full text-muted-foreground dark:prose-invert break-words [&>*]:text-xs [&>*]:sm:text-sm [&>*]:md:text-base">
                       {course.description ? (
                         <MarkdownRenderer content={course.description} />
                       ) : (
-                        <p className="text-sm sm:text-base">{course.description}</p>
+                        <p className="text-xs sm:text-sm md:text-base leading-relaxed">{course.description}</p>
                       )}
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Requirements */}
-                <Card className="w-full overflow-hidden">
-                  <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Requirements</h2>
-                    <ul className="space-y-2 text-sm sm:text-base text-muted-foreground">
+                <Card className="w-full overflow-hidden shadow-sm border-border/50">
+                  <CardContent className="p-3 sm:p-4 md:p-6">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-3 sm:mb-4">Requirements</h2>
+                    <ul className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm md:text-base text-muted-foreground">
                       <li className="flex items-start gap-2">
-                        <span className="text-green-600 mt-1">•</span>
-                        <span>Basic understanding of the topic</span>
+                        <span className="text-green-600 mt-0.5 sm:mt-1 font-bold">•</span>
+                        <span className="leading-relaxed">Basic understanding of the topic</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-600 mt-1">•</span>
-                        <span>A computer with internet connection</span>
+                        <span className="text-green-600 mt-0.5 sm:mt-1 font-bold">•</span>
+                        <span className="leading-relaxed">A computer with internet connection</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-600 mt-1">•</span>
-                        <span>Willingness to learn and practice</span>
+                        <span className="text-green-600 mt-0.5 sm:mt-1 font-bold">•</span>
+                        <span className="leading-relaxed">Willingness to learn and practice</span>
                       </li>
                     </ul>
                   </CardContent>
@@ -575,35 +575,35 @@ export default function CourseDetailPage() {
             )}
 
             {activeTab === 'curriculum' && (
-              <Card className="w-full overflow-hidden">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground">Course Curriculum</h2>
-                    <span className="text-xs sm:text-sm text-muted-foreground">
+              <Card className="w-full overflow-hidden shadow-sm border-border/50">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Course Curriculum</h2>
+                    <span className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground bg-secondary px-2 sm:px-2.5 py-1 rounded-full">
                       {course.lessons?.length || 0} Lessons
                     </span>
                   </div>
 
                   {!course.lessons || course.lessons.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                        <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
+                    <div className="text-center py-8 sm:py-10 md:py-12">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <BookOpen className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">No Lessons Yet</h3>
-                      <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                      <h3 className="text-sm sm:text-base md:text-lg font-semibold text-foreground mb-2">No Lessons Yet</h3>
+                      <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-3 sm:mb-4 px-4">
                         The instructor hasn't added any lessons to this course yet.
                       </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+                      <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 px-4">
                         Check back soon or browse other available courses.
                       </p>
                       <Link href="/courses" className="inline-block">
-                        <Button variant="outline" className="w-full sm:w-auto">
+                        <Button variant="outline" className="w-auto text-xs sm:text-sm h-9 sm:h-10 px-4 sm:px-6">
                           Browse Other Courses
                         </Button>
                       </Link>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       {course.lessons.map((lesson: any, index: number) => {
                         const isCompleted = isLessonCompleted(lesson._id);
                         const isFirstLesson = lesson.order === 1;
@@ -645,8 +645,8 @@ export default function CourseDetailPage() {
                         return (
                           <div
                             key={lesson._id}
-                            className={`group border rounded-lg p-3 sm:p-4 transition-all ${unlocked
-                              ? 'border-border hover:border-green-300 dark:hover:border-green-700 hover:shadow-md cursor-pointer bg-card'
+                            className={`group border rounded-lg p-2.5 sm:p-3 md:p-4 transition-all ${unlocked
+                              ? 'border-border hover:border-green-300 dark:hover:border-green-700 hover:shadow-md cursor-pointer bg-card active:scale-[0.99]'
                               : 'border-border bg-secondary/50 opacity-60'
                               }`}
                             onClick={() => {
@@ -657,36 +657,36 @@ export default function CourseDetailPage() {
                               }
                             }}
                           >
-                            <div className="flex items-start gap-3 sm:gap-4">
+                            <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4">
                               {/* Lesson Number/Status */}
-                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${completed
+                              <div className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${completed
                                 ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                                 : unlocked
                                   ? 'bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 text-green-700 dark:text-green-400'
                                   : 'bg-secondary text-muted-foreground'
                                 }`}>
                                 {completed ? (
-                                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                                 ) : unlocked ? (
-                                  <span className="font-bold text-xs sm:text-sm">{lesson.order || (index + 1)}</span>
+                                  <span className="font-bold text-[10px] xs:text-xs sm:text-sm">{lesson.order || (index + 1)}</span>
                                 ) : (
-                                  <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
                                 )}
                               </div>
 
                               {/* Lesson Info */}
                               <div className="flex-1 min-w-0">
-                                <h3 className={`font-semibold text-sm sm:text-base mb-1 ${unlocked ? 'text-foreground group-hover:text-green-600' : 'text-muted-foreground'
+                                <h3 className={`font-semibold text-xs sm:text-sm md:text-base mb-1 leading-snug ${unlocked ? 'text-foreground group-hover:text-green-600' : 'text-muted-foreground'
                                   }`}>
                                   {lesson.title}
                                 </h3>
-                                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 md:gap-3 text-[10px] xs:text-xs sm:text-sm text-muted-foreground">
                                   <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    {lesson.estimatedTime || 10} min
+                                    <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                                    <span className="whitespace-nowrap">{lesson.estimatedTime || 10} min</span>
                                   </span>
                                   {course.difficulty && (
-                                    <span className={`px-2 py-0.5 rounded-full text-xs ${course.difficulty === 'beginner'
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] xs:text-xs whitespace-nowrap ${course.difficulty === 'beginner'
                                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                                       : course.difficulty === 'intermediate'
                                         ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
@@ -696,12 +696,12 @@ export default function CourseDetailPage() {
                                     </span>
                                   )}
                                   {isEnrolled && isFirstLesson && (
-                                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                                    <span className="text-[10px] xs:text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 sm:px-2 py-0.5 rounded whitespace-nowrap">
                                       ✓ Unlocked
                                     </span>
                                   )}
                                   {!unlocked && lockReason && (
-                                    <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded hidden sm:inline">
+                                    <span className="text-[10px] xs:text-xs bg-secondary text-muted-foreground px-1.5 sm:px-2 py-0.5 rounded hidden md:inline whitespace-nowrap">
                                       {lockReason}
                                     </span>
                                   )}
@@ -710,11 +710,11 @@ export default function CourseDetailPage() {
 
                               {/* Action Icon */}
                               {unlocked && (
-                                <div className="flex-shrink-0">
+                                <div className="flex-shrink-0 hidden xs:block">
                                   {completed ? (
-                                    <Award className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                                    <Award className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-green-600" />
                                   ) : (
-                                    <Play className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-green-600 transition-colors" />
+                                    <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400 group-hover:text-green-600 transition-colors" />
                                   )}
                                 </div>
                               )}
@@ -729,31 +729,31 @@ export default function CourseDetailPage() {
             )}
 
             {activeTab === 'instructor' && (
-              <Card>
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-green-600 to-teal-600 flex items-center justify-center text-white font-bold text-2xl sm:text-3xl flex-shrink-0">
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 md:gap-6">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-green-600 to-teal-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl md:text-3xl flex-shrink-0">
                       {course.instructor?.name?.charAt(0).toUpperCase() || 'I'}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-foreground mb-1 truncate">
                         {course.instructor?.name || 'Anonymous Instructor'}
                       </h3>
-                      <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                      <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-3 sm:mb-4 truncate">
                         {course.instructor?.email || 'No email provided'}
                       </p>
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="w-4 h-4" />
+                      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>Expert Instructor</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>{course.enrolledCount || 0} Students</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span>{course.rating || 4.5} Rating</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                          <span>{course.rating?.toFixed(1) || '4.5'} Rating</span>
                         </div>
                       </div>
                     </div>
@@ -766,26 +766,26 @@ export default function CourseDetailPage() {
           {/* Right Column - Enrollment Card (Desktop already rendered above) */}
           <div className="lg:hidden">
             {/* Mobile Sticky Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 shadow-lg z-40">
-              <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
-                <div>
+            <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border p-3 sm:p-4 shadow-lg z-40">
+              <div className="flex items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
+                <div className="min-w-0">
                   {course.isPremium && course.price > 0 && !isEnrolled ? (
-                    <div className="text-xl font-bold text-foreground">${course.price}</div>
+                    <div className="text-lg sm:text-xl font-bold text-foreground">${course.price}</div>
                   ) : !isEnrolled ? (
-                    <div className="text-xl font-bold text-green-600">Free</div>
+                    <div className="text-lg sm:text-xl font-bold text-green-600">Free</div>
                   ) : null}
                   {isEnrolled && (
-                    <div className="text-xs text-muted-foreground">{progress}% Complete</div>
+                    <div className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground truncate">{progress}% Complete</div>
                   )}
                 </div>
 
                 {isEnrolled ? (
                   <>
                     {progress === 100 ? (
-                      <Link href="/certificates" className="flex-1">
-                        <Button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 w-full">
-                          <Award className="w-4 h-4 mr-2" />
-                          View Certificate
+                      <Link href="/certificates" className="flex-1 min-w-0">
+                        <Button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 w-full h-10 sm:h-11 text-xs sm:text-sm">
+                          <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                          <span className="truncate">View Certificate</span>
                         </Button>
                       </Link>
                     ) : (
@@ -811,10 +811,10 @@ export default function CourseDetailPage() {
                             toast.error('No lessons available');
                           }
                         }}
-                        className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 flex-1"
+                        className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 flex-1 h-10 sm:h-11 text-xs sm:text-sm min-w-0"
                       >
-                        <Play className="w-4 h-4 mr-2" />
-                        Continue
+                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                        <span className="truncate">Continue</span>
                       </Button>
                     )}
                   </>
@@ -822,17 +822,17 @@ export default function CourseDetailPage() {
                   <Button
                     onClick={handleEnroll}
                     disabled={enrolling}
-                    className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 flex-1"
+                    className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 flex-1 h-10 sm:h-11 text-xs sm:text-sm min-w-0"
                   >
                     {enrolling ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        Enrolling...
+                        <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-white border-t-transparent mr-1.5 sm:mr-2 flex-shrink-0"></div>
+                        <span className="truncate">Enrolling...</span>
                       </>
                     ) : (
                       <>
-                        <GraduationCap className="w-4 h-4 mr-2" />
-                        {course.isPremium && course.price > 0 ? 'Buy Now' : 'Enroll Free'}
+                        <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                        <span className="truncate">{course.isPremium && course.price > 0 ? 'Buy Now' : 'Enroll Free'}</span>
                       </>
                     )}
                   </Button>
@@ -840,7 +840,7 @@ export default function CourseDetailPage() {
               </div>
             </div>
             {/* Spacer for fixed bottom bar */}
-            <div className="h-20"></div>
+            <div className="h-16 sm:h-20"></div>
           </div>
         </div>
       </div>

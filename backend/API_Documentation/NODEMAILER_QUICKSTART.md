@@ -51,7 +51,7 @@ npm run dev
 
 Postman/Thunder Client দিয়ে test করুন:
 
-**POST** `https://microlearning-backend-reduan.onrender.com/api/email/test`
+**POST** `http://localhost:5000/api/email/test`
 
 Body (JSON):
 ```json
@@ -64,7 +64,7 @@ Body (JSON):
 
 #### Step 1: Templates Initialize করুন
 
-**POST** `https://microlearning-backend-reduan.onrender.com/api/email/admin/initialize-templates`
+**POST** `http://localhost:5000/api/email/admin/initialize-templates`
 
 Headers:
 ```
@@ -73,7 +73,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 #### Step 2: Email পাঠান
 
-**POST** `https://microlearning-backend-reduan.onrender.com/api/email/send`
+**POST** `http://localhost:5000/api/email/send`
 
 Headers:
 ```

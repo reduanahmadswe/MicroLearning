@@ -1,13 +1,13 @@
 import dotenv from 'dotenv';
 import path from 'path';
+
+// Load environment variables FIRST before any other imports
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import app from './config/app';
 import connectDatabase from './config/database';
-
-// Load environment variables with explicit path
-dotenv.config({ path: path.join(process.cwd(), '.env') });
-
 
 // Import queue configuration BEFORE workers
 import './config/queue';

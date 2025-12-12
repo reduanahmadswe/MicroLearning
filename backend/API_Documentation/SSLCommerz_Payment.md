@@ -24,7 +24,7 @@
 SSLCOMMERZ_STORE_ID=your_store_id_here
 SSLCOMMERZ_STORE_PASSWORD=your_store_password_here
 SSLCOMMERZ_IS_LIVE=false
-BACKEND_URL=https://microlearning-backend-reduan.onrender.com/
+BACKEND_URL=http://localhost:5000/
 FRONTEND_URL=http://localhost:3000
 ```
 

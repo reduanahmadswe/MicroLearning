@@ -469,7 +469,7 @@ sessionCards.data.forEach(card => {
 
 ### Environment Variables
 ```
-base_url=https://microlearning-backend-reduan.onrender.com/
+base_url=http://localhost:5000/
 access_token={{your_jwt_token}}
 flashcard_id={{flashcard_id}}
 lesson_id={{lesson_id}}

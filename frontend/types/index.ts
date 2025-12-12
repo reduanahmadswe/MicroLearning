@@ -95,6 +95,7 @@ export interface Course {
   title: string;
   description: string;
   thumbnail?: string;
+  thumbnailUrl?: string; // Database field name
   instructor: User;
   lessons: Lesson[];
   topic: string;

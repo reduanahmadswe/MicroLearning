@@ -26,16 +26,33 @@ import ApiError from '../../../utils/ApiError';
  * AI Service Configuration
  */
 const AI_CONFIG = {
-  provider: (process.env.AI_PROVIDER as AIProvider) || 'deepseek',
+  provider: (process.env.AI_PROVIDER as AIProvider) || 'openrouter',
 
-  // Deepseek Configuration (Primary - Cheaper & Faster)
+  // OpenRouter Configuration (Primary - Access to 100+ models)
+  openrouter: {
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    model: process.env.OPENROUTER_MODEL || 'google/gemma-2-9b-it:free',
+    endpoint: process.env.OPENAI_API_BASE_URL || 'https://openrouter.ai/api/v1',
+    fallbackModels: (process.env.OPENROUTER_FALLBACK_MODELS || 'microsoft/phi-3-mini-128k-instruct:free,meta-llama/llama-3.2-3b-instruct:free').split(','),
+  },
+
+  // Debug: Log API keys on startup
+  _debugKeys: (() => {
+    console.log('🔑 AI API Keys Status:');
+    console.log('  OpenRouter:', process.env.OPENROUTER_API_KEY ? `✅ ${process.env.OPENROUTER_API_KEY.substring(0, 20)}...` : '❌ Not set');
+    console.log('  Deepseek:', process.env.DEEPSEEK_API_KEY ? `✅ ${process.env.DEEPSEEK_API_KEY.substring(0, 20)}...` : '❌ Not set');
+    console.log('  OpenAI:', process.env.OPENAI_API_KEY ? `✅ ${process.env.OPENAI_API_KEY.substring(0, 20)}...` : '❌ Not set');
+    console.log('  Provider:', process.env.AI_PROVIDER || 'openrouter');
+  })(),
+
+  // Deepseek Configuration (Fallback)
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY || '',
     model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
     endpoint: 'https://api.deepseek.com/v1/chat/completions',
   },
 
-  // OpenAI Configuration (Fallback - More Reliable)
+  // OpenAI Configuration (Fallback)
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
@@ -43,9 +60,10 @@ const AI_CONFIG = {
   },
 
   defaultTemperature: 0.7,
-  defaultMaxTokens: 2000,
+  defaultMaxTokens: 2500,
   costPer1kTokens: {
-    'deepseek-chat': 0.00014, // Very cheap!
+    'free': 0, // Free models
+    'deepseek-chat': 0.00014,
     'gpt-4o-mini': 0.00015,
     'gpt-4o': 0.005,
     'gpt-3.5-turbo': 0.0005,
@@ -62,7 +80,7 @@ const calculateCost = (tokens: number, model: string): number => {
 
 /**
  * Helper: Make AI API request with automatic fallback
- * Tries Deepseek first, falls back to OpenAI if it fails
+ * Tries OpenRouter first (free models), then Deepseek, then OpenAI
  */
 const makeOpenAIRequest = async (
   messages: IOpenAIRequest['messages'],
@@ -70,7 +88,51 @@ const makeOpenAIRequest = async (
   maxTokens: number = AI_CONFIG.defaultMaxTokens
 ): Promise<IOpenAIResponse> => {
 
-  // Try Deepseek first (Primary)
+  // Try OpenRouter first (Primary - Free models)
+  if (AI_CONFIG.openrouter.apiKey && AI_CONFIG.openrouter.apiKey.length > 0) {
+    const modelsToTry = [AI_CONFIG.openrouter.model, ...AI_CONFIG.openrouter.fallbackModels];
+    
+    for (const model of modelsToTry) {
+      try {
+        console.log(`🚀 Trying OpenRouter with model: ${model}...`);
+        const response = await axios.post<IOpenAIResponse>(
+          `${AI_CONFIG.openrouter.endpoint}/chat/completions`,
+          {
+            model: model,
+            messages,
+            temperature,
+            max_tokens: maxTokens,
+            top_p: 0.95,
+            frequency_penalty: 0.1,
+            presence_penalty: 0.1,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AI_CONFIG.openrouter.apiKey}`,
+              'HTTP-Referer': process.env.FRONTEND_URL || 'https://microlearning-beta.vercel.app',
+              'X-Title': 'MicroLearning Platform',
+            },
+            timeout: 60000,
+          }
+        );
+
+        console.log(`✅ OpenRouter (${model}) succeeded!`);
+        return response.data;
+      } catch (error: any) {
+        const errorData = error.response?.data;
+        if (errorData?.error?.code === 402 || errorData?.error?.message?.includes('Insufficient credits')) {
+          console.warn(`⚠️ OpenRouter ${model}: Insufficient credits, trying next model...`);
+          continue;
+        }
+        console.warn(`⚠️ OpenRouter ${model} failed:`, error.message);
+        continue;
+      }
+    }
+    console.warn('⚠️ All OpenRouter models failed, trying fallback providers...');
+  }
+
+  // Try Deepseek (Fallback 1)
   if (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) {
     try {
       console.log('🚀 Trying Deepseek API...');
@@ -94,7 +156,7 @@ const makeOpenAIRequest = async (
       console.log('✅ Deepseek API succeeded!');
       return response.data;
     } catch (error: any) {
-      console.warn('⚠️ Deepseek API failed, falling back to OpenAI...', error.message);
+      console.warn('⚠️ Deepseek API failed, trying OpenAI...', error.message);
       // Continue to OpenAI fallback
     }
   }
@@ -158,7 +220,15 @@ const saveGenerationHistory = async (
   status: 'success' | 'failed' = 'success',
   error?: string
 ) => {
-  const cost = calculateCost(tokensUsed, AI_CONFIG.openai.model);
+  // Get the correct model based on provider
+  let aiModel = AI_CONFIG.openai.model;
+  if (AI_CONFIG.provider === 'openrouter') {
+    aiModel = AI_CONFIG.openrouter.model;
+  } else if (AI_CONFIG.provider === 'deepseek') {
+    aiModel = AI_CONFIG.deepseek.model;
+  }
+
+  const cost = calculateCost(tokensUsed, aiModel);
 
   await AIGenerationHistory.create({
     user: userId,
@@ -166,7 +236,7 @@ const saveGenerationHistory = async (
     request,
     response,
     provider: AI_CONFIG.provider,
-    aiModel: AI_CONFIG.openai.model,
+    aiModel: aiModel,
     tokensUsed,
     cost,
     status,
@@ -183,13 +253,14 @@ export const generateLesson = async (
 ): Promise<IGeneratedLesson> => {
 
   // Check if AI is configured
-  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+  const hasValidKey = (AI_CONFIG.openrouter.apiKey && AI_CONFIG.openrouter.apiKey.length > 0) ||
+                      (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
                       (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
 
   if (!hasValidKey) {
     throw new ApiError(
       501,
-      'AI Lesson Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+      'AI Lesson Generation is currently unavailable. Please configure OpenRouter, Deepseek, or OpenAI API keys.'
     );
   }
 
@@ -230,7 +301,9 @@ Format your response as a JSON object with the following structure:
       2500
     );
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
+    // Remove markdown code blocks if present (```json ... ``` or ``` ... ```)
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsedContent = JSON.parse(content);
 
     const generatedLesson: IGeneratedLesson = {
@@ -254,6 +327,14 @@ Format your response as a JSON object with the following structure:
 
     return generatedLesson;
   } catch (error: any) {
+    // Log the actual error for debugging
+    console.error('❌ generateLesson error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+      name: error.name,
+    });
+    
     await saveGenerationHistory(userId, 'lesson', data, null, 0, 'failed', error.message);
     
     // Return user-friendly error
@@ -277,13 +358,14 @@ export const generateQuiz = async (
 ): Promise<IGeneratedQuiz> => {
 
   // Check if AI is configured
-  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+  const hasValidKey = (AI_CONFIG.openrouter.apiKey && AI_CONFIG.openrouter.apiKey.length > 0) ||
+                      (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
                       (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
 
   if (!hasValidKey) {
     throw new ApiError(
       501,
-      'AI Quiz Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+      'AI Quiz Generation is currently unavailable. Please configure OpenRouter, Deepseek, or OpenAI API keys.'
     );
   }
 
@@ -332,7 +414,9 @@ Format your response as a JSON object:
       3000
     );
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
+    // Remove markdown code blocks if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsedContent = JSON.parse(content);
 
     const totalPoints = parsedContent.questions.reduce(
@@ -371,13 +455,14 @@ export const generateFlashcards = async (
   data: IGenerateFlashcardRequest
 ): Promise<IGeneratedFlashcardSet> => {
   // Check if AI is configured
-  const hasValidKey = (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
+  const hasValidKey = (AI_CONFIG.openrouter.apiKey && AI_CONFIG.openrouter.apiKey.length > 0) ||
+                      (AI_CONFIG.deepseek.apiKey && AI_CONFIG.deepseek.apiKey.length > 0) ||
                       (AI_CONFIG.openai.apiKey && AI_CONFIG.openai.apiKey.length > 0);
 
   if (!hasValidKey) {
     throw new ApiError(
       501,
-      'AI Flashcard Generation is currently unavailable. Please configure Deepseek or OpenAI API keys.'
+      'AI Flashcard Generation is currently unavailable. Please configure OpenRouter, Deepseek, or OpenAI API keys.'
     );
   }
 
@@ -425,7 +510,9 @@ Format your response as a JSON object:
       2500
     );
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
+    // Remove markdown code blocks if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsedContent = JSON.parse(content);
 
     const generatedFlashcardSet: IGeneratedFlashcardSet = {
@@ -669,7 +756,9 @@ Provide your response as a JSON object:
       2000
     );
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
+    // Remove markdown code blocks if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsedContent = JSON.parse(content);
 
     return {
@@ -743,7 +832,9 @@ Format as JSON:
       1500
     );
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
+    // Remove markdown code blocks if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsedContent = JSON.parse(content);
 
     return parsedContent.topics;

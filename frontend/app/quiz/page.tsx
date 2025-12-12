@@ -218,7 +218,7 @@ export default function QuizListPage() {
             <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Test your knowledge and compete</p>
           </div>
           <Button
-            onClick={() => setShowAIModal(true)}
+            onClick={() => toast.info('Coming Soon! AI-powered quiz generation will be available soon.', { duration: 3000 })}
             className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all h-10 sm:h-11 text-sm sm:text-base"
           >
             <Sparkles className="w-4 h-4 mr-2" />

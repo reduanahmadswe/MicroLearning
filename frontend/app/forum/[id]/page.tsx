@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
+import { useAppDispatch, useForumPostById, useForumCommentsByPostId, useIsInitializing } from '@/store/hooks';
+import { fetchForumPostById, fetchForumComments } from '@/store/globalSlice';
 import {
   MessageSquare,
   ThumbsUp,
@@ -167,64 +169,45 @@ export default function ForumPostPage() {
   const params = useParams();
   const postId = params.id as string;
   const { user, token } = useAuthStore();
+  
+  const dispatch = useAppDispatch();
+  const postFromRedux = useForumPostById(postId);
+  const commentsFromRedux = useForumCommentsByPostId(postId);
+  const isInitializing = useIsInitializing();
 
-  const [post, setPost] = useState<any>(null);
-  const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
   const [viewCounted, setViewCounted] = useState(false);
 
   useEffect(() => {
-    if (postId) {
-      loadPost();
-      loadComments();
-    }
-  }, [postId]);
-
-  const loadPost = async () => {
-    try {
-      setLoading(true);
-
-      // Check if this post view has already been counted for this user
-      const viewedPosts = JSON.parse(localStorage.getItem('viewedPosts') || '[]');
-      const alreadyViewed = viewedPosts.includes(postId);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to load post');
-      const data = await response.json();
-      setPost(data.data);
-
-      // Only mark as viewed if not already in localStorage
-      if (!alreadyViewed && !viewCounted) {
-        // Add to viewed posts in localStorage
-        viewedPosts.push(postId);
-        localStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
-        setViewCounted(true);
+    if (postId && !isInitializing) {
+      // Load post if not in Redux or needs refresh
+      if (!postFromRedux) {
+        dispatch(fetchForumPostById(postId));
       }
-    } catch (error: any) {
-      toast.error('Failed to load post');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadComments = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/forum/posts/${postId}/comments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data.data || []);
+      // Load comments if not in Redux
+      if (commentsFromRedux.length === 0) {
+        dispatch(fetchForumComments(postId));
       }
-    } catch (error: any) {
-      console.error('Failed to load comments:', error);
+      // Mark post as viewed
+      markAsViewed();
+    }
+  }, [postId, isInitializing, postFromRedux, commentsFromRedux.length, dispatch]);
+
+  const markAsViewed = () => {
+    if (!postId || viewCounted) return;
+    
+    // Check if this post view has already been counted for this user
+    const viewedPosts = JSON.parse(localStorage.getItem('viewedPosts') || '[]');
+    const alreadyViewed = viewedPosts.includes(postId);
+
+    // Only mark as viewed if not already in localStorage
+    if (!alreadyViewed) {
+      viewedPosts.push(postId);
+      localStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
+      setViewCounted(true);
     }
   };
 
@@ -239,7 +222,7 @@ export default function ForumPostPage() {
         body: JSON.stringify({ voteType }),
       });
       if (!response.ok) throw new Error('Failed to vote');
-      loadPost();
+      dispatch(fetchForumPostById(postId));
       toast.success('Vote recorded!');
     } catch (error: any) {
       toast.error('Failed to vote');
@@ -257,7 +240,7 @@ export default function ForumPostPage() {
         body: JSON.stringify({ voteType }),
       });
       if (!response.ok) throw new Error('Failed to vote');
-      loadComments();
+      dispatch(fetchForumComments(postId));
       toast.success('Vote recorded!');
     } catch (error: any) {
       toast.error('Failed to vote comment');
@@ -279,7 +262,7 @@ export default function ForumPostPage() {
         throw new Error(errorData.message || 'Failed to accept answer');
       }
 
-      loadComments();
+      dispatch(fetchForumComments(postId));
       toast.success('✅ Answer accepted!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to accept answer');
@@ -293,10 +276,10 @@ export default function ForumPostPage() {
     setSubmitting(true);
     try {
       // Try to join the group first if not already a member
-      if (post?.group?._id) {
+      if (postFromRedux?.group?._id) {
         try {
           const joinResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/forum/groups/${post.group._id}/join`,
+            `${process.env.NEXT_PUBLIC_API_URL}/forum/groups/${postFromRedux.group._id}/join`,
             {
               method: 'POST',
               headers: {
@@ -329,8 +312,8 @@ export default function ForumPostPage() {
 
       setNewComment('');
       toast.success('Answer posted! 💬');
-      loadComments();
-      loadPost();
+      dispatch(fetchForumComments(postId));
+      dispatch(fetchForumPostById(postId));
     } catch (error: any) {
       console.error('Comment error:', error);
       const errorMessage = error.message || 'Failed to post answer';
@@ -363,7 +346,7 @@ export default function ForumPostPage() {
       setReplyText({ ...replyText, [parentCommentId]: '' });
       setReplyingTo(null);
       toast.success('Reply posted! 💬');
-      loadComments();
+      dispatch(fetchForumComments(postId));
     } catch (error: any) {
       console.error('Reply error:', error);
       toast.error('Failed to post reply');
@@ -384,7 +367,7 @@ export default function ForumPostPage() {
     return date.toLocaleDateString();
   };
 
-  if (loading) {
+  if (isInitializing || !postFromRedux) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-page-gradient">
         <div className="text-center">
@@ -395,7 +378,7 @@ export default function ForumPostPage() {
     );
   }
 
-  if (!post) {
+  if (!postFromRedux) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-page-gradient">
         <div className="bg-card rounded-xl shadow-sm border border-border p-8 text-center">
@@ -435,21 +418,21 @@ export default function ForumPostPage() {
                   className="p-1 sm:p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                 >
                   <ThumbsUp
-                    className={`w-4 h-4 sm:w-6 sm:h-6 ${post.upvotes?.includes(user?._id)
+                    className={`w-4 h-4 sm:w-6 sm:h-6 ${user?._id && postFromRedux.upvotes?.includes(user._id)
                       ? 'text-green-600 fill-green-600'
                       : 'text-muted-foreground'
                       }`}
                   />
                 </button>
                 <span className="text-base sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                  {(post.upvotes?.length || 0) - (post.downvotes?.length || 0)}
+                  {(postFromRedux.upvotes?.length || 0) - (postFromRedux.downvotes?.length || 0)}
                 </span>
                 <button
                   onClick={() => handleVotePost('downvote')}
                   className="p-1 sm:p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                 >
                   <ThumbsDown
-                    className={`w-4 h-4 sm:w-6 sm:h-6 ${post.downvotes?.includes(user?._id)
+                    className={`w-4 h-4 sm:w-6 sm:h-6 ${user?._id && postFromRedux.downvotes?.includes(user._id)
                       ? 'text-red-600 fill-red-600'
                       : 'text-muted-foreground'
                       }`}
@@ -461,38 +444,38 @@ export default function ForumPostPage() {
               <div className="flex-1 min-w-0">
                 {/* Badges */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-2 sm:mb-4">
-                  {post.isSolved && (
+                  {postFromRedux.isSolved && (
                     <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-400 rounded-full text-[10px] sm:text-xs font-semibold border border-green-200 dark:border-green-800/30">
                       <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Solved
                     </span>
                   )}
-                  {post.isHelpNeeded && !post.isSolved && (
+                  {postFromRedux.isHelpNeeded && !postFromRedux.isSolved && (
                     <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 text-orange-700 dark:text-orange-400 rounded-full text-[10px] sm:text-xs font-semibold border border-orange-200 dark:border-orange-800/30">
                       <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Help Needed
                     </span>
                   )}
-                  {post.course && (
+                  {postFromRedux.course && (
                     <span className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-700 dark:text-purple-400 rounded-full text-[10px] sm:text-xs font-semibold border border-purple-200 dark:border-purple-800/30 truncate max-w-[150px] sm:max-w-none">
                       <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
-                      <span className="truncate">{post.course.title}</span>
+                      <span className="truncate">{postFromRedux.course.title}</span>
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-2 sm:mb-4 line-clamp-3 sm:line-clamp-none">{post.title}</h1>
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-2 sm:mb-4 line-clamp-3 sm:line-clamp-none">{postFromRedux.title}</h1>
 
                 {/* Content */}
                 <div className="prose max-w-none mb-3 sm:mb-6 dark:prose-invert">
-                  <p className="text-sm sm:text-base lg:text-lg text-muted-foreground whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                  <p className="text-sm sm:text-base lg:text-lg text-muted-foreground whitespace-pre-wrap leading-relaxed">{postFromRedux.content}</p>
                 </div>
 
                 {/* Tags */}
-                {post.tags && post.tags.length > 0 && (
+                {postFromRedux.tags && postFromRedux.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-6">
-                    {post.tags.map((tag: string, idx: number) => (
+                    {postFromRedux.tags.map((tag: string, idx: number) => (
                       <span
                         key={idx}
                         className="px-2 sm:px-3 py-0.5 sm:py-1 bg-secondary text-muted-foreground text-[10px] sm:text-sm rounded-lg font-medium border border-border"
@@ -507,15 +490,15 @@ export default function ForumPostPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 pt-3 sm:pt-6 border-t-2 border-border">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-md">
-                      {post.author?.name?.charAt(0).toUpperCase()}
+                      {postFromRedux.author?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-xs sm:text-base">{post.author?.name}</p>
+                      <p className="font-semibold text-foreground text-xs sm:text-base">{postFromRedux.author?.name}</p>
                       <p className="text-[10px] sm:text-sm text-muted-foreground">
-                        {post.author?.role === 'instructor' && (
+                        {postFromRedux.author?.role === 'instructor' && (
                           <span className="text-green-600 font-semibold">Instructor</span>
                         )}
-                        {post.author?.role !== 'instructor' && 'Member'}
+                        {postFromRedux.author?.role !== 'instructor' && 'Member'}
                       </p>
                     </div>
                   </div>
@@ -523,11 +506,11 @@ export default function ForumPostPage() {
                   <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-sm text-muted-foreground sm:ml-auto">
                     <div className="flex items-center gap-0.5 sm:gap-1">
                       <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
-                      <span>{formatDate(post.createdAt)}</span>
+                      <span>{formatDate(postFromRedux.createdAt)}</span>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1">
                       <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-teal-600" />
-                      <span>{post.viewCount || 0} views</span>
+                      <span>{postFromRedux.viewCount || 0} views</span>
                     </div>
                   </div>
                 </div>
@@ -542,7 +525,7 @@ export default function ForumPostPage() {
             <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground flex items-center gap-1.5 sm:gap-2">
               <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                {comments.length} {comments.length === 1 ? 'Answer' : 'Answers'}
+                {commentsFromRedux.length} {commentsFromRedux.length === 1 ? 'Answer' : 'Answers'}
               </span>
             </h2>
           </div>
@@ -574,7 +557,7 @@ export default function ForumPostPage() {
 
             {/* Answers List */}
             <div className="space-y-4 sm:space-y-6">
-              {comments.length === 0 ? (
+              {commentsFromRedux.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                     <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
@@ -583,7 +566,7 @@ export default function ForumPostPage() {
                   <p className="text-xs sm:text-base text-muted-foreground">Be the first to answer this question!</p>
                 </div>
               ) : (
-                comments.map((comment) => (
+                commentsFromRedux.map((comment) => (
                   <div
                     key={comment._id}
                     className="border-b-2 border-border last:border-0 pb-4 sm:pb-6 last:pb-0"
@@ -644,7 +627,7 @@ export default function ForumPostPage() {
 
                         {/* Comment Actions */}
                         <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                          {post.author?._id === user?._id && (
+                          {postFromRedux.author?._id === user?._id && (
                             <button
                               onClick={() => handleAcceptAnswer(comment._id)}
                               className={`text-[11px] sm:text-sm font-semibold flex items-center gap-1 transition-all px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg ${comment.isAcceptedAnswer
@@ -657,7 +640,7 @@ export default function ForumPostPage() {
                             </button>
                           )}
 
-                          {comment.isAcceptedAnswer && post.author?._id !== user?._id && (
+                          {comment.isAcceptedAnswer && postFromRedux.author?._id !== user?._id && (
                             <div className="text-[11px] sm:text-sm text-green-700 dark:text-green-400 font-semibold flex items-center gap-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-2 sm:px-3 py-1 rounded-full border border-green-200 dark:border-green-800/30">
                               <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 fill-green-700 dark:fill-green-600" />
                               <span className="hidden xs:inline">Accepted Answer</span>

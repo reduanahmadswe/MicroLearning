@@ -95,9 +95,9 @@ const aiGenerationHistorySchema = new Schema<IAIGenerationHistory>(
     },
     provider: {
       type: String,
-      enum: ['openai', 'claude', 'gemini'],
+      enum: ['openai', 'openrouter', 'deepseek', 'claude', 'gemini'],
       required: true,
-      default: 'openai',
+      default: 'openrouter',
     },
     aiModel: {
       type: String,

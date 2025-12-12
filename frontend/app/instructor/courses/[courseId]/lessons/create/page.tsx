@@ -36,7 +36,7 @@ export default function CreateLessonForCoursePage() {
   const fetchCourse = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`https://microlearning-backend-reduan.onrender.com/api/v1/courses/${courseId}`, {
+      const res = await axios.get(`http://localhost:5000/api/v1/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCourse(res.data.data);
@@ -78,7 +78,7 @@ export default function CreateLessonForCoursePage() {
       setSubmitting(true);
 
       const res = await axios.post(
-        'https://microlearning-backend-reduan.onrender.com/api/v1/lessons/create',
+        'http://localhost:5000/api/v1/lessons/create',
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

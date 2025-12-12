@@ -21,11 +21,16 @@ interface User {
 
 interface ProgressStats {
     totalXP: number;
-    level: number;
+    currentLevel: number;
     currentStreak: number;
-    lessonsCompleted: number;
-    quizzesCompleted: number;
-    studyTimeMinutes: number;
+    completedLessons: number;
+    completedQuizzes: number;
+    totalStudyTime: number;
+    longestStreak?: number;
+    completedCourses?: number;
+    achievementsCount?: number;
+    challengesWon?: number;
+    rank?: number;
 }
 
 interface Badge {
@@ -54,6 +59,7 @@ interface Course {
     title: string;
     description: string;
     thumbnail?: string;
+    thumbnailUrl?: string; // Database field name
     instructor: any;
     lessons: any[];
     topic: string;
@@ -100,11 +106,10 @@ interface Lesson {
 
 interface Friend {
     _id: string;
-    name: string;
-    email: string;
-    profilePicture?: string;
-    level?: number;
-    xp?: number;
+    user: User;
+    friend: User;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
 }
 
 interface Post {
@@ -213,6 +218,7 @@ interface ForumPost {
         _id: string;
         name: string;
         avatar?: string;
+        role?: string;
     };
     group: {
         _id: string;
@@ -367,6 +373,11 @@ interface GlobalState {
         allIds: string[];
     };
 
+    forumComments: {
+        byId: Record<string, any>;
+        byPostId: Record<string, string[]>;
+    };
+
     // Cache metadata (5 minutes)
     cache: {
         badges: number | null;
@@ -480,6 +491,10 @@ const initialState: GlobalState = {
     forumGroups: {
         byId: {},
         allIds: [],
+    },
+    forumComments: {
+        byId: {},
+        byPostId: {},
     },
     cache: {
         badges: null,
@@ -817,6 +832,22 @@ export const markForumPostSolved = createAsyncThunk(
     }
 );
 
+export const fetchForumPostById = createAsyncThunk(
+    'global/fetchForumPostById',
+    async (postId: string) => {
+        const response = await api.get(`/forum/posts/${postId}`);
+        return response.data.data;
+    }
+);
+
+export const fetchForumComments = createAsyncThunk(
+    'global/fetchForumComments',
+    async (postId: string) => {
+        const response = await api.get(`/forum/posts/${postId}/comments`);
+        return { postId, comments: response.data.data || [] };
+    }
+);
+
 // ============================================
 // QUIZ THUNKS
 // ============================================
@@ -1090,6 +1121,34 @@ const globalSlice = createSlice({
                 state.forumPosts.byId[post._id] = post;
                 state.forumPosts.allIds.unshift(post._id);
             }
+        });
+
+        builder.addCase(fetchForumPostById.fulfilled, (state, action) => {
+            if (!state.forumPosts) {
+                state.forumPosts = { byId: {}, allIds: [] };
+            }
+            const post = action.payload;
+            if (post) {
+                state.forumPosts.byId[post._id] = post;
+                if (!state.forumPosts.allIds.includes(post._id)) {
+                    state.forumPosts.allIds.push(post._id);
+                }
+            }
+        });
+
+        builder.addCase(fetchForumComments.fulfilled, (state, action) => {
+            if (!state.forumComments) {
+                state.forumComments = { byId: {}, byPostId: {} };
+            }
+            const { postId, comments } = action.payload;
+            const commentIds: string[] = [];
+            
+            comments.forEach((comment: any) => {
+                state.forumComments.byId[comment._id] = comment;
+                commentIds.push(comment._id);
+            });
+            
+            state.forumComments.byPostId[postId] = commentIds;
         });
 
         builder.addCase(voteOnForumPost.fulfilled, (state, action) => {

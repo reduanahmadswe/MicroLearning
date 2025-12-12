@@ -280,20 +280,20 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen bg-page-gradient">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-4 lg:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
         {/* Header */}
-        <div className="mb-4 sm:mb-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-start sm:items-center justify-between gap-2">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-green-600 to-teal-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                   <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-base sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-700 via-teal-600 to-emerald-600 bg-clip-text text-transparent truncate">
+                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
                     Community Forum
                   </h1>
-                  <p className="text-[10px] sm:text-sm text-muted-foreground mt-0.5 line-clamp-1">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Ask questions, share knowledge
                   </p>
                 </div>
@@ -312,12 +312,12 @@ export default function ForumPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3 lg:gap-4 mb-3 sm:mb-6">
-          <Card className="border border-border shadow-md hover:shadow-lg transition-shadow bg-card">
-            <CardContent className="p-2 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Questions</p>
+                  <p className="text-xs sm:text-xs text-muted-foreground mb-1 truncate">Questions</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">{allPosts.length}</p>
                 </div>
                 <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-100 to-teal-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
@@ -327,11 +327,11 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-border shadow-md hover:shadow-lg transition-shadow bg-card">
-            <CardContent className="p-2 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Solved</p>
+                  <p className="text-xs sm:text-xs text-muted-foreground mb-1 truncate">Solved</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-green-600">
                     {allPosts.filter((p: any) => p.isSolved).length}
                   </p>
@@ -343,11 +343,11 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-border shadow-md hover:shadow-lg transition-shadow bg-card">
-            <CardContent className="p-2 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Need Help</p>
+                  <p className="text-xs sm:text-xs text-muted-foreground mb-1 truncate">Need Help</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-orange-600">
                     {allPosts.filter((p: any) => p.isHelpNeeded && !p.isSolved).length}
                   </p>
@@ -359,11 +359,11 @@ export default function ForumPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-border shadow-md hover:shadow-lg transition-shadow bg-card">
-            <CardContent className="p-2 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 truncate">Members</p>
+                  <p className="text-xs sm:text-xs text-muted-foreground mb-1 truncate">Members</p>
                   <p className="text-base sm:text-xl lg:text-2xl font-bold text-teal-600">
                     {new Set(allPosts.map((p: any) => p.author._id)).size}
                   </p>
@@ -376,15 +376,15 @@ export default function ForumPage() {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-2 sm:gap-6">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-2 sm:space-y-6">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             {/* Search & Filters */}
-            <Card className="border border-border shadow-lg bg-card">
-              <CardContent className="p-2 sm:p-4 lg:p-6">
+            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm ">
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-2 sm:space-y-3">
                   {/* Search */}
-                  <div className="relative">
+                  <div className="relative ">
                     <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type="text"
@@ -392,12 +392,12 @@ export default function ForumPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && setSearchQuery(searchQuery)}
                       placeholder="Search discussions..."
-                      className="w-full pl-7 sm:pl-10 pr-2.5 sm:pr-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-background text-foreground"
+                      className="w-full pl-7 sm:pl-10 pr-4 sm:pr-6 py-1.5 sm:py-2.5 text-[11px] sm:text-sm border border-border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-background text-foreground"
                     />
                   </div>
 
                   {/* Category Chips - Horizontal Scroll */}
-                  <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+                  <div className="flex gap-2 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {categories.map((cat) => {
                       const Icon = cat.icon;
                       return (
@@ -475,7 +475,7 @@ export default function ForumPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 {filteredPosts.map((post: any) => {
                   const voteScore = getVoteScore(post);
                   const hasUpvoted = hasUserVoted(post, 'up');
@@ -484,9 +484,9 @@ export default function ForumPage() {
                   return (
                     <Card
                       key={post._id}
-                      className="border border-border shadow-md hover:shadow-xl transition-all cursor-pointer group bg-card"
+                      className="border-0 shadow-xl bg-card/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 cursor-pointer group"
                     >
-                      <CardContent className="p-3 sm:p-4 lg:p-6">
+                      <CardContent className="p-4 sm:p-6">
                         <div className="flex gap-2 sm:gap-3 lg:gap-4">
                           {/* Vote Section - More compact */}
                           <div className="flex flex-col items-center gap-0.5 sm:gap-1 min-w-[40px] sm:min-w-[50px] lg:min-w-[60px] flex-shrink-0">
@@ -595,15 +595,15 @@ export default function ForumPage() {
                             <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border">
                               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-gradient-to-r from-green-600 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs lg:text-sm flex-shrink-0">
-                                  {post.author.name.charAt(0).toUpperCase()}
+                                  {post.author?.name?.charAt(0).toUpperCase() || '?'}
                                 </div>
                                 <span className="text-[10px] sm:text-xs lg:text-sm text-foreground font-medium truncate">
-                                  {post.author.name}
+                                  {post.author?.name || 'Unknown'}
                                 </span>
                               </div>
 
                               {/* Mark as Solved Button - Smaller on mobile */}
-                              {user?._id === post.author._id && (
+                              {user?._id === post.author?._id && (
                                 <button
                                   onClick={(e) => {
                                     e.preventDefault();
@@ -629,18 +629,17 @@ export default function ForumPage() {
             )}
           </div>
 
-          {/* Sidebar */}
-          {/* Sidebar */}
-          <div className="space-y-2 sm:space-y-6">
+          {/* Sidebar - Hidden on mobile, visible on large screens */}
+          <div className="hidden lg:block space-y-6">
             {/* Trending Topics */}
-            <Card className="border border-border shadow-lg bg-card">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/10 dark:to-teal-900/10 border-b border-border p-2.5 sm:p-4 lg:p-6">
+            <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/10 dark:to-teal-900/10 border-b border-border p-6">
                 <CardTitle className="text-sm sm:text-lg flex items-center gap-1.5 sm:gap-2 text-foreground">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                   Trending Topics
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-2 sm:p-4 lg:p-6">
+              <CardContent className="p-6">
                 <div className="space-y-1.5 sm:space-y-3">
                   {['JavaScript', 'React', 'Python', 'Node.js', 'TypeScript'].map((topic, idx) => (
                     <div
@@ -666,8 +665,8 @@ export default function ForumPage() {
             </Card>
 
             {/* Community Stats */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-green-600 via-teal-600 to-emerald-600 text-white overflow-hidden">
-              <CardContent className="p-3 sm:p-6 relative">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-green-600 via-teal-600 to-emerald-600 text-white overflow-hidden">
+              <CardContent className="p-6 relative">
                 <div className="absolute top-0 right-0 w-20 h-20 sm:w-32 sm:h-32 bg-white/10 rounded-full -mr-10 sm:-mr-16 -mt-10 sm:-mt-16"></div>
                 <div className="absolute bottom-0 left-0 w-14 h-14 sm:w-24 sm:h-24 bg-white/10 rounded-full -ml-7 sm:-ml-12 -mb-7 sm:-mb-12"></div>
 
@@ -768,66 +767,70 @@ export default function ForumPage() {
       {showCreateModal && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40 animate-fadeIn"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
             onClick={() => setShowCreateModal(false)}
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-border shadow-2xl animate-scaleIn bg-card">
-              <CardHeader className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white sticky top-0 z-10 p-3 sm:p-4 lg:p-6">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-7 sm:p-4 md:p-6">
+            <Card className="w-full sm:w-[90%] sm:max-w-lg md:max-w-xl max-h-[95vh] sm:max-h-[85vh] overflow-y-auto border-0 sm:border border-border shadow-2xl animate-slideUp sm:animate-scaleIn bg-card rounded-t-3xl sm:rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 text-white sticky top-0 z-10 p-3.5 sm:p-4 md:p-5 rounded-t-3xl sm:rounded-t-2xl">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base sm:text-xl lg:text-2xl font-bold flex items-center gap-1.5 sm:gap-2">
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-                    Ask a Question
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2">
+                    <Send className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span>Ask a Question</span>
                   </CardTitle>
                   <button
                     onClick={() => setShowCreateModal(false)}
-                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                    className="p-2 hover:bg-white/20 rounded-xl transition-all active:scale-95"
                   >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </CardHeader>
 
-              <CardContent className="p-3 sm:p-4 lg:p-6">
-                <div className="space-y-3 sm:space-y-4 lg:space-y-5">
+              <CardContent className="p-3.5 sm:p-4 md:p-5">
+                <div className="space-y-3.5 sm:space-y-4">
                   {/* Title */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2 flex items-center gap-1">
-                      Title <span className="text-red-500">*</span>
+                    <label className="block text-sm sm:text-base font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <span>Title</span>
+                      <span className="text-red-500 text-lg">*</span>
                     </label>
                     <input
                       type="text"
                       value={createForm.title}
                       onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                       placeholder="What's your question?"
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground"
+                      className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground placeholder:text-muted-foreground/60"
                     />
                   </div>
 
                   {/* Content */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2 flex items-center gap-1">
-                      Description <span className="text-red-500">*</span>
+                    <label className="block text-sm sm:text-base font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <span>Description</span>
+                      <span className="text-red-500 text-lg">*</span>
                     </label>
                     <textarea
                       value={createForm.content}
                       onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
-                      rows={6}
+                      rows={5}
                       placeholder="Provide more details about your question..."
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 resize-none text-foreground"
+                      className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 resize-none text-foreground placeholder:text-muted-foreground/60 leading-relaxed"
                     />
+                    <p className="text-xs text-muted-foreground mt-1.5">Minimum 3 characters</p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Group Selection */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2 flex items-center gap-1">
-                        Group <span className="text-red-500">*</span>
+                      <label className="block text-sm sm:text-base font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                        <span>Group</span>
+                        <span className="text-red-500 text-lg">*</span>
                       </label>
                       <select
                         value={createForm.groupId}
                         onChange={(e) => setCreateForm({ ...createForm, groupId: e.target.value })}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground"
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground cursor-pointer"
                       >
                         <option value="">Select a group</option>
                         {groups.map(group => (
@@ -838,13 +841,13 @@ export default function ForumPage() {
 
                     {/* Type */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2">
+                      <label className="block text-sm sm:text-base font-semibold text-foreground mb-2">
                         Type
                       </label>
                       <select
                         value={createForm.contentType}
                         onChange={(e) => setCreateForm({ ...createForm, contentType: e.target.value })}
-                        className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground"
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground cursor-pointer"
                       >
                         <option value="question">❓ Question</option>
                         <option value="discussion">💬 Discussion</option>
@@ -855,13 +858,13 @@ export default function ForumPage() {
 
                   {/* Course Selection */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2">
-                      Related Course (Optional)
+                    <label className="block text-sm sm:text-base font-semibold text-foreground mb-2">
+                      Related Course <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
                     </label>
                     <select
                       value={createForm.courseId}
                       onChange={(e) => setCreateForm({ ...createForm, courseId: e.target.value })}
-                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground"
+                      className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground cursor-pointer"
                     >
                       <option value="">Select a course</option>
                       {courses.map(course => (
@@ -872,56 +875,56 @@ export default function ForumPage() {
 
                   {/* Tags */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-foreground mb-1.5 sm:mb-2">
-                      Tags (comma-separated)
+                    <label className="block text-sm sm:text-base font-semibold text-foreground mb-2">
+                      Tags <span className="text-xs text-muted-foreground font-normal">(comma-separated)</span>
                     </label>
                     <div className="relative">
-                      <Hash className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-green-500 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <Hash className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-600 w-4 h-4" />
                       <input
                         type="text"
                         value={createForm.tags}
                         onChange={(e) => setCreateForm({ ...createForm, tags: e.target.value })}
                         placeholder="javascript, react, beginner"
-                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground"
+                        className="w-full pl-11 pr-4 py-3 sm:py-3.5 text-sm sm:text-base bg-background border-2 border-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all hover:border-gray-300 dark:hover:border-gray-600 text-foreground placeholder:text-muted-foreground/60"
                       />
                     </div>
                   </div>
 
                   {/* Help Needed */}
-                  <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-2 border-orange-200 dark:border-orange-800 rounded-xl hover:border-orange-300 dark:hover:border-orange-700 transition-all">
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-2 border-orange-200 dark:border-orange-800/50 rounded-xl hover:border-orange-300 dark:hover:border-orange-700 transition-all cursor-pointer active:scale-[0.99]">
                     <input
                       type="checkbox"
                       id="helpNeeded"
                       checked={createForm.isHelpNeeded}
                       onChange={(e) => setCreateForm({ ...createForm, isHelpNeeded: e.target.checked })}
-                      className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 text-orange-600 border-orange-300 rounded focus:ring-orange-500 flex-shrink-0 cursor-pointer"
+                      className="mt-1 w-5 h-5 text-orange-600 border-orange-300 rounded-md focus:ring-orange-500 focus:ring-2 flex-shrink-0 cursor-pointer"
                     />
                     <div className="flex-1 min-w-0">
-                      <label htmlFor="helpNeeded" className="text-xs sm:text-sm font-semibold text-foreground cursor-pointer flex items-center gap-1.5 sm:gap-2">
-                        <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 flex-shrink-0" />
-                        <span className="line-clamp-1">Mark as "Urgent - Need Help"</span>
+                      <label htmlFor="helpNeeded" className="text-sm sm:text-base font-bold text-foreground cursor-pointer flex items-center gap-2">
+                        <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
+                        <span>Mark as "Urgent - Need Help"</span>
                       </label>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
                         Use this for time-sensitive questions that need immediate attention
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t-2 border-border">
+                {/* Actions - Fixed at bottom on mobile */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 mt-5 pt-5 border-t-2 border-border sticky sm:static bottom-0 bg-card sm:bg-transparent -mx-3.5 sm:mx-0 px-3.5 sm:px-0 pb-3.5 sm:pb-0">
                   <Button
                     onClick={() => setShowCreateModal(false)}
                     variant="outline"
-                    className="flex-1 border-2 border-border hover:border-muted-foreground/30 hover:bg-secondary h-9 sm:h-10 text-xs sm:text-sm font-semibold rounded-xl transition-all"
+                    className="flex-1 border-2 border-border hover:border-muted-foreground/30 hover:bg-secondary h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl transition-all active:scale-95"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleCreatePost}
-                    className="flex-1 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 hover:from-green-700 hover:via-teal-700 hover:to-emerald-700 h-9 sm:h-10 text-xs sm:text-sm font-semibold shadow-lg rounded-xl transition-all"
+                    className="flex-1 bg-gradient-to-r from-green-600 via-teal-600 to-emerald-600 hover:from-green-700 hover:via-teal-700 hover:to-emerald-700 h-11 sm:h-12 text-sm sm:text-base font-bold shadow-lg rounded-xl transition-all active:scale-95"
                   >
-                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Post Question
                   </Button>
                 </div>
