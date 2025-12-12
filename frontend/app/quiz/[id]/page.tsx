@@ -141,10 +141,12 @@ export default function QuizPlayerPage() {
       const timeTaken = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
       // Format answers according to backend validation schema
+      // Include all questions, even unanswered ones
       const formattedAnswers = quiz.questions.map((q, index) => {
         let answer = answers[index];
 
         // Convert answer based on question type
+        // If unanswered, send empty string
         if (answer === undefined || answer === null) {
           answer = '';
         } else if (q.type === 'mcq' && typeof answer === 'number' && q.options) {
@@ -162,7 +164,7 @@ export default function QuizPlayerPage() {
 
         return {
           questionIndex: index,
-          answer: answer,
+          answer: answer, // Empty string for unanswered questions
         };
       });
 
@@ -502,6 +504,19 @@ export default function QuizPlayerPage() {
               <p className="text-base text-muted-foreground leading-relaxed">
                 Are you sure you want to submit this quiz? You cannot change your answers after submission.
               </p>
+              
+              {quiz.questions.length - getAnsweredCount() > 0 && (
+                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-4 rounded-xl">
+                  <p className="text-sm text-orange-800 dark:text-orange-200 flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Warning:</strong> You have {quiz.questions.length - getAnsweredCount()} unanswered question{quiz.questions.length - getAnsweredCount() !== 1 ? 's' : ''}. 
+                      Unanswered questions will be marked as incorrect.
+                    </span>
+                  </p>
+                </div>
+              )}
+
               <div className="bg-muted/30 p-4 rounded-xl space-y-3 text-sm border border-border">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Questions:</span>

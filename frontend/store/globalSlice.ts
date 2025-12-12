@@ -871,7 +871,7 @@ export const fetchQuizById = createAsyncThunk(
 export const submitQuizAttempt = createAsyncThunk(
     'global/submitQuizAttempt',
     async ({ quizId, answers, timeTaken }: { quizId: string; answers: any[]; timeTaken: number }) => {
-        const response = await api.post(`/quiz/${quizId}/submit`, { answers, timeTaken });
+        const response = await api.post(`/quiz/submit`, { quizId, answers, timeTaken });
         return response.data.data;
     }
 );

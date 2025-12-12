@@ -91,17 +91,6 @@ export default function AboutPage() {
       }
     },
     { 
-      name: 'Fatema Akter', 
-      role: 'Head of Education', 
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop', 
-      bio: 'Former DU Professor',
-      socials: {
-        linkedin: 'https://linkedin.com',
-        twitter: 'https://twitter.com',
-        email: 'fatema@microlearning.com'
-      }
-    },
-    { 
       name: 'Abdullah Al Noman', 
       role: 'CTO', 
       image: 'https://avatars.githubusercontent.com/u/141672697?v=4', 
@@ -112,6 +101,17 @@ export default function AboutPage() {
         twitter: 'https://twitter.com/abdullahalnoman',
         email: 'noman@microlearning.com'
       }
+    },
+    { 
+      name: 'Faizun Nur', 
+      role: 'Head of Education', 
+      image: 'https://res.cloudinary.com/di21cbkyf/image/upload/v1765551133/photo_2025-12-12_20-39-08_azqxom.jpg', 
+      bio: 'Educational Innovation Expert',
+      socials: {
+        linkedin: 'https://bd.linkedin.com/in/faizun-nur-a6760619b',
+        twitter: 'https://x.com/faizun_official',
+        email: 'faizunnur71@gmail.com'
+      }
     },
     { 
       name: 'Nusrat Jahan', 
